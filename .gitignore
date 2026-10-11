@@ -1,0 +1,82 @@
+# .NET, IDE y resultados de build
+**/bin/
+**/obj/
+.vs/
+.vscode/.ropeproject
+.idea/
+TestResults/
+coverage/
+*.user
+*.suo
+
+# Datos, respaldos y secretos locales
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.db.enc
+*.bak
+*.pfx
+*.p12
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.*.local.json
+
+# Temporales y sistema
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Herramientas locales y datos de demostración
+.tools/
+.demo-data/
+artifacts/logs/
+
+# Diarios y variantes de bases de datos locales
+*.db-journal
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+*.sqlite3-shm
+*.sqlite3-wal
+*.sqlite3-journal
+*.db3
+*.db3-shm
+*.db3-wal
+*.db3-journal
+*.s3db
+*.sqlite.enc
+*.sqlite3.enc
+*.backup
+
+# Credenciales y claves privadas
+.secrets/
+credentials.json
+credentials.*.json
+token.json
+token.*.json
+tokens.json
+oauth*.json
+*.secrets.json
+*.p8
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+
+# Exportaciones, respaldos y datos personales de uso local
+/backups/
+/respaldos/
+/exports/
+/datos-locales/
+
+# Resultados generados con rutas y metadatos del equipo
+artifacts/test-results/
+*.trx

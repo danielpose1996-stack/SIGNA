@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GestorDocente.Application/GestorDocente.Application.csproj" />
+    <Project Path="src/GestorDocente.Desktop/GestorDocente.Desktop.csproj" />
+    <Project Path="src/GestorDocente.Domain/GestorDocente.Domain.csproj" />
+    <Project Path="src/GestorDocente.Infrastructure/GestorDocente.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GestorDocente.Acceptance.Tests/GestorDocente.Acceptance.Tests.csproj" />
+    <Project Path="tests/GestorDocente.Application.Tests/GestorDocente.Application.Tests.csproj" />
+    <Project Path="tests/GestorDocente.Domain.Tests/GestorDocente.Domain.Tests.csproj" />
+    <Project Path="tests/GestorDocente.Infrastructure.Tests/GestorDocente.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

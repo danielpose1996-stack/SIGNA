@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:v="using:GestorDocente.Desktop.Views" x:Class="GestorDocente.Desktop.Views.MainWindow" Title="UNIPAZ · Gestor Académico Docente · Demostración" Width="1580" Height="960" MinWidth="1100" MinHeight="700" WindowStartupLocation="CenterScreen">
+  <Grid>
+    <Grid ColumnDefinitions="236,*">
+      <Border Background="#EBF2FA" BorderBrush="#DDE7F3" BorderThickness="0,0,1,0">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="14,28,14,20">
+          <StackPanel Margin="18,0,0,28" Spacing="3">
+            <TextBlock Text="UNIPAZ" FontSize="26" FontWeight="Bold" />
+            <TextBlock Text="Gestor Académico" FontSize="14" />
+            <TextBlock Text="Docente" FontSize="14" />
+          </StackPanel>
+          <StackPanel Grid.Row="1" Spacing="3">
+            <Button Classes="nav" IsEnabled="False" ToolTip.Tip="Inicio: incremento posterior"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="home" Width="23" Height="23" /><TextBlock Text="Inicio" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav active" Command="{Binding NavigateCommand}" CommandParameter="Notas"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="book" Stroke="#0067F5" Width="23" Height="23" /><TextBlock Text="Mis Materias" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav" IsEnabled="False" ToolTip.Tip="Estudiantes: importación y gestión en un incremento posterior"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="users" Width="23" Height="23" /><TextBlock Text="Estudiantes" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav" Command="{Binding NavigateCommand}" CommandParameter="Notas"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="edit" Width="23" Height="23" /><TextBlock Text="Notas y Asistencias" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav" Command="{Binding NavigateCommand}" CommandParameter="Rúbricas"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="grid" Width="23" Height="23" /><TextBlock Text="Rúbricas" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav" IsEnabled="False" ToolTip.Tip="Reportes: generación PDF pendiente de especificación"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="document" Width="23" Height="23" /><TextBlock Text="Reportes" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="nav" IsEnabled="False" ToolTip.Tip="Configuración general: incremento posterior"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="settings" Width="23" Height="23" /><TextBlock Text="Configuración" VerticalAlignment="Center" /></StackPanel></Button>
+          </StackPanel>
+          <Grid Grid.Row="2" ColumnDefinitions="44,*" Margin="10,0">
+            <Border Width="42" Height="42" CornerRadius="21" Background="#195AAF"><TextBlock Text="JP" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="17" /></Border>
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center"><TextBlock Text="Docente · ejemplo" Classes="muted" FontSize="12" /><TextBlock Text="Juan Pérez" FontSize="15" /></StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+      <Grid Grid.Column="1" RowDefinitions="44,Auto,Auto,Auto,Auto,*,30">
+        <Border BorderBrush="#DFE8F4" BorderThickness="0,0,0,1" Background="#F8FAFD" Padding="22,0">
+          <Grid ColumnDefinitions="*,280,44">
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"><c:VectorIcon Kind="book" Width="18" Height="18" /><TextBlock Text="Mis Materias" Classes="muted" FontSize="12" /><c:VectorIcon Kind="chevron" Width="12" Height="12" /><TextBlock Text="{Binding CourseName}" FontSize="12" /></StackPanel>
+            <TextBox Grid.Column="1" Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiantes…" Height="30" MinHeight="30" FontSize="12" VerticalAlignment="Center" AutomationProperties.Name="Buscar estudiantes" />
+            <Border Grid.Column="2" Background="#195AAF" Width="30" Height="30" CornerRadius="15" HorizontalAlignment="Right"><TextBlock Text="JP" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" /></Border>
+          </Grid>
+        </Border>
+        <Grid Grid.Row="1" ColumnDefinitions="60,*,Auto" Margin="24,18,20,18">
+          <Border Background="#064392" Width="54" Height="54" CornerRadius="7"><c:VectorIcon Kind="monitor" Stroke="White" Width="31" Height="31" /></Border>
+          <StackPanel Grid.Column="1" Margin="18,0,10,0" VerticalAlignment="Center" Spacing="8"><TextBlock Text="{Binding CourseName}" FontSize="25" FontWeight="Bold" TextWrapping="Wrap" /><WrapPanel Orientation="Horizontal"><TextBlock Text="{Binding CourseInfo}" Classes="muted" FontSize="12" TextWrapping="Wrap" MaxWidth="440" Margin="0,0,12,0" /><Border Background="#DAF6E8" CornerRadius="4" Padding="10,3"><TextBlock Text="En curso" Foreground="#06714A" FontSize="12" /></Border></WrapPanel></StackPanel>
+          <Button Grid.Column="2" IsEnabled="False" ToolTip.Tip="Exportación PDF pendiente de especificación" VerticalAlignment="Center"><StackPanel Orientation="Horizontal" Spacing="9"><c:VectorIcon Kind="document" Width="19" Height="19" /><TextBlock Text="Exportar reporte" FontSize="12" /></StackPanel></Button>
+        </Grid>
+        <Border Grid.Row="2" BorderBrush="#DFE8F4" BorderThickness="1" CornerRadius="7" Background="White" Margin="18,0">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Classes="tab" Classes.active="{Binding IsNotes}" Command="{Binding NavigateCommand}" CommandParameter="Notas"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="grid" Width="21" Height="21" /><TextBlock Text="Notas" /></StackPanel></Button>
+            <Button Classes="tab" Classes.active="{Binding IsAttendance}" Command="{Binding NavigateCommand}" CommandParameter="Asistencias"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="users" Width="21" Height="21" /><TextBlock Text="Asistencias" /></StackPanel></Button>
+            <Button Classes="tab" Command="{Binding ConfigureCommand}"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="settings" Width="21" Height="21" /><TextBlock Text="Configuración de evaluaciones" /></StackPanel></Button>
+            <Button Classes="tab" IsEnabled="False" ToolTip.Tip="Gestión de estudiantes en un incremento posterior"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="users" Width="21" Height="21" /><TextBlock Text="Estudiantes" /></StackPanel></Button>
+          </StackPanel>
+        </Border>
+        <c:CutSelector Grid.Row="3" Margin="18,10,18,0" />
+        <Border Grid.Row="4" Background="#FFF8E6" CornerRadius="5" Padding="10" Margin="18,8,18,0" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border>
+        <Grid Grid.Row="5" Margin="18,10,18,10"><v:NotesView IsVisible="{Binding IsNotes}" /><v:AttendanceView IsVisible="{Binding IsAttendance}" /></Grid>
+        <Border Grid.Row="6" BorderBrush="#E1EAF4" BorderThickness="0,1,0,0" Padding="20,0"><Grid ColumnDefinitions="Auto,*"><TextBlock Text="MODO DEMOSTRACIÓN" FontWeight="SemiBold" FontSize="10" Foreground="#0067F5" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="{Binding SaveStatus}" Classes="muted" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid></Border>
+      </Grid>
+    </Grid>
+    <Border x:Name="ModalOverlay" Background="#330B2450" IsVisible="False" />
+  </Grid>
+</Window>

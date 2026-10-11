@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Controls.GradeEditor">
+  <Grid RowDefinitions="Auto,Auto" Margin="1,0">
+    <TextBox IsVisible="{Binding IsDirect}" Text="{Binding Input,Mode=TwoWay}" Watermark="—" TextAlignment="Center" MinHeight="28" Height="28" Padding="3,2" BorderThickness="0" Background="#EAF6F1" Foreground="#126454" LostFocus="CommitOnLostFocus" KeyDown="CommitOnEnter" ToolTip.Tip="Nota directa entre 0,0 y 5,0. Enter para guardar; vacío significa pendiente." AutomationProperties.Name="Calificación directa" />
+    <Button IsVisible="{Binding HasRubric}" Command="{Binding EvaluateCommand}" MinHeight="28" Height="28" Padding="3,2" BorderThickness="0" Background="#EAF1FF" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" ToolTip.Tip="Evaluar mediante los criterios de esta actividad" AutomationProperties.Name="Evaluar con rúbrica">
+      <TextBlock Text="{Binding Input}" FontSize="13" Foreground="#20569D" />
+    </Button>
+    <TextBlock Grid.Row="1" Classes="error" Text="{Binding Error}" IsVisible="{Binding Error,Converter={StaticResource HasText}}" ToolTip.Tip="{Binding Error}" FontSize="10" MaxWidth="90" />
+  </Grid>
+</UserControl>

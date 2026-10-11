@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.NotesView">
+  <Grid RowDefinitions="Auto,10,*">
+    <ItemsControl ItemsSource="{Binding Groups}">
+      <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate><DataTemplate>
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,8,0" Height="88" Padding="12" Background="White" ToolTip.Tip="Seleccionar una actividad para crear o editar su rúbrica">
+          <Button.Flyout><Flyout Placement="Bottom"><ItemsControl ItemsSource="{Binding Activities}"><ItemsControl.ItemTemplate><DataTemplate><Button Classes="quiet" Command="{Binding OpenCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" MinWidth="260" Padding="8"><Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="3"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" /><TextBlock Text="{Binding WeightLabel}" Classes="muted" FontSize="11" /></StackPanel><Border Grid.Column="1" Background="#EAF7F1" CornerRadius="3" Padding="7,4" VerticalAlignment="Center"><TextBlock Text="{Binding RubricLabel}" FontSize="11" Foreground="#24765C" /></Border></Grid></Button></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Flyout></Button.Flyout>
+          <Grid ColumnDefinitions="30,*,14"><Border Background="#E8F1FF" CornerRadius="5" Width="30" Height="34" VerticalAlignment="Top"><c:VectorIcon Kind="document" Width="22" Height="22" Stroke="#0067F5" /></Border><StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="4"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" /><TextBlock Text="{Binding WeightLabel}" FontWeight="SemiBold" FontSize="12" /><TextBlock Text="Seleccionar actividad" Foreground="#0067F5" FontSize="10" /></StackPanel><c:VectorIcon Grid.Column="2" Kind="chevron" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
+        </Button>
+      </DataTemplate></ItemsControl.ItemTemplate>
+    </ItemsControl>
+    <Border Grid.Row="2" Classes="card" Padding="0">
+      <Grid RowDefinitions="50,*,42">
+        <Grid ColumnDefinitions="300,*,Auto" Margin="12,6">
+          <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante o documento…" AutomationProperties.Name="Filtrar tabla de notas" />
+          <TextBlock Grid.Column="2" Classes="muted" Text="Nota directa: Enter para guardar · Azul: evaluar con rúbrica" FontSize="11" VerticalAlignment="Center" Margin="10,0" />
+        </Grid>
+        <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" SelectionMode="Single" />
+        <TextBlock Grid.Row="1" Text="No hay estudiantes que coincidan con la búsqueda." Classes="muted" IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Border Grid.Row="2" Background="#EDF3FA" Padding="16,10"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Promedio del curso · corte seleccionado" FontWeight="SemiBold" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="15" /></Grid></Border>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,39 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.RubricWindow" Title="Construcción de rúbrica" Width="640" Height="850" MinWidth="560" MinHeight="460" Background="White" CanResize="True" WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="58,*,Auto" Margin="20,0,20,16">
+    <Grid ColumnDefinitions="30,*,Auto" Margin="0,14"><c:VectorIcon Kind="document" Stroke="#0067F5" Width="25" Height="25" /><TextBlock Grid.Column="1" Text="Construcción de rúbrica" FontSize="19" FontWeight="SemiBold" Margin="12,0" VerticalAlignment="Center" /><Button Grid.Column="2" Classes="quiet" Click="Cancel" ToolTip.Tip="Cerrar y descartar cambios" AutomationProperties.Name="Cerrar rúbrica"><c:VectorIcon Kind="close" Width="16" Height="16" /></Button></Grid>
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="12">
+        <Border Background="#F7FAFF" BorderBrush="#E0E9F5" BorderThickness="1" CornerRadius="6" Padding="14"><Grid ColumnDefinitions="30,*,Auto"><c:VectorIcon Kind="document" Stroke="#0067F5" Width="25" Height="25" /><StackPanel Grid.Column="1" Margin="12,0"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16" /><TextBlock Text="{Binding GroupLabel}" FontSize="11" Margin="0,5,0,0" /></StackPanel><Border Grid.Column="2" Background="#DCF7E9" CornerRadius="4" Padding="8,4" VerticalAlignment="Center"><TextBlock Text="{Binding RubricState}" Foreground="#137C51" FontSize="11" /></Border></Grid></Border>
+        <StackPanel Spacing="6">
+          <TextBlock Text="Información general" FontWeight="SemiBold" />
+          <Grid ColumnDefinitions="*,120" ColumnSpacing="12"><StackPanel Spacing="4"><TextBlock Text="Nombre de la actividad" FontSize="11" /><TextBox Text="{Binding Name,Mode=TwoWay}" AutomationProperties.Name="Nombre de la actividad" /></StackPanel><StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Peso en el grupo (%)" FontSize="11" /><NumericUpDown Value="{Binding Weight,Mode=TwoWay}" Minimum="0" Maximum="100" Increment="1" FormatString="0.##" AutomationProperties.Name="Peso de la actividad" /></StackPanel></Grid>
+          <TextBlock Text="Descripción (opcional)" FontSize="11" Margin="0,4,0,0" /><TextBox Text="{Binding Description,Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" Height="66" AutomationProperties.Name="Descripción de la actividad" />
+        </StackPanel>
+        <Border BorderBrush="#E0E9F5" BorderThickness="1" CornerRadius="5" Padding="8">
+          <StackPanel Spacing="7"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Criteria.Count,StringFormat='Criterios de la rúbrica ({0})'}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" /><Button Grid.Column="1" Command="{Binding AddCriterionCommand}" MinHeight="28" Padding="8,4"><StackPanel Orientation="Horizontal" Spacing="5"><c:VectorIcon Kind="plus" Width="14" Height="14" Stroke="#0067F5" /><TextBlock Text="Agregar criterio" Foreground="#0067F5" FontSize="11" /></StackPanel></Button></Grid>
+            <DataGrid x:Name="CriteriaTable" ItemsSource="{Binding Criteria}" AutoGenerateColumns="False" Height="218" ColumnHeaderHeight="32" RowHeight="43" CanUserResizeColumns="True">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Criterio" Width="156"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontSize="12" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellTemplate><DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding Name,Mode=TwoWay}" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Descripción" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellTemplate><DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding Description,Mode=TwoWay}" TextWrapping="Wrap" AcceptsReturn="True" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate></DataGridTemplateColumn>
+                <DataGridTextColumn Header="Peso %" Binding="{Binding Weight}" Width="65" />
+                <DataGridTemplateColumn Header="Acciones" Width="74"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="quiet" Click="EditCriterion" Padding="5" MinHeight="26" ToolTip.Tip="Editar criterio"><c:VectorIcon Kind="edit" Width="15" Height="15" /></Button><Button Classes="quiet" Click="RemoveCriterion" Padding="5" MinHeight="26" ToolTip.Tip="Eliminar criterio"><c:VectorIcon Kind="trash" Stroke="#D83A4A" Width="15" Height="15" /></Button></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="La suma de los criterios debe ser 100 %. Doble clic para editar." Classes="muted" FontSize="10" />
+          </StackPanel>
+        </Border>
+        <Border BorderBrush="#E0E9F5" BorderThickness="1" CornerRadius="5" Padding="8"><StackPanel Spacing="7"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Escala de valoración" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" /><Button Grid.Column="1" Command="{Binding AddLevelCommand}" MinHeight="28" Padding="8,4"><StackPanel Orientation="Horizontal" Spacing="5"><c:VectorIcon Kind="plus" Width="14" Height="14" Stroke="#0067F5" /><TextBlock Text="Agregar nivel" Foreground="#0067F5" FontSize="11" /></StackPanel></Button></Grid>
+          <DataGrid x:Name="LevelsTable" ItemsSource="{Binding Levels}" AutoGenerateColumns="False" Height="174" ColumnHeaderHeight="30" RowHeight="34">
+            <DataGrid.Columns><DataGridTextColumn Header="Nivel" Binding="{Binding Name}" Width="110" /><DataGridTextColumn Header="Desde %" Binding="{Binding Lower}" Width="63" /><DataGridTextColumn Header="Hasta %" Binding="{Binding Upper}" Width="63" /><DataGridTextColumn Header="Descripción" Binding="{Binding Description}" Width="*" /><DataGridTemplateColumn Header="" Width="35"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Classes="quiet" Click="RemoveLevel" Padding="4" MinHeight="25" ToolTip.Tip="Eliminar nivel"><c:VectorIcon Kind="trash" Stroke="#D83A4A" Width="14" Height="14" /></Button></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn></DataGrid.Columns>
+          </DataGrid>
+          <TextBlock Text="Intervalos [desde, hasta); el último incluye 100 %. Sin huecos ni superposición." Classes="muted" FontSize="10" TextWrapping="Wrap" />
+        </StackPanel></Border>
+        <TextBlock Text="Las notas existentes se conservan al editar esta rúbrica." Classes="muted" FontSize="11" />
+      </StackPanel>
+    </ScrollViewer>
+    <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
+      <TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error,Converter={StaticResource HasText}}" />
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto"><Button Click="Preview"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="eye" Width="18" Height="18" /><TextBlock Text="Vista previa" FontSize="12" /></StackPanel></Button><Button Grid.Column="2" Content="Cancelar" Click="Cancel" Margin="0,0,10,0" /><Button Grid.Column="3" Classes="primary" Content="Guardar rúbrica" Click="Save" /></Grid>
+    </StackPanel>
+  </Grid>
+</Window>
