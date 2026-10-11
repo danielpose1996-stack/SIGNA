@@ -18,7 +18,10 @@ public sealed class CatalogEditorViewModel(CatalogService catalog,AcademicSemest
     public AcademicSemester? SelectedSemester{get;set;}=semester;
     public string SavedSemesterId{get;private set;}="";
     private string error="";
+    private bool isSaving;
     public string Error{get=>error;private set=>Set(ref error,value);}
+    public bool IsSaving{get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanSave));}}
+    public bool CanSave=>!IsSaving;
     public bool Save()
     {
         try
@@ -27,6 +30,31 @@ public sealed class CatalogEditorViewModel(CatalogService catalog,AcademicSemest
             else SavedSemesterId=catalog.CreateCourse(SelectedSemester?.Id ?? "",Code,Name,School,Group).SemesterId;
             return true;
         }
-        catch(Exception ex)when(ex is AcademicValidationException or IOException or System.Data.Common.DbException){Error=ex is AcademicValidationException ? ex.Message : "No se guardó. Revisa el acceso al archivo local y reintenta.";return false;}
+        catch(Exception ex){Error=ex is AcademicRefreshException ? ex.Message : ex is AcademicValidationException ? ex.Message : $"No se guardó ({SafeErrorCode.From(ex)}). Revisa el acceso al archivo local y reintenta.";return false;}
+    }
+    public async Task<bool> SaveAsync()
+    {
+        if(IsSaving)return false;
+        IsSaving=true;
+        try
+        {
+            if(IsSemester)SavedSemesterId=(await catalog.CreateSemesterAsync(Year,Term)).Id;
+            else SavedSemesterId=(await catalog.CreateCourseAsync(SelectedSemester?.Id ?? "",Code,Name,School,Group)).SemesterId;
+            Error="";return true;
+        }
+        catch(AcademicRefreshException ex)
+        {
+            // La escritura ya está confirmada. No permitir un segundo INSERT accidental.
+            Error=ex.Message;
+            SavedSemesterId=ex.CommittedEntity switch
+            {
+                AcademicSemester saved=>saved.Id,
+                CourseRecord saved=>saved.SemesterId,
+                _=>SelectedSemester?.Id ?? ""
+            };
+            return true;
+        }
+        catch(Exception ex){Error=ex is AcademicValidationException ? ex.Message : $"No se guardó ({SafeErrorCode.From(ex)}). Revisa el acceso al archivo local y reintenta.";return false;}
+        finally{IsSaving=false;}
     }
 }

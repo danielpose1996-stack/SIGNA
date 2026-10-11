@@ -32,7 +32,7 @@ public sealed class HomeViewModel : ObservableObject
         this.service = service;
         this.catalog=catalog;
         Refresh();
-        if(catalog is null)service.Changed += Refresh;
+        if(catalog is null)service.ChangedDetailed += change=>{if(change.Kind==WorkspaceChangeKind.Students)Refresh();};
         else catalog.Changed+=Refresh;
     }
 

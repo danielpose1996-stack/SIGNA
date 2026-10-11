@@ -4,6 +4,6 @@
     <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="10"><ComboBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Tipo de semana" /><Button Grid.Column="1" Classes="primary" Content="Agregar semana" Click="Add" IsEnabled="{Binding CanAdd}" /></Grid>
     <ListBox Grid.Row="2" ItemsSource="{Binding Weeks}" SelectedItem="{Binding SelectedWeek,Mode=TwoWay}"><ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" Margin="6" /></DataTemplate></ListBox.ItemTemplate></ListBox>
     <TextBlock Grid.Row="3" Text="{Binding Error}" Classes="error" />
-    <Grid Grid.Row="4" ColumnDefinitions="*,Auto"><Button Content="Retirar semana seleccionada" Click="Remove" HorizontalAlignment="Left" /><Button Grid.Column="1" Content="Cerrar" Click="CloseDialog" /></Grid>
+    <Grid Grid.Row="4" ColumnDefinitions="*,Auto"><Button Content="Retirar semana seleccionada" Click="Remove" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Left" /><Button Grid.Column="1" Content="Cerrar" Click="CloseDialog" /></Grid>
   </Grid>
 </Window>

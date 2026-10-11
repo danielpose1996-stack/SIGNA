@@ -23,16 +23,28 @@ public partial class App : Avalonia.Application
                 }
                 else
                 {
-                    var dataDirectory=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AulaRegistro");
-                    var catalog=new CatalogService(new SqliteCatalogStore(Path.Combine(dataDirectory,"aula-registro.db")));
-                    desktop.MainWindow=new MainWindow {DataContext=new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new XlsxStudentReader(),new XlsxReportExporter())};
+                    desktop.MainWindow=new MainWindow {DataContext=CreateProductionViewModel()};
                 }
-            } catch(Exception ex) when(ex is IOException or System.Data.Common.DbException or System.Text.Json.JsonException or Domain.AcademicValidationException)
+            } catch(Exception ex)
             {
-                desktop.MainWindow=new Window {Title="Gestor Docente · no se pudieron abrir los datos",Width=620,Height=260,Content=new TextBlock {Margin=new(30),TextWrapping=Avalonia.Media.TextWrapping.Wrap,Text="No se pudo abrir el almacenamiento local. Los datos no se reemplazaron.\n\n"+ex.Message}};
+                var message=ex is Domain.AcademicValidationException ? ex.Message : $"No se pudo abrir el almacenamiento local ({SafeErrorCode.From(ex)}). Revisa permisos y espacio disponible. Los datos no se reemplazaron.";
+                desktop.MainWindow=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_MODE")=="demo" ?
+                    new Window {Title="Gestor Docente · no se pudieron abrir los datos",Width=620,Height=260,Content=new TextBlock {Margin=new(30),TextWrapping=Avalonia.Media.TextWrapping.Wrap,Text=message}} :
+                    new RecoveryStartupWindow(ProductionDatabasePath(),message);
             }
         }
         base.OnFrameworkInitializationCompleted();
+    }
+    internal static MainViewModel CreateProductionViewModel()
+    {
+        var path=ProductionDatabasePath();
+        var catalog=new CatalogService(new SqliteCatalogStore(path));
+        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new XlsxStudentReader(),new XlsxReportExporter(),new EncryptedLocalBackupService(path));
+    }
+    internal static string ProductionDatabasePath()
+    {
+        var dataDirectory=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AulaRegistro");
+        return Path.Combine(dataDirectory,"aula-registro.db");
     }
 }
 internal sealed class EmptyWorkspaceStore:IWorkspaceStore

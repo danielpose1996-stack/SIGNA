@@ -38,7 +38,9 @@ public class EvaluationStabilityTests
         var store=new MemoryStore();var service=new WorkspaceService(store);var vm=new ConfigurationViewModel(service,1);
         vm.SelectedGroup=vm.Groups.First();vm.AddActivity();service.Changed+=()=>throw new InvalidOperationException("Suscriptor de prueba");
         Assert.False(await vm.SaveAsync());Assert.StartsWith("Los datos se guardaron",vm.Error);
-        Assert.Contains("Suscriptor de prueba",vm.ErrorDetails);Assert.Equal(4,service.Cut(1).Groups[0].Activities.Count);
+        Assert.Contains("AcademicRefreshException",vm.ErrorDetails);
+        Assert.DoesNotContain("Suscriptor de prueba",vm.ErrorDetails);
+        Assert.Equal(4,service.Cut(1).Groups[0].Activities.Count);
         Assert.Equal(4,new WorkspaceService(store).Cut(1).Groups[0].Activities.Count);
     }
 

@@ -2,7 +2,7 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24,0,24,24" Spacing="20">
       <Border Background="#EAF3FF" BorderBrush="#D4E5FA" BorderThickness="1" CornerRadius="8" Padding="18">
-        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="#0067F5" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Módulo en preparación" FontWeight="SemiBold" /><TextBlock Text="En esta entrega puedes consultar las opciones previstas. La creación y restauración de copias se implementarán primero; después se añadirá la conexión opcional a Google Drive." Foreground="#45638E" TextWrapping="Wrap" /></StackPanel></Grid>
+        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="#0067F5" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="#45638E" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="#143875" /></StackPanel></Grid>
       </Border>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
         <Border Classes="card" Padding="24">
@@ -10,9 +10,9 @@
             <c:VectorIcon Kind="backup" Stroke="#0067F5" Width="34" Height="34" HorizontalAlignment="Left" />
             <TextBlock Text="Respaldo local" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Una copia que tú conservas" Classes="muted" />
-            <TextBlock Text="Podrás elegir dónde guardar el archivo de respaldo y conservarlo en este equipo, en una memoria externa o subirlo manualmente a tu Drive." TextWrapping="Wrap" />
-            <Border Background="#F1F6FD" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Sin cuenta y sin internet" FontWeight="SemiBold" /><TextBlock Text="La copia local incluirá el trabajo académico y se podrá recuperar en otro equipo compatible." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
-            <TextBlock Text="Crear respaldo · Pendiente del siguiente incremento" Foreground="#806326" FontSize="12" TextWrapping="Wrap" />
+            <TextBlock Text="Elige un archivo nuevo .aulabk para conservarlo en este equipo, una memoria externa o subirlo manualmente a tu Drive." TextWrapping="Wrap" />
+            <Border Background="#F1F6FD" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Sin cuenta y sin internet" FontWeight="SemiBold" /><TextBlock Text="La copia incluirá materias, estudiantes, notas y asistencias. Se verifica antes de cifrarse." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
+            <Button Classes="primary" Content="Crear respaldo cifrado" Command="{Binding CreateBackupCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="card" Padding="24">
@@ -27,7 +27,7 @@
         </Border>
       </Grid>
       <Border Classes="card" Padding="20">
-        <Grid ColumnDefinitions="40,*"><c:VectorIcon Kind="restore" Width="28" Height="28" Stroke="#0067F5" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Spacing="8"><TextBlock Text="Restaurar una copia" Classes="section" /><TextBlock Text="El archivo se verificará antes de recuperar sus datos. Se mostrará qué se reemplazará y se conservará una copia recuperable del estado anterior." Classes="muted" TextWrapping="Wrap" /><TextBlock Text="Restauración · Pendiente del siguiente incremento" Foreground="#806326" FontSize="12" /></StackPanel></Grid>
+        <Grid ColumnDefinitions="40,*"><c:VectorIcon Kind="restore" Width="28" Height="28" Stroke="#0067F5" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Spacing="8"><TextBlock Text="Restaurar una copia" Classes="section" /><TextBlock Text="Se comprueba la contraseña, integridad y compatibilidad antes de reemplazar la base. Se guarda una copia preventiva cifrada de los datos actuales." Classes="muted" TextWrapping="Wrap" /><Button Content="Elegir copia y restaurar" Command="{Binding RestoreBackupCommand}" HorizontalAlignment="Left" /></StackPanel></Grid>
       </Border>
       <Button Content="Volver a Inicio" Command="{Binding NavigateCommand}" CommandParameter="Inicio" HorizontalAlignment="Left" />
     </StackPanel>

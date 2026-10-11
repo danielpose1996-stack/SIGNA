@@ -5,6 +5,6 @@ namespace GestorDocente.Desktop.Views;
 public partial class RecoveryWindow : Window
 {
     public RecoveryWindow(){InitializeComponent();Controls.WindowLayout.Configure(this);}
-    private void Restore(object? sender,RoutedEventArgs e)=>(DataContext as RecoveryViewModel)?.Restore();
+    private async void Restore(object? sender,RoutedEventArgs e){if(DataContext is RecoveryViewModel model)await model.RestoreAsync();}
     private void CloseDialog(object? sender,RoutedEventArgs e)=>Close();
 }

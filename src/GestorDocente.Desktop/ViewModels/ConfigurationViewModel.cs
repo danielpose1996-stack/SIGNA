@@ -96,12 +96,12 @@ public sealed class ConfigurationViewModel:ObservableObject
     }
     public void ReportSaveError(Exception ex,bool committed=false)
     {
-        Error=committed ? "Los datos se guardaron, pero falló la actualización de la pantalla. Cierra esta ventana y pulsa Actualizar. Consulta los detalles del error."
+        Error=committed || ex is AcademicRefreshException ? "Los datos se guardaron, pero falló la actualización de la pantalla. Cierra esta ventana y pulsa Actualizar. Consulta los detalles del error."
             : ex is AcademicValidationException ? ex.Message
             : ex is UnauthorizedAccessException ? "No se guardó: no tienes permiso para escribir en el almacenamiento local."
-            : ex is IOException or System.Data.Common.DbException ? $"No se guardó la configuración: {ex.Message}"
-            : $"No se guardó la configuración por un error inesperado ({ex.GetType().Name}): {ex.Message}";
-        ErrorDetails=ex.ToString();
+            : ex is IOException or System.Data.Common.DbException ? $"No se guardó la configuración ({SafeErrorCode.From(ex)}). Revisa el archivo local y reintenta."
+            : $"No se guardó la configuración por un error inesperado ({SafeErrorCode.From(ex)}).";
+        ErrorDetails=$"{SafeErrorCode.From(ex)} · código 0x{ex.HResult:X8}";
     }
     private void RefreshSelected()
     {

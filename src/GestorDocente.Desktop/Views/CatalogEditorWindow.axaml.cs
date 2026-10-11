@@ -6,5 +6,5 @@ public partial class CatalogEditorWindow:Window
 {
     public CatalogEditorWindow(){InitializeComponent();Controls.WindowLayout.Configure(this);}
     private void Cancel(object? sender,RoutedEventArgs e)=>Close();
-    private void Save(object? sender,RoutedEventArgs e){if((DataContext as CatalogEditorViewModel)?.Save()==true)Close();}
+    private async void Save(object? sender,RoutedEventArgs e){if(DataContext is CatalogEditorViewModel model && await model.SaveAsync())Close();}
 }

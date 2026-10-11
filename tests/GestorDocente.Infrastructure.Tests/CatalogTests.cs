@@ -86,12 +86,53 @@ public class CatalogTests
             Assert.Equal(4m,GradeCalculator.Cut(reopened.Cut(1),student));Assert.Equal(2,reopened.Cut(1).Groups[0].Activities.Count);
         });
     }
+    [Theory]
+    [InlineData("json_remove(payload,'$.Students')")]
+    [InlineData("json_set(payload,'$.SemesterId','otra')")]
+    public void Inconsistent_payload_is_rejected_without_rewriting_it(string expression)
+    {
+        WithDatabase(path=>{
+            var catalog=new CatalogService(new SqliteCatalogStore(path));var term=catalog.CreateSemester(2026,1);
+            var course=catalog.CreateCourse(term.Id,"AUD","Auditoría","Escuela","");
+            using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
+            {
+                db.Open();using var cmd=db.CreateCommand();cmd.CommandText=$"UPDATE course_workspaces SET payload={expression} WHERE course_id=$id";
+                cmd.Parameters.AddWithValue("$id",course.Id);cmd.ExecuteNonQuery();
+            }
+            Assert.Throws<AcademicValidationException>(()=>catalog.Open(course.Id));
+            if(expression.Contains("Students",StringComparison.Ordinal))
+                Assert.Throws<AcademicValidationException>(()=>catalog.Courses(term.Id));
+        });
+    }
+    [Fact]
+    public void Save_rejects_metadata_mismatch_before_commit()
+    {
+        WithDatabase(path=>{
+            var store=new SqliteCatalogStore(path);var catalog=new CatalogService(store);
+            var term=catalog.CreateSemester(2026,1);var course=catalog.CreateCourse(term.Id,"META","Materia","Escuela","");
+            var adapter=store.OpenCourse(course.Id);var data=adapter.Load()!;data.SemesterId="otro";
+            Assert.Throws<AcademicValidationException>(()=>adapter.Save(data));
+            Assert.Equal(term.Id,catalog.Open(course.Id).Current.SemesterId);
+        });
+    }
+    [Fact]
+    public void Catalog_refresh_failure_reports_committed_semester_without_duplicate_insert()
+    {
+        WithDatabase(path=>{
+            var catalog=new CatalogService(new SqliteCatalogStore(path));
+            catalog.Changed+=()=>throw new InvalidOperationException("Observador ficticio");
+            var error=Assert.Throws<AcademicRefreshException>(()=>catalog.CreateSemester(2026,1));
+            var created=Assert.IsType<AcademicSemester>(error.CommittedEntity);
+            Assert.Equal(created.Id,new CatalogService(new SqliteCatalogStore(path)).Semesters.Single().Id);
+        });
+    }
     [Fact]
     public void Legacy_sqlite_workspace_upgrades_once_and_preserves_grade_values_and_states()
     {
         WithDatabase(path=>{
             var catalog=new CatalogService(new SqliteCatalogStore(path));var term=catalog.CreateSemester(2026,1);var course=catalog.CreateCourse(term.Id,"L","Anterior","Escuela","");
             var legacy=DemoWorkspaceFactory.Create();legacy.SchemaVersion=1;legacy.IsDemo=false;legacy.CourseId=course.Id;legacy.SemesterId=term.Id;
+            legacy.CourseCode=course.Code;legacy.CourseName=course.Name;legacy.School=course.School;legacy.GroupName=course.Group;legacy.Period=term.Name;
             var json=System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(legacy))!;
             foreach(var cut in json["Cuts"]!.AsArray())foreach(var group in cut!["Groups"]!.AsArray())foreach(var activity in group!["Activities"]!.AsArray())activity!["Rubric"]=new System.Text.Json.Nodes.JsonObject{["Criteria"]=new System.Text.Json.Nodes.JsonArray()};
             using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))

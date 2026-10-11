@@ -27,6 +27,8 @@ public sealed class StudentImportViewModel:ObservableObject
     private int headerRow;
     private bool rebuilding,settingsExpanded;
     private string error="",summary="";
+    private bool isSaving;
+    public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanImport));}}
     public IReadOnlyList<WorkbookSheet> Sheets{get;}
     public WorkbookSheet? SelectedSheet{get=>selectedSheet;set{if(Set(ref selectedSheet,value))DetectColumns();}}
     public int HeaderRow{get=>headerRow;set{if(Set(ref headerRow,value)){Raise(nameof(FirstDataRow));Preview();}}}
@@ -40,7 +42,7 @@ public sealed class StudentImportViewModel:ObservableObject
     public string Error{get=>error;private set=>Set(ref error,value);}
     public string Summary{get=>summary;private set=>Set(ref summary,value);}
     public bool HasPreview=>Rows.Count>0;
-    public bool CanImport=>Rows.Any(r=>r.CanImport);
+    public bool CanImport=>!IsSaving && ImportedCount==0 && Rows.Any(r=>r.CanImport);
     public string ImportButtonText=>$"Importar todos ({Rows.Count(r=>r.CanImport)})";
     public string MappingSummary=>DocumentColumn is null ? "No se identificaron las columnas. Abre Corregir columnas y elige nombre y documento una sola vez." : $"Documento: {ColumnLetter(DocumentColumn.Index)} · Nombre: {string.Join(" + ",Columns.Where(c=>c.IsName).Select(c=>ColumnLetter(c.Index)))} · Desde la fila {FirstDataRow}";
     public int ImportedCount{get;private set;}
@@ -75,9 +77,28 @@ public sealed class StudentImportViewModel:ObservableObject
             var students=Rows.Where(r=>r.CanImport).Select(r=>new StudentImportCandidate(r.Document,r.Name)).ToList();
             service.ImportStudents(students);ImportedCount=students.Count;return true;
         }
-        catch(Exception ex)when(ex is AcademicValidationException or IOException or System.Data.Common.DbException)
-        {Error=ex is AcademicValidationException ? ex.Message : "No se importaron estudiantes. Revisa el acceso a los datos y reintenta.";return false;}
+        catch(Exception ex){Error=ImportError(ex);return false;}
     }
+    public async Task<bool> SaveAsync()
+    {
+        if(IsSaving || ImportedCount>0)return false;
+        IsSaving=true;var before=service.Current;
+        try
+        {
+            var students=Rows.Where(r=>r.CanImport).Select(r=>new StudentImportCandidate(r.Document,r.Name)).ToList();
+            await service.ImportStudentsAsync(students);ImportedCount=students.Count;Error="";return true;
+        }
+        catch(Exception ex)
+        {
+            var committed=service.Current!=before;
+            if(committed)ImportedCount=Rows.Count(r=>r.CanImport);
+            Error=ImportError(ex,committed);Raise(nameof(CanImport));return committed;
+        }
+        finally{IsSaving=false;}
+    }
+    private static string ImportError(Exception ex,bool committed=false)=>committed || ex is AcademicRefreshException ?
+        "Los estudiantes se guardaron, pero falló el refresco. Cierra esta ventana y pulsa Actualizar." :
+        ex is AcademicValidationException ? ex.Message : $"No se importaron estudiantes ({SafeErrorCode.From(ex)}). Revisa el acceso a los datos y reintenta.";
     private void DetectColumns()
     {
         rebuilding=true;

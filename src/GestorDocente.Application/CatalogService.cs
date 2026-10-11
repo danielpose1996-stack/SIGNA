@@ -18,11 +18,27 @@ public sealed class CatalogService(ICatalogStore store)
     public IReadOnlyList<CourseRecord> Courses(string semesterId)=>store.Courses(semesterId);
     public AcademicSemester CreateSemester(int year,int term)
     {
+        var semester=CreateSemesterCore(year,term);Publish(semester);return semester;
+    }
+    public async Task<AcademicSemester> CreateSemesterAsync(int year,int term)
+    {
+        var semester=await Task.Run(()=>CreateSemesterCore(year,term));Publish(semester);return semester;
+    }
+    private AcademicSemester CreateSemesterCore(int year,int term)
+    {
         if(year is <1000 or >9999 || term is <1 or >2)throw new AcademicValidationException("Escribe un año de cuatro dígitos y un semestre 1 o 2.");
         if(Semesters.Any(s=>s.Year==year && s.Term==term))throw new AcademicValidationException("Este semestre ya existe. Selecciónalo en la lista.");
-        var semester=new AcademicSemester(Guid.NewGuid().ToString("N"),year,term);store.AddSemester(semester);Changed?.Invoke();return semester;
+        var semester=new AcademicSemester(Guid.NewGuid().ToString("N"),year,term);store.AddSemester(semester);return semester;
     }
     public CourseRecord CreateCourse(string semesterId,string code,string name,string school,string group)
+    {
+        var course=CreateCourseCore(semesterId,code,name,school,group);Publish(course);return course;
+    }
+    public async Task<CourseRecord> CreateCourseAsync(string semesterId,string code,string name,string school,string group)
+    {
+        var course=await Task.Run(()=>CreateCourseCore(semesterId,code,name,school,group));Publish(course);return course;
+    }
+    private CourseRecord CreateCourseCore(string semesterId,string code,string name,string school,string group)
     {
         var semester=Semesters.SingleOrDefault(s=>s.Id==semesterId) ?? throw new AcademicValidationException("Crea o selecciona primero un semestre.");
         foreach(var (value,label) in new[]{(code,"código"),(name,"nombre de asignatura"),(school,"escuela")})
@@ -32,7 +48,14 @@ public sealed class CatalogService(ICatalogStore store)
             throw new AcademicValidationException("Ya existe este código y grupo en el semestre. Para otra sección, indica un grupo diferente.");
         var course=new CourseRecord(Guid.NewGuid().ToString("N"),semesterId,code,name,school,group);
         var workspace=new AcademicWorkspace {IsDemo=false,CourseId=course.Id,SemesterId=semesterId,CourseName=name,CourseCode=code,School=school,GroupName=group,Period=semester.Name,Cuts=Enumerable.Range(1,3).Select(n=>new AcademicCut{Number=n}).ToList()};
-        store.AddCourse(course,workspace);Changed?.Invoke();return course;
+        store.AddCourse(course,workspace);return course;
+    }
+    private void Publish(object created)
+    {
+        if(Changed is not { } changed)return;
+        List<Exception> failures=[];
+        foreach(Action handler in changed.GetInvocationList())try{handler();}catch(Exception ex){failures.Add(ex);}
+        if(failures.Count>0)throw new AcademicRefreshException(new AggregateException(failures),created);
     }
     public WorkspaceService Open(string courseId)=>new(store.OpenCourse(courseId));
 }

@@ -17,16 +17,20 @@ public sealed class GradeCellViewModel : ObservableObject
     private readonly int cut;
     private readonly string studentId,activityId;
     private string input,error="";
+    private bool isSaving;
     public string Input {get=>input;set=>Set(ref input,value);}
     public string Error {get=>error;private set=>Set(ref error,value);}
-    public GradeCellViewModel(WorkspaceService service,int cut,string studentId,string targetId)
+    public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
+    public bool CanEdit=>!IsSaving;
+    public GradeCellViewModel(WorkspaceService service,int cut,string studentId,string targetId,AcademicCutReadIndex? index=null)
     {
         this.service=service;this.cut=cut;this.studentId=studentId;activityId=targetId;
-        var value=service.Cut(cut).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==targetId)?.Value;
+        var value=(index ?? new AcademicCutReadIndex(service.Cut(cut))).Grade(studentId,targetId);
         input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";
     }
     public void Commit()
     {
+        var before=service.Current;
         try {
             decimal? value=null;
             if(!string.IsNullOrWhiteSpace(Input))
@@ -34,12 +38,38 @@ public sealed class GradeCellViewModel : ObservableObject
                 if(!AcademicFormatting.TryDecimal(Input,out var parsed))throw new AcademicValidationException("Escribe una nota entre 0,0 y 5,0.");
                 AcademicRules.ValidateGrade(parsed); value=parsed;
             }
-            var old=service.Cut(cut).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activityId)?.Value;
+            var old=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);
             Error="";
             if(old!=value)service.SetGrade(cut,studentId,activityId,value);
             else Input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";
-        } catch(Exception ex) when(ex is AcademicValidationException or IOException or System.Data.Common.DbException) {Error=ex is AcademicValidationException ? ex.Message : "No se guardó la nota. Reintenta.";}
+        } catch(Exception ex) {Error=SaveError(ex,service.Current!=before);}
     }
+    public async Task CommitAsync()
+    {
+        if(IsSaving)return;
+        var before=service.Current;
+        try
+        {
+            decimal? value=null;
+            if(!string.IsNullOrWhiteSpace(Input))
+            {
+                if(!AcademicFormatting.TryDecimal(Input,out var parsed))throw new AcademicValidationException("Escribe una nota entre 0,0 y 5,0.");
+                AcademicRules.ValidateGrade(parsed);value=parsed;
+            }
+            var old=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);
+            Error="";
+            if(old==value){Input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";return;}
+            IsSaving=true;
+            await service.SetGradeAsync(cut,studentId,activityId,value);
+        }
+        catch(Exception ex){Error=SaveError(ex,service.Current!=before);}
+        finally{IsSaving=false;}
+    }
+    private static string SaveError(Exception ex,bool committed)=>
+        committed || ex is AcademicRefreshException ? "La nota se guardó, pero falló el refresco. Pulsa Actualizar para verla." :
+        ex is AcademicValidationException ? ex.Message :
+        ex is UnauthorizedAccessException ? "No se guardó la nota: acceso denegado al archivo local." :
+        $"No se guardó la nota ({SafeErrorCode.From(ex)}). Reintenta o revisa el archivo local.";
 }
 public sealed class GradeRowViewModel
 {
@@ -51,12 +81,13 @@ public sealed class GradeRowViewModel
     public string Total {get;}
     public string Completion {get;}
     public Dictionary<string,string> GroupTotals {get;}
-    public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number)
+    public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
     {
         Student=student;Number=number;
-        GroupTotals=service.Cut(cut).Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(GradeCalculator.Group(service.Cut(cut),g,student.Id)));
-        Cells=service.Cut(cut).Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id));
-        var total=GradeCalculator.Cut(service.Cut(cut),student.Id);
+        var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
+        GroupTotals=data.Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(index.Group(g,student.Id)));
+        Cells=data.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id,index));
+        var total=index.Cut(student.Id);
         Total=AcademicFormatting.Grade(total);Completion=total is null ? "Pendiente" : "Completo";
     }
 }
@@ -66,19 +97,29 @@ public sealed class AttendanceCellViewModel : ObservableObject
     public static IReadOnlyList<AttendanceOption> Options {get;}=[new("—",null),new("P",AttendanceState.Present),new("A",AttendanceState.Absent),new("J",AttendanceState.Justified),new("T",AttendanceState.Late)];
     private AttendanceOption selected;
     private string error="";
-    private readonly Action<AttendanceState?> save;
+    private bool isSaving;
+    private readonly Func<AttendanceState?,Task> save;
     public AttendanceOption Selected
     {
         get=>selected;
         set {
-            if(value is null || value.State==selected.State)return;
-            try {save(value.State);selected=value;Raise();Raise(nameof(Tone));Error="";}
-            catch(Exception ex) when(ex is AcademicValidationException or IOException or System.Data.Common.DbException) {Error=ex is AcademicValidationException ? ex.Message : "No se guardó la asistencia.";Raise();}
+            if(value is null || IsSaving || value.State==selected.State && Error.Length==0)return;
+            selected=value;Raise();Raise(nameof(Tone));
+            _=SaveSelectionAsync(value);
         }
     }
     public string Error {get=>error;private set=>Set(ref error,value);}
+    public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
+    public bool CanEdit=>!IsSaving;
     public string Tone=>Selected.State switch {AttendanceState.Present=>"#E9FBF1",AttendanceState.Absent=>"#FFF0F0",AttendanceState.Justified=>"#FFF8E6",AttendanceState.Late=>"#F6EEFF",_=>"#F0F4F9"};
-    public AttendanceCellViewModel(AttendanceState? state,Action<AttendanceState?> save) {this.save=save;selected=Options.FirstOrDefault(x=>x.State==state) ?? Options[0];}
+    public AttendanceCellViewModel(AttendanceState? state,Func<AttendanceState?,Task> save) {this.save=save;selected=Options.FirstOrDefault(x=>x.State==state) ?? Options[0];}
+    private async Task SaveSelectionAsync(AttendanceOption option)
+    {
+        IsSaving=true;Error="";
+        try{await save(option.State);}
+        catch(Exception ex){Error=ex is AcademicRefreshException ? "La asistencia se guardó, pero falló el refresco. Pulsa Actualizar." : ex is AcademicValidationException ? ex.Message : $"No se guardó la asistencia ({SafeErrorCode.From(ex)}). Selecciónala de nuevo para reintentar.";}
+        finally{IsSaving=false;}
+    }
 }
 public sealed record WeeklyDetail(string Title,string Code,string Description);
 public sealed class AttendanceRowViewModel
@@ -93,14 +134,14 @@ public sealed class AttendanceRowViewModel
     public string Percentage=>"Por definir";
     public string Status=>Summary.Recorded==0 ? "Sin registros" : "Registrado";
     public ObservableCollection<WeeklyDetail> WeeklyDetails {get;}
-    public AttendanceRowViewModel(WorkspaceService service,int cut,Student student,int number)
+    public AttendanceRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
     {
         Student=student;Number=number;
-        var data=service.Cut(cut);
-        Cells=data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(data.Attendance.SingleOrDefault(a=>a.StudentId==student.Id && a.WeekNumber==x.Number)?.State,state=>service.SetAttendance(cut,student.Id,x.Number,state)));
-        Summary=AttendanceSummary.From(data.Weeks.Select(w=>data.Attendance.SingleOrDefault(x=>x.StudentId==student.Id && x.WeekNumber==w.Number)?.State));
+        var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
+        Cells=data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state)));
+        Summary=AttendanceSummary.From(data.Weeks.Select(w=>index.Attendance(student.Id,w.Number)));
         WeeklyDetails=new(data.Weeks.Select(w=> {
-            var state=data.Attendance.SingleOrDefault(x=>x.StudentId==student.Id && x.WeekNumber==w.Number)?.State;
+            var state=index.Attendance(student.Id,w.Number);
             var text=state switch {AttendanceState.Present=>"Presente",AttendanceState.Absent=>"Ausente",AttendanceState.Justified=>"Justificada",AttendanceState.Late=>"Tarde",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"};
             var code=state switch {AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",_=>"—"};
             return new WeeklyDetail(w.Label,code,text);

@@ -53,6 +53,8 @@ artifacts/logs/
 *.sqlite.enc
 *.sqlite3.enc
 *.backup
+*.aulabk
+*.aulabk.tmp
 
 # Credenciales y claves privadas
 .secrets/
@@ -80,3 +82,15 @@ id_ed25519
 # Resultados generados con rutas y metadatos del equipo
 artifacts/test-results/
 *.trx
+
+# Material de trabajo local; el repositorio publico contiene solo el software
+/AGENTS.md
+/.agents/
+/.specify/
+/specs/
+/docs/
+/design-references/
+/artifacts/evidencias/
+/LEEME-PRIMERO.md
+/src/README.md
+/tests/README.md

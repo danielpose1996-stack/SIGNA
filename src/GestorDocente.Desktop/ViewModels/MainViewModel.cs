@@ -12,6 +12,7 @@ public sealed class MainViewModel : ObservableObject
     public CatalogService? Catalog {get;}
     public IStudentWorkbookReader? WorkbookReader {get;}
     public IAcademicReportExporter? ReportExporter {get;}
+    public ILocalBackupService? LocalBackup {get;}
     private readonly Dictionary<string,(int Cut,string Page,string Search,string? Student)> courseStates=[];
     public HomeViewModel Home {get;}
     private NavigationSection section=NavigationSection.Home;
@@ -24,10 +25,17 @@ public sealed class MainViewModel : ObservableObject
     public event Action? RecoveryRequested;
     public event Action? ImportRequested;
     public event Action? ExportRequested;
+    public event Action? BackupRequested;
+    public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
+    public RelayCommand CreateBackupCommand{get;}
+    public RelayCommand RestoreBackupCommand{get;}
+    private string backupStatus="Elige dónde guardar una copia cifrada. Conservarás la contraseña para restaurarla.";
+    public string BackupStatus{get=>backupStatus;set=>Set(ref backupStatus,value);}
+    public bool CanUseLocalBackup=>LocalBackup is not null;
     public bool IsDemo=>Service.Current.IsDemo;
     public string StorageLabel=>IsDemo ? "DEMOSTRACIÓN · DATOS FICTICIOS" : "DATOS LOCALES";
     public bool HasOpenCourse=>!string.IsNullOrWhiteSpace(Service.Current.CourseName);
@@ -120,13 +128,16 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand ManageWeeksCommand {get;}
     public RelayCommand ConfigureCommand {get;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null)
     {
         Service=service;
         Catalog=catalog;
-        WorkbookReader=workbookReader;ReportExporter=reportExporter;
+        WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;
+        if(localBackup is null)BackupStatus="Los respaldos se habilitan en el catálogo local, fuera de la demostración.";
         ImportStudentsCommand=new(_=>ImportRequested?.Invoke(),_=>HasOpenCourse && WorkbookReader is not null && !FileBusy);
         ExportReportCommand=new(_=>ExportRequested?.Invoke(),_=>HasOpenCourse && ReportExporter is not null && !FileBusy);
+        CreateBackupCommand=new(_=>BackupRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
+        RestoreBackupCommand=new(_=>RestoreRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         Home=new(service,catalog);
         OpenCourseCommand=new(parameter=>Try(()=>OpenCourse(parameter as CourseSummary)),_=>!FileBusy && (HasOpenCourse || Home.HasCourses));
         NewSemesterCommand=new(_=>CatalogEditorRequested?.Invoke(true),_=>Catalog is not null);
@@ -149,11 +160,48 @@ public sealed class MainViewModel : ObservableObject
         ManageWeeksCommand=new(_=>WeekEditorRequested?.Invoke());
         ConfigureCommand=new(_=>ConfigurationRequested?.Invoke(),_=>!FileBusy);
         DismissMessageCommand=new(_=>Message="");
-        Service.Changed+=OnChanged;
+        Service.ChangedDetailed+=OnChanged;
+        Service.RefreshFailed+=OnRefreshFailed;
         SaveStatus=IsDemo ? "Cambios guardados solo en la demostración" : "Guardado en este equipo · sin cuenta requerida";
         Rebuild();
     }
-    private void OnChanged(){SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";Rebuild();Home.Refresh();OpenCourseCommand.Refresh();}
+    private void OnChanged(WorkspaceChange change)
+    {
+        SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";
+        if(change.Cut==SelectedCut && change.StudentId is { } studentId && change.Kind is WorkspaceChangeKind.Grade or WorkspaceChangeKind.Attendance)
+        {
+            var index=new AcademicCutReadIndex(Service.Cut(SelectedCut));
+            if(change.Kind==WorkspaceChangeKind.Grade)
+            {
+                var position=GradeRows.ToList().FindIndex(r=>r.Student.Id==studentId);
+                if(position>=0)
+                {
+                    var prior=GradeRows[position];
+                    GradeRows[position]=new GradeRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
+                }
+                UpdateCourseAverage(index);
+            }
+            else
+            {
+                var position=AttendanceRows.ToList().FindIndex(r=>r.Student.Id==studentId);
+                if(position>=0)
+                {
+                    var prior=AttendanceRows[position];
+                    var updated=new AttendanceRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
+                    AttendanceRows[position]=updated;
+                    if(SelectedStudent?.Student.Id==studentId)SelectedStudent=updated;
+                }
+            }
+            return;
+        }
+        if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students || change.Cut==SelectedCut)Rebuild();
+        if(change.Kind==WorkspaceChangeKind.Students){if(Catalog is not null)Home.Refresh();OpenCourseCommand.Refresh();}
+    }
+    private void OnRefreshFailed(AcademicRefreshException error)
+    {
+        SaveStatus="Guardado confirmado · actualización de pantalla fallida";
+        Message=error.Message;
+    }
     private void OpenCourse(CourseSummary? course)
     {
         if(Catalog is not null)
@@ -163,7 +211,8 @@ public sealed class MainViewModel : ObservableObject
             if(Service.Current.CourseId!=id)
             {
                 if(HasOpenCourse)courseStates[Service.Current.CourseId]=(SelectedCut,Page,Search,SelectedStudent?.Student.Id);
-                var next=Catalog.Open(id);Service.Changed-=OnChanged;Service=next;Service.Changed+=OnChanged;
+                var next=Catalog.Open(id);Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;
+                Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
                 var saved=courseStates.GetValueOrDefault(id,(1,"Notas","",null));
                 selectedCut=saved.Cut;page=saved.Page;search=saved.Search;selectedStudent=null;Message="";
                 Rebuild();if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
@@ -176,16 +225,18 @@ public sealed class MainViewModel : ObservableObject
     private void ReloadCourse()
     {
         if(Catalog is null || !HasOpenCourse)return;var next=Catalog.Open(Service.Current.CourseId);
-        Service.Changed-=OnChanged;Service=next;Service.Changed+=OnChanged;Rebuild();Message="";SaveStatus="Materia actualizada desde el archivo local";
+        Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;Service=next;
+        Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;Rebuild();Message="";SaveStatus="Materia actualizada desde el archivo local";
     }
     public void Try(Action action)
     {
-        try {action();Message="";} catch(Exception ex) when(ex is AcademicValidationException or IOException or System.Data.Common.DbException or System.Text.Json.JsonException or UnauthorizedAccessException) {Message=ex is AcademicValidationException ? ex.Message : "No se guardó el cambio. Revisa el acceso a tus datos locales y reintenta.";}
+        try {action();Message="";} catch(Exception ex) {Message=ex is AcademicRefreshException or AcademicValidationException ? ex.Message : $"No se completó la operación ({SafeErrorCode.From(ex)}). Revisa tus datos locales y reintenta.";}
     }
     private void Rebuild()
     {
         var selectedId=SelectedStudent?.Student.Id;
         var cut=Service.Cut(SelectedCut);
+        var index=new AcademicCutReadIndex(cut);
         Groups.Clear();
         foreach(var group in cut.Groups)Groups.Add(new(group.Name,$"{group.Weight:0.##} %",group.Mode==EvaluationMode.Direct ? "Nota directa" : $"Promedio simple · {group.Activities.Count} subactividades",ConfigureCommand));
         Weeks.Clear();foreach(var week in cut.Weeks)Weeks.Add(week);
@@ -199,15 +250,20 @@ public sealed class MainViewModel : ObservableObject
         {
             i++;
             if(!student.FullName.Contains(Search,StringComparison.OrdinalIgnoreCase) && !student.Document.Contains(Search,StringComparison.OrdinalIgnoreCase))continue;
-            grades.Add(new(Service,SelectedCut,student,i));
-            attendance.Add(new(Service,SelectedCut,student,i));
+            grades.Add(new(Service,SelectedCut,student,i,index));
+            attendance.Add(new(Service,SelectedCut,student,i,index));
         }
         GradeRows.ReplaceAll(grades);AttendanceRows.ReplaceAll(attendance);
         SelectedStudent=AttendanceRows.FirstOrDefault(x=>x.Student.Id==selectedId) ?? AttendanceRows.FirstOrDefault();
-        var totals=Service.Current.Students.Select(s=>GradeCalculator.Cut(cut,s.Id)).ToList();
-        CourseAverage=totals.Count>0 && totals.All(x=>x is not null) ? AcademicFormatting.Grade(totals.Average(x=>x!.Value)) : "Pendiente";
-        Raise(nameof(CourseAverage));Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(CanAddWeek));
+        UpdateCourseAverage(index);
+        Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(CanAddWeek));
         Raise(nameof(EmptyTableMessage));Raise(nameof(StudentCount));
         AddWeekCommand.Refresh();
+    }
+    private void UpdateCourseAverage(AcademicCutReadIndex index)
+    {
+        var totals=Service.Current.Students.Select(s=>index.Cut(s.Id)).ToList();
+        CourseAverage=totals.Count>0 && totals.All(x=>x is not null) ? AcademicFormatting.Grade(totals.Average(x=>x!.Value)) : "Pendiente";
+        Raise(nameof(CourseAverage));
     }
 }

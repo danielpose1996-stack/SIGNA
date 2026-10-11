@@ -23,6 +23,7 @@ public partial class AttendanceView : UserControl
                 var combo=new ComboBox {DataContext=row!.Cells[number],ItemsSource=AttendanceCellViewModel.Options,Padding=new(6,2),MinHeight=28,Height=30,HorizontalAlignment=Avalonia.Layout.HorizontalAlignment.Stretch};
                 combo.ItemTemplate=new FuncDataTemplate<AttendanceOption>((option,_)=>new TextBlock {Text=option!.Label,FontSize=12});
                 combo.Bind(ComboBox.SelectedItemProperty,new Binding(nameof(AttendanceCellViewModel.Selected)){Mode=BindingMode.TwoWay});
+                combo.Bind(ComboBox.IsEnabledProperty,new Binding(nameof(AttendanceCellViewModel.CanEdit)));
                 combo.Bind(ComboBox.BackgroundProperty,new Binding(nameof(AttendanceCellViewModel.Tone)));
                 combo.Bind(ToolTip.TipProperty,new Binding(nameof(AttendanceCellViewModel.Error)));
                 Avalonia.Automation.AutomationProperties.SetName(combo,$"Estado de asistencia, semana {number}");
