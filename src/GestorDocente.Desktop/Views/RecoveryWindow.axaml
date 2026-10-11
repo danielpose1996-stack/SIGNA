@@ -1,0 +1,9 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.RecoveryWindow" Title="Recuperar retirados" Width="650" Height="520" MinWidth="500" MinHeight="380" WindowStartupLocation="CenterOwner">
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="22" RowSpacing="12">
+    <StackPanel Spacing="7"><TextBlock Text="Recuperar retirados" FontSize="22" FontWeight="SemiBold" /><TextBlock Text="Se conservan las notas y asistencias originales. Al recuperar una actividad principal debes ajustar los porcentajes para sumar 100 %." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+    <Grid Grid.Row="1"><ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected,Mode=TwoWay}"><ListBox.ItemTemplate><DataTemplate><Grid ColumnDefinitions="90,*" Margin="6"><TextBlock Text="{Binding Kind}" Classes="muted" /><TextBlock Grid.Column="1" Text="{Binding Name}" TextWrapping="Wrap" /></Grid></DataTemplate></ListBox.ItemTemplate></ListBox><TextBlock Text="No hay elementos retirados en este corte." IsVisible="{Binding IsEmpty}" Classes="muted" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+    <TextBlock Grid.Row="2" Text="{Binding Error}" Classes="error" />
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cerrar" Click="CloseDialog" /><Button Classes="primary" Content="Recuperar seleccionado" Click="Restore" /></StackPanel>
+  </Grid>
+</Window>
+

@@ -3,7 +3,7 @@
 **Estado:** Borrador SDD
 
 ## I. Propósito
-Aplicación de escritorio para que docentes administren materias, grupos, estudiantes, evaluaciones, calificaciones, rúbricas y asistencias, reemplazando el manejo manual de varias hojas de Excel.
+Aplicación de escritorio para que docentes administren materias, grupos, estudiantes, evaluaciones, calificaciones y asistencias, reemplazando el manejo manual de varias hojas de Excel.
 
 ## II. Principios no negociables
 1. **Local-first:** lectura, escritura y cálculo offline por defecto; ningún servidor obligatorio.
@@ -20,9 +20,8 @@ Aplicación de escritorio para que docentes administren materias, grupos, estudi
 ## III. Dominio funcional aprobado
 - Crear materias y grupos académicos; importar roster XLS/XLSX con vista previa y revisión de duplicados.
 - Tres cortes académicos; cada corte tiene su hoja de notas independiente.
-- Docente configura grupos de evaluación y porcentajes; permite varias actividades (talleres/quices) dentro de un mismo grupo.
-- **Parcial:** calificación única, no admite subactividades agrupadas.
-- **Rúbrica:** opcional e independiente para cada actividad individual, incluido el parcial si se configura; permitir nota directa sin rúbrica.
+- Docente configura actividades principales con nombre libre y porcentajes que suman 100 % por corte. Cualquier actividad admite nota directa o subactividades opcionales con promedio simple, incluido Parcial.
+- Rúbricas retiradas por solicitud del docente; conservar notas numéricas existentes según `specs/012-evaluacion-sin-rubricas/spec.md`.
 - Asistencias: añadir semanas según se dicte clase, máximo nueve semanas por corte; sin obligación de registrar semanas festivas.
 - Estados individuales: presente, ausente, justificada, tarde; distinguir también «sin clase» (no cuenta como asistencia).
 - Informe de asistencia de un estudiante a PDF, mostrando estados, períodos registrados y cálculo según política aprobada.
@@ -31,7 +30,7 @@ Aplicación de escritorio para que docentes administren materias, grupos, estudi
 ## IV. Reglas pendientes de definir antes de programarlas
 - Pesos de cada corte sobre la nota final; redondeo y reglas de aprobación.
 - Cómo se computan ausencias justificadas y tardanzas en las estadísticas de asistencia.
-- Si un grupo de actividades se promedia simple o ponderado por actividad (propuesta: configurarlo).
+- Agregación interna definida: promedio aritmético simple de las subactividades.
 - Política de retención, consentimiento y ubicación autorizada de respaldos en cuentas personales o institucionales.
 - Estrategia de claves de cifrado y recuperación de acceso a los archivos cifrados.
 

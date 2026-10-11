@@ -24,16 +24,16 @@ public sealed class SqliteWorkspaceStore : IWorkspaceStore
         using var connection=Open(); using var command=connection.CreateCommand();
         command.CommandText="SELECT schema_version,payload FROM demo_workspace WHERE id=1;";
         using var reader=command.ExecuteReader(); if(!reader.Read())return null;
-        if(reader.GetInt32(0)!=1)throw new AcademicValidationException("Versión de demostración incompatible. Los datos no se reemplazaron.");
+        if(reader.GetInt32(0) is not (1 or 2))throw new AcademicValidationException("Versión de demostración incompatible. Los datos no se reemplazaron.");
         return JsonSerializer.Deserialize<AcademicWorkspace>(reader.GetString(1)) ?? throw new AcademicValidationException("La demostración almacenada está vacía o dañada.");
     }
     public void Save(AcademicWorkspace workspace)
     {
-        if(!workspace.IsDemo || workspace.SchemaVersion!=1)throw new AcademicValidationException("Este almacenamiento admite únicamente la demostración versión 1.");
+        if(!workspace.IsDemo || workspace.SchemaVersion!=2)throw new AcademicValidationException("Este almacenamiento admite únicamente la demostración versión 2.");
         var payload=JsonSerializer.Serialize(workspace);
         using var connection=Open(); using var transaction=connection.BeginTransaction(); using var command=connection.CreateCommand();
         command.Transaction=transaction;
-        command.CommandText="INSERT INTO demo_workspace(id,schema_version,payload) VALUES(1,1,$payload) ON CONFLICT(id) DO UPDATE SET schema_version=1,payload=$payload;";
+        command.CommandText="INSERT INTO demo_workspace(id,schema_version,payload) VALUES(1,2,$payload) ON CONFLICT(id) DO UPDATE SET schema_version=2,payload=$payload;";
         command.Parameters.AddWithValue("$payload",payload);command.ExecuteNonQuery();transaction.Commit();
     }
 }

@@ -1,4 +1,6 @@
-# 004 — Rúbricas por actividad
+# 004 — Rúbricas por actividad (retirado)
+
+> Módulo retirado por solicitud explícita del docente; documento conservado como historial. Ver `specs/012-evaluacion-sin-rubricas/spec.md`.
 
 **Estado:** borrador pendiente de aprobación. **Origen:** constitución, sección III; AGENTS.md, diseño.
 

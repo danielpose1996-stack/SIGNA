@@ -48,3 +48,7 @@ Backup con base abierta mediante API consistente; restauración completa; copia 
 ## Decisiones abiertas
 
 D-09/D-10: cifrado, claves y recuperación, formato, compatibilidad, retención y cuentas/carpeta autorizadas. Definir el procedimiento de recuperación ante fallo, el almacenamiento de OAuth y los permisos concretos antes de integrar Drive.
+
+## Aclaración del usuario — 2026-10-11
+
+La aplicación debe abrir directamente sin registro ni inicio de sesión. Los respaldos se accederán desde el menú y tendrán dos alternativas: archivo local que el docente puede subir manualmente a su Drive, y conexión opcional a Google para enviarlo desde la aplicación. No se requiere cuenta Google para trabajar, guardar o restaurar localmente. Esta solicitud confirma el comportamiento general; no aprueba todavía formato, cifrado, custodia de claves ni implementación OAuth. La propuesta por entregas se documenta en `specs/009-inicio-y-respaldos/plan.md`.

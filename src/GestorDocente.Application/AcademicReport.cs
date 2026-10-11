@@ -1,0 +1,43 @@
+using GestorDocente.Domain;
+namespace GestorDocente.Application;
+
+public sealed record ReportColumn(string Title,double Width);
+public sealed record AcademicReport(string Sheet,string Title,string Context,string Note,IReadOnlyList<ReportColumn> Columns,IReadOnlyList<IReadOnlyList<object?>> Rows);
+public static class AcademicReportProjection
+{
+    public static AcademicReport Build(AcademicWorkspace workspace,int number,AcademicReportKind kind)
+    {
+        var cut=workspace.Cuts.SingleOrDefault(c=>c.Number==number) ?? throw new AcademicValidationException("Selecciona un corte válido.");
+        var columns=new List<ReportColumn>{new("#",7),new("Documento",20),new("Nombre del estudiante",38)};
+        if(kind==AcademicReportKind.Notes)
+        {
+            foreach(var group in cut.Groups){foreach(var activity in group.Activities)columns.Add(new($"{group.Name}\n{activity.Name}",22));columns.Add(new($"{(group.Mode==EvaluationMode.Direct ? "Nota" : "Promedio")} {group.Name}\n{group.Weight:0.##} %",22));}
+            columns.Add(new("Nota del corte",18));columns.Add(new("Estado",18));
+        }
+        else
+        {
+            foreach(var week in cut.Weeks)columns.Add(new(week.Label,22));
+            foreach(var title in new[]{"Presentes","Ausentes","Justificadas","Tardanzas","Registrados","Sin diligenciar","% asistencia"})columns.Add(new(title,19));
+        }
+        var rows=new List<IReadOnlyList<object?>>();int index=0;
+        foreach(var student in workspace.Students)
+        {
+            var row=new List<object?>{++index,student.Document,student.FullName};
+            if(kind==AcademicReportKind.Notes)
+            {
+                foreach(var group in cut.Groups){foreach(var activity in group.Activities)row.Add(cut.Grades.SingleOrDefault(g=>g.StudentId==student.Id && g.ActivityId==activity.Id)?.Value);row.Add(GradeCalculator.Group(cut,group,student.Id));}
+                var total=GradeCalculator.Cut(cut,student.Id);row.Add(total);row.Add(total is null ? "Pendiente" : "Completo");
+            }
+            else
+            {
+                var states=cut.Weeks.Select(w=>cut.Attendance.SingleOrDefault(a=>a.StudentId==student.Id && a.WeekNumber==w.Number)?.State).ToList();
+                row.AddRange(states.Select(s=>(object?)(s switch{AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"})));
+                var summary=AttendanceSummary.From(states);row.AddRange(new object?[]{summary.Present,summary.Absent,summary.Justified,summary.Late,summary.Recorded,states.Count(s=>s is null),"Pendiente de política"});
+            }
+            rows.Add(row);
+        }
+        return new(kind==AcademicReportKind.Notes ? "Notas" : "Asistencias",$"{workspace.CourseName} · Corte {number}",
+            $"Código: {workspace.CourseCode} · Período: {workspace.Period} · Escuela: {workspace.School} · Grupo: {workspace.GroupName}",
+            kind==AcademicReportKind.Notes ? "Instantánea de valores guardados. Celdas vacías: nota pendiente. Los tres cortes aún no tienen pesos finales definidos." : "P: Presente · A: Ausente · J: Justificada · T: Tarde. Sin diligenciar no es ausencia. Porcentaje pendiente de política.",columns,rows);
+    }
+}

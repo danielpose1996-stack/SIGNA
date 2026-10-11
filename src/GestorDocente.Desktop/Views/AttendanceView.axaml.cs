@@ -19,7 +19,7 @@ public partial class AttendanceView : UserControl
         foreach(var week in observed.Weeks)
         {
             var number=week.Number;
-            AttendanceTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header($"Sem {number}"),Width=new(68),CellTemplate=new FuncDataTemplate<AttendanceRowViewModel>((row,_)=> {
+            AttendanceTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header(week.ShortLabel),Width=new(82),CellTemplate=new FuncDataTemplate<AttendanceRowViewModel>((row,_)=> {
                 var combo=new ComboBox {DataContext=row!.Cells[number],ItemsSource=AttendanceCellViewModel.Options,Padding=new(6,2),MinHeight=28,Height=30,HorizontalAlignment=Avalonia.Layout.HorizontalAlignment.Stretch};
                 combo.ItemTemplate=new FuncDataTemplate<AttendanceOption>((option,_)=>new TextBlock {Text=option!.Label,FontSize=12});
                 combo.Bind(ComboBox.SelectedItemProperty,new Binding(nameof(AttendanceCellViewModel.Selected)){Mode=BindingMode.TwoWay});
@@ -29,7 +29,7 @@ public partial class AttendanceView : UserControl
                 return combo;
             })});
         }
-        AttendanceTable.Columns.Add(Text("Total registrados","Total",145));AttendanceTable.Columns.Add(Text("% asistencia","Percentage",105));AttendanceTable.Columns.Add(Text("Estado","Status",95));
+        AttendanceTable.Columns.Add(Text("P / registrados","Total",100));AttendanceTable.Columns.Add(Text("% asistencia","Percentage",95));AttendanceTable.Columns.Add(Text("Estado","Status",95));
     }
     private static DataGridTemplateColumn Text(string title,string path,double width)=>TablePresentation.Text(title,path,width);
 }

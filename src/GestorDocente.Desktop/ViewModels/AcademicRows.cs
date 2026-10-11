@@ -19,20 +19,14 @@ public sealed class GradeCellViewModel : ObservableObject
     private string input,error="";
     public string Input {get=>input;set=>Set(ref input,value);}
     public string Error {get=>error;private set=>Set(ref error,value);}
-    public bool HasRubric {get;}
-    public bool IsDirect=>!HasRubric;
-    public RelayCommand EvaluateCommand {get;}
-    public GradeCellViewModel(WorkspaceService service,int cut,string studentId,EvaluationActivity activity,Action<string,string> evaluate)
+    public GradeCellViewModel(WorkspaceService service,int cut,string studentId,string targetId)
     {
-        this.service=service;this.cut=cut;this.studentId=studentId;activityId=activity.Id;
-        HasRubric=activity.Rubric is not null;
-        var value=service.Cut(cut).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activity.Id)?.Value;
+        this.service=service;this.cut=cut;this.studentId=studentId;activityId=targetId;
+        var value=service.Cut(cut).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==targetId)?.Value;
         input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";
-        EvaluateCommand=new(_=>evaluate(studentId,activityId));
     }
     public void Commit()
     {
-        if(HasRubric)return;
         try {
             decimal? value=null;
             if(!string.IsNullOrWhiteSpace(Input))
@@ -56,10 +50,12 @@ public sealed class GradeRowViewModel
     public Dictionary<string,GradeCellViewModel> Cells {get;}
     public string Total {get;}
     public string Completion {get;}
-    public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number,Action<string,string> evaluate)
+    public Dictionary<string,string> GroupTotals {get;}
+    public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number)
     {
         Student=student;Number=number;
-        Cells=service.Cut(cut).Groups.SelectMany(x=>x.Activities).ToDictionary(x=>x.Id,x=>new GradeCellViewModel(service,cut,student.Id,x,evaluate));
+        GroupTotals=service.Cut(cut).Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(GradeCalculator.Group(service.Cut(cut),g,student.Id)));
+        Cells=service.Cut(cut).Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id));
         var total=GradeCalculator.Cut(service.Cut(cut),student.Id);
         Total=AcademicFormatting.Grade(total);Completion=total is null ? "Pendiente" : "Completo";
     }
@@ -93,7 +89,7 @@ public sealed class AttendanceRowViewModel
     public string FullName=>Student.FullName;
     public Dictionary<int,AttendanceCellViewModel> Cells {get;}
     public AttendanceSummary Summary {get;}
-    public string Total=>$"{Summary.Present} P / {Summary.Recorded} registrados";
+    public string Total=>$"{Summary.Present} P / {Summary.Recorded}";
     public string Percentage=>"Por definir";
     public string Status=>Summary.Recorded==0 ? "Sin registros" : "Registrado";
     public ObservableCollection<WeeklyDetail> WeeklyDetails {get;}
@@ -107,7 +103,7 @@ public sealed class AttendanceRowViewModel
             var state=data.Attendance.SingleOrDefault(x=>x.StudentId==student.Id && x.WeekNumber==w.Number)?.State;
             var text=state switch {AttendanceState.Present=>"Presente",AttendanceState.Absent=>"Ausente",AttendanceState.Justified=>"Justificada",AttendanceState.Late=>"Tarde",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"};
             var code=state switch {AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",_=>"—"};
-            return new WeeklyDetail($"Semana {w.Number}",code,text);
+            return new WeeklyDetail(w.Label,code,text);
         }));
     }
 }

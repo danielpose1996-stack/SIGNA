@@ -1,5 +1,7 @@
 # 003 — Cortes, evaluaciones y notas
 
+> Histórico: las reglas de rúbricas, parcial único y pesos internos fueron sustituidas por `specs/012-evaluacion-sin-rubricas/spec.md`.
+
 **Estado:** borrador pendiente de aprobación. **Origen:** constitución, secciones III y IV.
 
 ## Problema y objetivo
@@ -48,3 +50,11 @@ Independencia de cortes; varias actividades; parcial sin subactividades; notas d
 ## Decisiones abiertas
 
 D-04/D-05: escala, pesos por corte, aprobación, suma de porcentajes, promedio simple/ponderado, pendientes y redondeo. Definir cuándo se guarda una celda y qué ocurre al cambiar evaluaciones ya calificadas. Estos criterios no habilitan todavía el desarrollo de cálculos.
+
+## Aclaración confirmada — 2026-10-11
+
+Para el incremento 010, el usuario define grupos de evaluación con nombre libre y porcentajes acordados cuya suma debe ser 100 % del corte. Cada grupo contiene actividades individuales y su nota se obtiene mediante promedio aritmético simple. Ejemplo: Talleres 20 % con tres talleres; su promedio aporta ese 20 %, independientemente de que cada taller tenga rúbrica o nota directa. Quices funciona del mismo modo. Parcial conserva su regla explícita de nota única.
+
+Cada actividad individual decide de manera independiente si usa rúbrica. Los porcentajes de criterios de la rúbrica suman 100 % y ponderan la nota de esa actividad; esa nota luego participa en el promedio simple del grupo. No solicitar al docente porcentajes para los talleres individuales.
+
+Esta aclaración sustituye para el nuevo incremento la propuesta de elegir entre actividades con peso directo y grupos, y define la agregación interna como promedio simple. La demostración del incremento 008 todavía utiliza pesos internos y no se modifica en esta planificación. Los criterios, ejemplos y cambios necesarios están en `specs/010-semestres-y-trabajo-academico/plan.md`. Permanecen pendientes los pesos finales de los tres cortes y las políticas de aprobación/redondeo.

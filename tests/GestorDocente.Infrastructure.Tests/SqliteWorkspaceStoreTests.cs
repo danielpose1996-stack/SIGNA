@@ -9,7 +9,7 @@ namespace GestorDocente.Infrastructure.Tests;
 public class SqliteWorkspaceStoreTests
 {
     [Fact]
-    public void Reopening_database_preserves_grades_rubrics_and_attendance()
+    public void Reopening_database_preserves_modes_grades_and_attendance()
     {
         var path=Path.Combine(Path.GetTempPath(),Guid.NewGuid()+".db");
         try {
@@ -19,7 +19,7 @@ public class SqliteWorkspaceStoreTests
             var reopened=new WorkspaceService(new SqliteWorkspaceStore(path));
             Assert.Equal(4.75m,reopened.Cut(2).Grades.Single(x=>x.StudentId=="s1" && x.ActivityId=="t2").Value);
             Assert.Equal(AttendanceState.Late,reopened.Cut(2).Attendance.Single(x=>x.StudentId=="s1" && x.WeekNumber==1).State);
-            Assert.NotNull(reopened.Activity(2,"t1").Rubric);
+            Assert.Equal(EvaluationMode.SubActivities,reopened.Cut(2).Groups[0].Mode);
         } finally {SqliteConnection.ClearAllPools(); if(File.Exists(path))File.Delete(path);}
     }
 }

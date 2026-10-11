@@ -27,7 +27,10 @@ public sealed class VectorIcon : Control
         ["trash"]="M4 6 L20 6 M8 6 L8 3 L16 3 L16 6 M6 6 L7 21 L17 21 L18 6 M10 10 L10 17 M14 10 L14 17",
         ["edit"]="M4 17 L17 4 L21 8 L8 21 L3 22 Z M14 7 L18 11",
         ["chevron"]="M8 5 L15 12 L8 19",
-        ["info"]="M12 2 A10 10 0 1 0 12 22 A10 10 0 1 0 12 2 M12 10 L12 17 M12 6 L12 7"
+        ["info"]="M12 2 A10 10 0 1 0 12 22 A10 10 0 1 0 12 2 M12 10 L12 17 M12 6 L12 7",
+        ["backup"]="M3 7 L21 7 L21 21 L3 21 Z M5 7 L5 3 L19 3 L19 7 M9 12 L15 12 M12 12 L12 17 M9 15 L12 18 L15 15",
+        ["cloud"]="M6 19 C0 19 0 11 6 11 C5 2 18 2 18 11 C24 10 25 19 19 19 Z",
+        ["restore"]="M4 10 C5 3 18 2 21 10 C24 19 11 25 6 19 M4 4 L4 10 L10 10 M12 8 L12 13 L16 15"
     }.ToDictionary(x=>x.Key,x=>Geometry.Parse(x.Value));
     public override void Render(DrawingContext context)
     {

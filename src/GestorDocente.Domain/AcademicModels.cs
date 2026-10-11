@@ -2,8 +2,11 @@ namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
 {
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = 2;
     public bool IsDemo { get; set; } = true;
+    public string CourseId { get; set; } = "";
+    public string SemesterId { get; set; } = "";
+    public string School { get; set; } = "";
     public string CourseName { get; set; } = "Programación Orientada a Objetos";
     public string CourseCode { get; set; } = "INF-301";
     public string GroupName { get; set; } = "01";
@@ -19,13 +22,17 @@ public sealed class AcademicCut
     public List<GradeEntry> Grades { get; set; } = [];
     public List<AttendanceWeek> Weeks { get; set; } = [];
     public List<AttendanceEntry> Attendance { get; set; } = [];
+    public List<RemovedActivity> RemovedActivities { get; set; } = [];
+    public List<EvaluationGroup> RemovedGroups { get; set; } = [];
+    public List<AttendanceWeek> RemovedWeeks { get; set; } = [];
 }
+public enum EvaluationMode { Direct, SubActivities }
 public sealed class EvaluationGroup
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "";
     public decimal Weight { get; set; }
-    public bool IsPartial { get; set; }
+    public EvaluationMode Mode { get; set; } = EvaluationMode.Direct;
     public List<EvaluationActivity> Activities { get; set; } = [];
 }
 public sealed class EvaluationActivity
@@ -33,31 +40,15 @@ public sealed class EvaluationActivity
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
-    public decimal Weight { get; set; }
-    public RubricDefinition? Rubric { get; set; }
 }
-public sealed class RubricDefinition
+public sealed record GradeEntry(string StudentId, string ActivityId, decimal Value);
+public sealed record RemovedActivity(string GroupId, EvaluationActivity Activity);
+public enum WeekKind { Class, Activities }
+public sealed record AttendanceWeek(int Number, WeekKind Kind = WeekKind.Class)
 {
-    public List<RubricCriterion> Criteria { get; set; } = [];
-    public List<RubricLevel> Levels { get; set; } = [];
+    public string Label => $"Semana {Number} · {(Kind == WeekKind.Class ? "Clase" : "Actividades")}";
+    public string ShortLabel => $"Sem {Number}\n{(Kind == WeekKind.Class ? "Clase" : "Actividad")}";
 }
-public sealed class RubricCriterion
-{
-    public string Id { get; set; } = Guid.NewGuid().ToString("N");
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public decimal Weight { get; set; }
-}
-public sealed class RubricLevel
-{
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public decimal Lower { get; set; }
-    public decimal Upper { get; set; }
-}
-public sealed record GradeEntry(string StudentId, string ActivityId, decimal Value, RubricAssessment? Assessment = null);
-public sealed record RubricAssessment(RubricDefinition Rubric, Dictionary<string, decimal> Scores);
-public sealed record AttendanceWeek(int Number);
 public enum AttendanceState { Present, Absent, Justified, Late, NoClass }
 public sealed record AttendanceEntry(string StudentId, int WeekNumber, AttendanceState State);
 public sealed record AttendanceSummary(int Present, int Absent, int Justified, int Late)

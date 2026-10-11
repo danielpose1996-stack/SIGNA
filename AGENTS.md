@@ -21,7 +21,7 @@ Este repositorio es una aplicación de escritorio local-first para gestión acad
 ## Diseño
 - Estética universitaria sobria; interfaz clara, profesional, sin sobrecarga, alineada con las maquetas aprobadas.
 - Tabla con rayado de cebra, edición clara y navegación accesible por teclado.
-- La construcción de rúbricas debe realizarse en ventana modal, no en panel lateral permanente.
+- Actividades principales con porcentaje y nota directa o subactividades con promedio simple, sin rúbricas, según `specs/012-evaluacion-sin-rubricas/spec.md`.
 - Probar visualmente tamaño normal, redimensionado, escala de pantalla y estados sin datos / error.
 - Usar una skill de UX/UI solo cuando se haya revisado y aprobado su procedencia; no asumir que una maqueta es código ejecutable.
 

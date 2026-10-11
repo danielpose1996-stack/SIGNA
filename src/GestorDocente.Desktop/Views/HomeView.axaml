@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.HomeView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24,0,24,24" Spacing="22">
+      <Border Background="#EAF3FF" BorderBrush="#D4E5FA" BorderThickness="1" CornerRadius="8" Padding="22" IsVisible="{Binding IsHome}">
+        <Grid ColumnDefinitions="48,*">
+          <Border Background="#D6E8FF" Width="44" Height="44" CornerRadius="8" VerticalAlignment="Top"><c:VectorIcon Kind="monitor" Width="26" Height="26" Stroke="#0067F5" /></Border>
+          <StackPanel Grid.Column="1" Margin="14,0,0,0" Spacing="8">
+            <TextBlock Text="Tu trabajo académico, en este equipo" FontSize="21" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Text="Organiza las notas y asistencias desde tus materias. Puedes trabajar sin internet y sin crear una cuenta." Foreground="#45638E" TextWrapping="Wrap" MaxWidth="820" HorizontalAlignment="Left" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding Home.HasCatalog}">
+        <TextBlock Text="Período académico" VerticalAlignment="Center" />
+        <ComboBox Width="150" ItemsSource="{Binding Home.Semesters}" SelectedItem="{Binding Home.SelectedSemester,Mode=TwoWay}" AutomationProperties.Name="Período académico" />
+        <Button Content="Crear semestre" Command="{Binding NewSemesterCommand}" />
+        <Button Classes="primary" Content="Crear materia" Command="{Binding NewCourseCommand}" />
+      </StackPanel>
+      <Grid ColumnDefinitions="*,300" ColumnSpacing="20">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Materias disponibles" Classes="section" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="quiet" Content="Ver mis materias" Command="{Binding NavigateCommand}" CommandParameter="Materias" IsVisible="{Binding IsHome}" />
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Home.Courses}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="card" Padding="22" Margin="0,0,0,12">
+                  <StackPanel Spacing="15">
+                    <Grid ColumnDefinitions="42,*">
+                      <Border Background="#EDF4FF" Width="40" Height="40" CornerRadius="7"><c:VectorIcon Kind="book" Stroke="#0067F5" Width="24" Height="24" /></Border>
+                      <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="5">
+                        <TextBlock Text="{Binding Name}" FontSize="19" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding School}" Classes="muted" FontSize="12" /><TextBlock Text="{Binding StudentsLabel}" Classes="muted" FontSize="13" />
+                    <Border Background="#F1F6FD" CornerRadius="5" Padding="10,8" IsVisible="{Binding IsDemo}"><TextBlock Text="Materia de demostración · contiene datos ficticios" Foreground="#45638E" FontSize="12" TextWrapping="Wrap" /></Border>
+                    <Border Background="#DFE8F4" Height="1" />
+                    <Button Classes="primary" Content="Abrir materia" HorizontalAlignment="Left" Command="{Binding DataContext.OpenCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" AutomationProperties.Name="Abrir materia disponible" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Border Classes="card" Padding="24" IsVisible="{Binding Home.IsEmpty}">
+            <StackPanel Spacing="10"><c:VectorIcon Kind="book" Width="32" Height="32" HorizontalAlignment="Left" /><TextBlock Text="Todavía no hay materias" FontSize="18" FontWeight="SemiBold" /><TextBlock Text="Crea primero un semestre (por ejemplo, 2026-1) y después una materia. Selecciona otro período para consultar años anteriores." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+          </Border>
+          <TextBlock Text="Los datos se guardan automáticamente en este equipo. Abre una materia y usa Importar Excel para incorporar su listado de estudiantes." Classes="muted" FontSize="12" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="14">
+          <TextBlock Text="Tu copia de seguridad" Classes="section" Margin="0,8,0,6" />
+          <Border Classes="card" Padding="20">
+            <StackPanel Spacing="14">
+              <c:VectorIcon Kind="backup" Stroke="#0067F5" Width="30" Height="30" HorizontalAlignment="Left" />
+              <TextBlock Text="Respaldos" FontSize="19" FontWeight="SemiBold" />
+              <TextBlock Text="Guarda una copia local o conecta Google Drive de forma opcional." Classes="muted" TextWrapping="Wrap" />
+              <Border Background="#FFF8E6" CornerRadius="5" Padding="10"><StackPanel Spacing="5"><TextBlock Text="Sin respaldos creados" FontWeight="SemiBold" FontSize="12" /><TextBlock Text="Creación y restauración disponibles en el siguiente incremento." FontSize="12" Foreground="#806326" TextWrapping="Wrap" /></StackPanel></Border>
+              <Button x:Name="OpenBackups" Content="Ver opciones de respaldo" Command="{Binding NavigateCommand}" CommandParameter="Respaldos" HorizontalAlignment="Stretch" />
+            </StackPanel>
+          </Border>
+          <Border Background="#EDF7F3" BorderBrush="#D8EBE3" BorderThickness="1" CornerRadius="8" Padding="16"><StackPanel Spacing="7"><TextBlock Text="Uso directo y local" FontWeight="SemiBold" Foreground="#17684E" /><TextBlock Text="Abre el programa y trabaja. La cuenta de Google solo se necesitará si decides conectar Drive." Foreground="#436A5E" FontSize="12" TextWrapping="Wrap" /></StackPanel></Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
+
