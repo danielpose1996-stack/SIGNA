@@ -8,6 +8,7 @@ public static class AcademicReportProjection
     public static AcademicReport Build(AcademicWorkspace workspace,int number,AcademicReportKind kind)
     {
         var cut=workspace.Cuts.SingleOrDefault(c=>c.Number==number) ?? throw new AcademicValidationException("Selecciona un corte válido.");
+        var readIndex=new AcademicCutReadIndex(cut);
         var columns=new List<ReportColumn>{new("#",7),new("Documento",20),new("Nombre del estudiante",38)};
         if(kind==AcademicReportKind.Notes)
         {
@@ -25,12 +26,12 @@ public static class AcademicReportProjection
             var row=new List<object?>{++index,student.Document,student.FullName};
             if(kind==AcademicReportKind.Notes)
             {
-                foreach(var group in cut.Groups){foreach(var activity in group.Activities)row.Add(cut.Grades.SingleOrDefault(g=>g.StudentId==student.Id && g.ActivityId==activity.Id)?.Value);row.Add(GradeCalculator.Group(cut,group,student.Id));}
-                var total=GradeCalculator.Cut(cut,student.Id);row.Add(total);row.Add(total is null ? "Pendiente" : "Completo");
+                foreach(var group in cut.Groups){foreach(var activity in group.Activities)row.Add(readIndex.Grade(student.Id,activity.Id));row.Add(readIndex.Group(group,student.Id));}
+                var total=readIndex.Cut(student.Id);row.Add(total);row.Add(total is null ? "Pendiente" : "Completo");
             }
             else
             {
-                var states=cut.Weeks.Select(w=>cut.Attendance.SingleOrDefault(a=>a.StudentId==student.Id && a.WeekNumber==w.Number)?.State).ToList();
+                var states=cut.Weeks.Select(w=>readIndex.Attendance(student.Id,w.Number)).ToList();
                 row.AddRange(states.Select(s=>(object?)(s switch{AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"})));
                 var summary=AttendanceSummary.From(states);row.AddRange(new object?[]{summary.Present,summary.Absent,summary.Justified,summary.Late,summary.Recorded,states.Count(s=>s is null),"Pendiente de política"});
             }

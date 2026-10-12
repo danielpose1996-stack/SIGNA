@@ -28,6 +28,17 @@ public class WorkspaceTests
         store.Fail=true;Assert.Throws<IOException>(()=>service.SetGrade(1,"s1","t1",0));Assert.Equal(before,service.Cut(1).Grades.Single(g=>g.StudentId=="s1" && g.ActivityId=="t1").Value);
     }
     [Fact]
+    public async Task Unchanged_async_grade_and_attendance_do_not_write_again()
+    {
+        var store=new MemoryStore();var service=new WorkspaceService(store);
+        var grade=new AcademicCutReadIndex(service.Cut(1)).Grade("s1","t1");
+        var attendance=new AcademicCutReadIndex(service.Cut(1)).Attendance("s1",1);
+        var before=store.Saves;
+        await service.SetGradeAsync(1,"s1","t1",grade);
+        await service.SetAttendanceAsync(1,"s1",1,attendance);
+        Assert.Equal(before,store.Saves);
+    }
+    [Fact]
     public void Weeks_and_attendance_are_independent_by_cut()
     {
         var service=new WorkspaceService(new MemoryStore());while(service.Cut(1).Weeks.Count<9)service.AddWeek(1);
@@ -50,8 +61,8 @@ public class WorkspaceTests
     }
     private sealed class MemoryStore:IWorkspaceStore
     {
-        public bool Fail;private AcademicWorkspace? data;
+        public bool Fail;public int Saves;private AcademicWorkspace? data;
         public AcademicWorkspace? Load()=>data is null ? null : WorkspaceService.Clone(data);
-        public void Save(AcademicWorkspace value){if(Fail)throw new IOException();data=WorkspaceService.Clone(value);}
+        public void Save(AcademicWorkspace value){if(Fail)throw new IOException();data=WorkspaceService.Clone(value);Saves++;}
     }
 }

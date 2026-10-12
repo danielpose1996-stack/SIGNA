@@ -33,6 +33,25 @@ public class EvaluationModesTests
         service.ConfigureGroups(1,[new(){Id="g",Name="Trabajo",Weight=100}]);Assert.Null(GradeCalculator.Cut(service.Cut(1),"s1"));Assert.Equal(2,service.Cut(1).RemovedActivities.Count);
     }
     [Fact]
+    public void Dense_subactivities_convert_every_complete_student_without_changing_incomplete_ones()
+    {
+        var data=DemoWorkspaceFactory.Create();
+        data.Students=Enumerable.Range(1,600).Select(i=>new Student($"f{i}",$"F-{i}",$"Estudiante ficticio {i}")).ToList();
+        foreach(var cut in data.Cuts){cut.Grades.Clear();cut.Attendance.Clear();}
+        var group=data.Cuts[0].Groups[0];
+        data.Cuts[0].Grades=data.Students.SelectMany((student,i)=>group.Activities.Take(i==0 ? 2 : 3)
+            .Select((activity,j)=>new GradeEntry(student.Id,activity.Id,j+2))).ToList();
+        var service=new WorkspaceService(new MemoryStore(data));
+        var groups=WorkspaceService.Clone(service.Cut(1).Groups);
+        groups[0].Mode=EvaluationMode.Direct;groups[0].Activities.Clear();
+        service.ConfigureGroups(1,groups);
+        var converted=service.Cut(1);
+        Assert.Equal(599,converted.Grades.Count(g=>g.ActivityId==group.Id));
+        Assert.DoesNotContain(converted.Grades,g=>g.StudentId=="f1" && g.ActivityId==group.Id);
+        Assert.All(converted.Grades.Where(g=>g.ActivityId==group.Id),g=>Assert.Equal(3m,g.Value));
+        Assert.Equal(3,converted.RemovedActivities.Count);
+    }
+    [Fact]
     public void Legacy_workspace_migrates_numbers_ids_attendance_and_removed_records_atomically()
     {
         var legacy=Legacy();var before=JsonSerializer.Serialize(legacy);var store=new MemoryStore(legacy);var service=new WorkspaceService(store);

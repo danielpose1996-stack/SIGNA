@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.HomeView">
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24,0,24,24" Spacing="22">
+      <Border Background="#FFF8E6" CornerRadius="5" Padding="10" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border>
       <Border Background="#EAF3FF" BorderBrush="#D4E5FA" BorderThickness="1" CornerRadius="8" Padding="22" IsVisible="{Binding IsHome}">
         <Grid ColumnDefinitions="48,*">
           <Border Background="#D6E8FF" Width="44" Height="44" CornerRadius="8" VerticalAlignment="Top"><c:VectorIcon Kind="monitor" Width="26" Height="26" Stroke="#0067F5" /></Border>
@@ -16,6 +17,8 @@
         <Button Content="Crear semestre" Command="{Binding NewSemesterCommand}" />
         <Button Classes="primary" Content="Crear materia" Command="{Binding NewCourseCommand}" />
       </StackPanel>
+      <TextBlock Text="Cargando materias…" Classes="muted" IsVisible="{Binding Home.IsLoading}" />
+      <Border Background="#FFF0F0" CornerRadius="5" Padding="10" IsVisible="{Binding Home.Error,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Home.Error}" Foreground="#A52828" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Reintentar" Command="{Binding Home.RefreshCommand}" /></Grid></Border>
       <Grid ColumnDefinitions="*,300" ColumnSpacing="20">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto">

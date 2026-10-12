@@ -17,6 +17,7 @@ public sealed class GradeCellViewModel : ObservableObject
     private readonly int cut;
     private readonly string studentId,activityId;
     private string input,error="";
+    private decimal? originalValue;
     private bool isSaving;
     public string Input {get=>input;set=>Set(ref input,value);}
     public string Error {get=>error;private set=>Set(ref error,value);}
@@ -26,6 +27,7 @@ public sealed class GradeCellViewModel : ObservableObject
     {
         this.service=service;this.cut=cut;this.studentId=studentId;activityId=targetId;
         var value=(index ?? new AcademicCutReadIndex(service.Cut(cut))).Grade(studentId,targetId);
+        originalValue=value;
         input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";
     }
     public void Commit()
@@ -38,11 +40,10 @@ public sealed class GradeCellViewModel : ObservableObject
                 if(!AcademicFormatting.TryDecimal(Input,out var parsed))throw new AcademicValidationException("Escribe una nota entre 0,0 y 5,0.");
                 AcademicRules.ValidateGrade(parsed); value=parsed;
             }
-            var old=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);
             Error="";
-            if(old!=value)service.SetGrade(cut,studentId,activityId,value);
+            if(originalValue!=value){service.SetGrade(cut,studentId,activityId,value);originalValue=value;}
             else Input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";
-        } catch(Exception ex) {Error=SaveError(ex,service.Current!=before);}
+        } catch(Exception ex) {if(service.Current!=before)originalValue=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);Error=SaveError(ex,service.Current!=before);}
     }
     public async Task CommitAsync()
     {
@@ -56,13 +57,13 @@ public sealed class GradeCellViewModel : ObservableObject
                 if(!AcademicFormatting.TryDecimal(Input,out var parsed))throw new AcademicValidationException("Escribe una nota entre 0,0 y 5,0.");
                 AcademicRules.ValidateGrade(parsed);value=parsed;
             }
-            var old=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);
             Error="";
-            if(old==value){Input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";return;}
+            if(originalValue==value){Input=value?.ToString("0.00",AcademicFormatting.Culture) ?? "";return;}
             IsSaving=true;
             await service.SetGradeAsync(cut,studentId,activityId,value);
+            originalValue=value;
         }
-        catch(Exception ex){Error=SaveError(ex,service.Current!=before);}
+        catch(Exception ex){if(service.Current!=before)originalValue=new AcademicCutReadIndex(service.Cut(cut)).Grade(studentId,activityId);Error=SaveError(ex,service.Current!=before);}
         finally{IsSaving=false;}
     }
     private static string SaveError(Exception ex,bool committed)=>

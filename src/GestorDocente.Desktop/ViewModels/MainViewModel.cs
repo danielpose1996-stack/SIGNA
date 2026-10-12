@@ -14,6 +14,14 @@ public sealed class MainViewModel : ObservableObject
     public IAcademicReportExporter? ReportExporter {get;}
     public ILocalBackupService? LocalBackup {get;}
     private readonly Dictionary<string,(int Cut,string Page,string Search,string? Student)> courseStates=[];
+    private readonly List<GradeRowViewModel> allGradeRows=[];
+    private readonly List<AttendanceRowViewModel> allAttendanceRows=[];
+    private readonly Dictionary<string,int> studentPositions=[];
+    private AcademicCutReadIndex? readIndex;
+    private decimal?[] courseTotals=[];
+    private decimal courseTotalSum;
+    private int completedStudents;
+    private sealed record CourseProjection(AcademicCutReadIndex Index,List<GradeRowViewModel> Grades,List<AttendanceRowViewModel> Attendance,Dictionary<string,int> Positions,decimal?[] Totals);
     public HomeViewModel Home {get;}
     private NavigationSection section=NavigationSection.Home;
     private int selectedCut=1;
@@ -28,7 +36,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand CreateBackupCommand{get;}
@@ -95,7 +103,7 @@ public sealed class MainViewModel : ObservableObject
         NavigationSection.Courses=>"Selecciona una materia para trabajar en sus notas y asistencias.",
         NavigationSection.Backups=>"Conserva una copia de tu trabajo y recupérala cuando la necesites.", _=>""
     };
-    public string Search {get=>search;set {if(Set(ref search,value))Rebuild();}}
+    public string Search {get=>search;set {if(Set(ref search,value ?? string.Empty))ApplySearchFilter();}}
     public string Message {get=>message;set=>Set(ref message,value);}
     public string SaveStatus {get=>saveStatus;private set=>Set(ref saveStatus,value);}
     public string CourseName=>Service.Current.CourseName;
@@ -139,10 +147,10 @@ public sealed class MainViewModel : ObservableObject
         CreateBackupCommand=new(_=>BackupRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         RestoreBackupCommand=new(_=>RestoreRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         Home=new(service,catalog);
-        OpenCourseCommand=new(parameter=>Try(()=>OpenCourse(parameter as CourseSummary)),_=>!FileBusy && (HasOpenCourse || Home.HasCourses));
+        OpenCourseCommand=new(parameter=>_ = OpenCourseAsync(parameter as CourseSummary),_=>!FileBusy && (HasOpenCourse || Home.HasCourses));
         NewSemesterCommand=new(_=>CatalogEditorRequested?.Invoke(true),_=>Catalog is not null);
         NewCourseCommand=new(_=>CatalogEditorRequested?.Invoke(false),_=>Home.CanCreateCourse);
-        ReloadCourseCommand=new(_=>Try(()=>ReloadCourse()),_=>Catalog is not null && HasOpenCourse);
+        ReloadCourseCommand=new(_=>_ = ReloadCourseAsync(),_=>Catalog is not null && HasOpenCourse && !FileBusy);
         ToggleDetailCommand=new(_=>{DetailVisible=!DetailVisible;Raise(nameof(DetailHidden));});
         RecoveryCommand=new(_=>RecoveryRequested?.Invoke());
         Home.PropertyChanged+=(_,_)=>{OpenCourseCommand.Refresh();NewCourseCommand.Refresh();};
@@ -170,63 +178,109 @@ public sealed class MainViewModel : ObservableObject
         SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";
         if(change.Cut==SelectedCut && change.StudentId is { } studentId && change.Kind is WorkspaceChangeKind.Grade or WorkspaceChangeKind.Attendance)
         {
-            var index=new AcademicCutReadIndex(Service.Cut(SelectedCut));
+            if(readIndex is null){Rebuild();return;}
+            var index=readIndex;
             if(change.Kind==WorkspaceChangeKind.Grade)
             {
-                var position=GradeRows.ToList().FindIndex(r=>r.Student.Id==studentId);
-                if(position>=0)
+                if(change.ActivityId is null){Rebuild();return;}
+                index.ApplyGrade(studentId,change.ActivityId,change.Grade);
+                if(studentPositions.TryGetValue(studentId,out var position))
                 {
-                    var prior=GradeRows[position];
-                    GradeRows[position]=new GradeRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
+                    var previousTotal=courseTotals[position];
+                    var nextTotal=index.Cut(studentId);
+                    courseTotals[position]=nextTotal;
+                    if(previousTotal is { } old){courseTotalSum-=old;completedStudents--;}
+                    if(nextTotal is { } current){courseTotalSum+=current;completedStudents++;}
+                    var prior=allGradeRows[position];
+                    var updated=new GradeRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
+                    allGradeRows[position]=updated;
+                    var visiblePosition=GradeRows.ToList().FindIndex(r=>r.Student.Id==studentId);
+                    if(visiblePosition>=0)GradeRows[visiblePosition]=updated;
                 }
-                UpdateCourseAverage(index);
+                PublishCourseAverage();
             }
             else
             {
-                var position=AttendanceRows.ToList().FindIndex(r=>r.Student.Id==studentId);
-                if(position>=0)
+                if(change.Week is null){Rebuild();return;}
+                index.ApplyAttendance(studentId,change.Week.Value,change.Attendance);
+                if(studentPositions.TryGetValue(studentId,out var position))
                 {
-                    var prior=AttendanceRows[position];
+                    var prior=allAttendanceRows[position];
                     var updated=new AttendanceRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
-                    AttendanceRows[position]=updated;
+                    allAttendanceRows[position]=updated;
+                    var visiblePosition=AttendanceRows.ToList().FindIndex(r=>r.Student.Id==studentId);
+                    if(visiblePosition>=0)AttendanceRows[visiblePosition]=updated;
                     if(SelectedStudent?.Student.Id==studentId)SelectedStudent=updated;
                 }
             }
             return;
         }
         if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students || change.Cut==SelectedCut)Rebuild();
-        if(change.Kind==WorkspaceChangeKind.Students){if(Catalog is not null)Home.Refresh();OpenCourseCommand.Refresh();}
+        if(change.Kind==WorkspaceChangeKind.Students){if(Catalog is not null)_ = Home.RefreshAsync();OpenCourseCommand.Refresh();}
     }
     private void OnRefreshFailed(AcademicRefreshException error)
     {
         SaveStatus="Guardado confirmado · actualización de pantalla fallida";
         Message=error.Message;
     }
-    private void OpenCourse(CourseSummary? course)
+    public async Task OpenCourseAsync(CourseSummary? course)
     {
-        if(Catalog is not null)
+        if(FileBusy)return;
+        try
         {
-            var id=course?.Id ?? (HasOpenCourse ? Service.Current.CourseId : Home.Courses.FirstOrDefault()?.Id);
-            if(string.IsNullOrEmpty(id))return;
-            if(Service.Current.CourseId!=id)
+            if(Catalog is not null)
             {
-                if(HasOpenCourse)courseStates[Service.Current.CourseId]=(SelectedCut,Page,Search,SelectedStudent?.Student.Id);
-                var next=Catalog.Open(id);Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;
-                Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
-                var saved=courseStates.GetValueOrDefault(id,(1,"Notas","",null));
-                selectedCut=saved.Cut;page=saved.Page;search=saved.Search;selectedStudent=null;Message="";
-                Rebuild();if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
-                foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle)})Raise(name);
-                SaveStatus="Materia abierta · datos guardados en este equipo";ReloadCourseCommand.Refresh();ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();
+                var id=course?.Id ?? (HasOpenCourse ? Service.Current.CourseId : Home.Courses.FirstOrDefault()?.Id);
+                if(string.IsNullOrEmpty(id))return;
+                if(Service.Current.CourseId!=id)
+                {
+                    var saved=courseStates.GetValueOrDefault(id,(1,"Notas","",null));
+                    FileBusy=true;SaveStatus="Abriendo materia…";
+                    var (next,projection)=await Task.Run(()=>
+                    {
+                        var loaded=Catalog.Open(id);
+                        return (loaded,BuildProjection(loaded,saved.Cut));
+                    });
+                    if(Service.IsSaving)throw new AcademicValidationException("Espera a que termine de guardarse la materia actual antes de abrir otra.");
+                    if(HasOpenCourse)courseStates[Service.Current.CourseId]=(SelectedCut,Page,Search,SelectedStudent?.Student.Id);
+                    SwitchCourse(next,saved,projection);
+                }
             }
+            if(HasOpenCourse)Section=NavigationSection.Academic;
+            Message="";
         }
-        if(HasOpenCourse)Section=NavigationSection.Academic;
+        catch(Exception ex){Message=ex is AcademicRefreshException or AcademicValidationException ? ex.Message : $"No se pudo abrir la materia ({SafeErrorCode.From(ex)}). Revisa el archivo local y reintenta.";}
+        finally{if(FileBusy){FileBusy=false;if(SaveStatus=="Abriendo materia…")SaveStatus="Materia anterior conservada · revisa el aviso";}}
     }
-    private void ReloadCourse()
+    private void SwitchCourse(WorkspaceService next,(int Cut,string Page,string Search,string? Student) saved,CourseProjection projection)
     {
-        if(Catalog is null || !HasOpenCourse)return;var next=Catalog.Open(Service.Current.CourseId);
-        Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;Service=next;
-        Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;Rebuild();Message="";SaveStatus="Materia actualizada desde el archivo local";
+        Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;
+        Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
+        selectedCut=saved.Cut;page=saved.Page;search=saved.Search;selectedStudent=null;
+        ShowProjection(projection);
+        if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
+        foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);
+        SaveStatus="Materia abierta · datos guardados en este equipo";
+        ReloadCourseCommand.Refresh();ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();
+    }
+    private async Task ReloadCourseAsync()
+    {
+        if(Catalog is null || !HasOpenCourse || FileBusy)return;
+        FileBusy=true;SaveStatus="Actualizando materia…";
+        try
+        {
+            var id=Service.Current.CourseId;
+            var saved=(SelectedCut,Page,Search,SelectedStudent?.Student.Id);
+            var (next,projection)=await Task.Run(()=>
+            {
+                var loaded=Catalog.Open(id);
+                return (loaded,BuildProjection(loaded,saved.SelectedCut));
+            });
+            if(Service.IsSaving)throw new AcademicValidationException("Espera a que termine el guardado antes de actualizar la materia.");
+            SwitchCourse(next,saved,projection);Message="";SaveStatus="Materia actualizada desde el archivo local";
+        }
+        catch(Exception ex){Message=ex is AcademicValidationException ? ex.Message : $"No se pudo actualizar la materia ({SafeErrorCode.From(ex)}). Reintenta.";}
+        finally{FileBusy=false;if(SaveStatus=="Actualizando materia…")SaveStatus="Materia anterior conservada · revisa el aviso";}
     }
     public void Try(Action action)
     {
@@ -234,9 +288,30 @@ public sealed class MainViewModel : ObservableObject
     }
     private void Rebuild()
     {
-        var selectedId=SelectedStudent?.Student.Id;
+        ShowProjection(BuildProjection(Service,SelectedCut));
+    }
+    private static CourseProjection BuildProjection(WorkspaceService service,int selectedCut)
+    {
+        var index=new AcademicCutReadIndex(service.Cut(selectedCut));
+        var grades=new List<GradeRowViewModel>(service.Current.Students.Count);
+        var attendance=new List<AttendanceRowViewModel>(service.Current.Students.Count);
+        var positions=new Dictionary<string,int>(service.Current.Students.Count);
+        var totals=new decimal?[service.Current.Students.Count];
+        var i=0;
+        foreach(var student in service.Current.Students)
+        {
+            positions.Add(student.Id,i);
+            grades.Add(new(service,selectedCut,student,i+1,index));
+            attendance.Add(new(service,selectedCut,student,i+1,index));
+            totals[i]=index.Cut(student.Id);
+            i++;
+        }
+        return new(index,grades,attendance,positions,totals);
+    }
+    private void ShowProjection(CourseProjection projection)
+    {
         var cut=Service.Cut(SelectedCut);
-        var index=new AcademicCutReadIndex(cut);
+        readIndex=projection.Index;
         Groups.Clear();
         foreach(var group in cut.Groups)Groups.Add(new(group.Name,$"{group.Weight:0.##} %",group.Mode==EvaluationMode.Direct ? "Nota directa" : $"Promedio simple · {group.Activities.Count} subactividades",ConfigureCommand));
         Weeks.Clear();foreach(var week in cut.Weeks)Weeks.Add(week);
@@ -244,26 +319,41 @@ public sealed class MainViewModel : ObservableObject
         // after both tables have their matching grade/week schema.
         GradeRows.Clear();AttendanceRows.Clear();
         Raise(nameof(Groups));Raise(nameof(Weeks));
-        var grades=new List<GradeRowViewModel>();var attendance=new List<AttendanceRowViewModel>();
-        int i=0;
-        foreach(var student in Service.Current.Students)
-        {
-            i++;
-            if(!student.FullName.Contains(Search,StringComparison.OrdinalIgnoreCase) && !student.Document.Contains(Search,StringComparison.OrdinalIgnoreCase))continue;
-            grades.Add(new(Service,SelectedCut,student,i,index));
-            attendance.Add(new(Service,SelectedCut,student,i,index));
-        }
-        GradeRows.ReplaceAll(grades);AttendanceRows.ReplaceAll(attendance);
-        SelectedStudent=AttendanceRows.FirstOrDefault(x=>x.Student.Id==selectedId) ?? AttendanceRows.FirstOrDefault();
-        UpdateCourseAverage(index);
-        Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(CanAddWeek));
-        Raise(nameof(EmptyTableMessage));Raise(nameof(StudentCount));
+        allGradeRows.Clear();allAttendanceRows.Clear();studentPositions.Clear();
+        allGradeRows.AddRange(projection.Grades);allAttendanceRows.AddRange(projection.Attendance);
+        foreach(var (id,position) in projection.Positions)studentPositions.Add(id,position);
+        ApplySearchFilter();
+        UpdateCourseAverage(projection.Totals);
+        Raise(nameof(CanAddWeek));Raise(nameof(StudentCount));
         AddWeekCommand.Refresh();
     }
-    private void UpdateCourseAverage(AcademicCutReadIndex index)
+    private void ApplySearchFilter()
     {
-        var totals=Service.Current.Students.Select(s=>index.Cut(s.Id)).ToList();
-        CourseAverage=totals.Count>0 && totals.All(x=>x is not null) ? AcademicFormatting.Grade(totals.Average(x=>x!.Value)) : "Pendiente";
+        var selectedId=SelectedStudent?.Student.Id;
+        var grades=new List<GradeRowViewModel>();
+        var attendance=new List<AttendanceRowViewModel>();
+        for(var i=0;i<allGradeRows.Count;i++)
+        {
+            var student=allGradeRows[i].Student;
+            if(!student.FullName.Contains(Search,StringComparison.OrdinalIgnoreCase) && !student.Document.Contains(Search,StringComparison.OrdinalIgnoreCase))continue;
+            grades.Add(allGradeRows[i]);
+            attendance.Add(allAttendanceRows[i]);
+        }
+        if(!GradeRows.SequenceEqual(grades))GradeRows.ReplaceAll(grades);
+        if(!AttendanceRows.SequenceEqual(attendance))AttendanceRows.ReplaceAll(attendance);
+        SelectedStudent=attendance.FirstOrDefault(x=>x.Student.Id==selectedId) ?? attendance.FirstOrDefault();
+        Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(EmptyTableMessage));
+    }
+    private void UpdateCourseAverage(decimal?[] totals)
+    {
+        courseTotals=totals;
+        courseTotalSum=courseTotals.Where(x=>x is not null).Sum(x=>x!.Value);
+        completedStudents=courseTotals.Count(x=>x is not null);
+        PublishCourseAverage();
+    }
+    private void PublishCourseAverage()
+    {
+        CourseAverage=courseTotals.Length>0 && completedStudents==courseTotals.Length ? AcademicFormatting.Grade(courseTotalSum/courseTotals.Length) : "Pendiente";
         Raise(nameof(CourseAverage));
     }
 }

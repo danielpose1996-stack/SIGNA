@@ -30,7 +30,7 @@ public partial class MainWindow : Window
             await ShowAcademicDialog(new CatalogEditorWindow{DataContext=vm});
             if(!string.IsNullOrWhiteSpace(vm.SavedSemesterId))
             {
-                observed.Home.Refresh();
+                await observed.Home.RefreshAsync();
                 observed.Home.SelectedSemester=observed.Home.Semesters.FirstOrDefault(s=>s.Id==vm.SavedSemesterId);
                 if(!string.IsNullOrWhiteSpace(vm.Error))observed.Message=vm.Error;
             }
@@ -161,15 +161,17 @@ public partial class MainWindow : Window
         model.FileBusy=true;
         try
         {
-            var snapshot=WorkspaceService.Clone(model.Service.Current);var cut=model.SelectedCut;var kind=model.IsAttendance ? AcademicReportKind.Attendance : AcademicReportKind.Notes;
-            var code=new string(snapshot.CourseCode.Select(c=>Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
-            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Exportar reporte Excel del corte",SuggestedFileName=$"{code}-{snapshot.Period}-corte-{cut}-{kind}.xlsx",DefaultExtension="xlsx",FileTypeChoices=[ExcelType]});
+            var cut=model.SelectedCut;var kind=model.IsAttendance ? AcademicReportKind.Attendance : AcademicReportKind.Notes;
+            var course=model.Service.Current;
+            var code=new string(course.CourseCode.Select(c=>Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
+            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Exportar reporte Excel del corte",SuggestedFileName=$"{code}-{course.Period}-corte-{cut}-{kind}.xlsx",DefaultExtension="xlsx",FileTypeChoices=[ExcelType]});
             if(file is null)return;
             var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Selecciona una carpeta local para el reporte.");
             if(!path.EndsWith(".xlsx",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("El reporte debe guardarse con extensión .xlsx.");
             var overwrite=File.Exists(path);if(overwrite && !await new ConfirmWindow("El archivo ya existe. ¿Reemplazar este reporte con los datos actuales?","Reemplazar reporte").ShowDialog<bool>(this))return;
             model.Message="Generando reporte Excel…";
-            var bytes=await Task.Run(()=>model.ReportExporter.Export(snapshot,cut,kind));
+            var source=model.Service.Current;
+            var bytes=await Task.Run(()=>model.ReportExporter.Export(WorkspaceService.Clone(source),cut,kind));
             await Task.Run(()=>ReportFile.Save(path,bytes,overwrite));model.Message=$"Reporte Excel guardado: {file.Name}. Incluye toda la lista del corte {cut}.";
         }
         catch(Exception ex){model.Message=SafeError(ex);}

@@ -35,7 +35,7 @@ public sealed class StudentImportViewModel:ObservableObject
     public int FirstDataRow{get=>HeaderRow+1;set=>HeaderRow=value-1;}
     public ObservableCollection<ImportColumnViewModel> Columns{get;}=[];
     public ImportColumnViewModel? DocumentColumn{get=>documentColumn;set{if(Set(ref documentColumn,value))Preview();}}
-    public ObservableCollection<ImportStudentRowViewModel> Rows{get;}=[];
+    public ObservableRangeCollection<ImportStudentRowViewModel> Rows{get;}=[];
     public bool SettingsExpanded{get=>settingsExpanded;set=>Set(ref settingsExpanded,value);}
     public string SourceName{get;}
     public string Context=>$"{service.Current.CourseName} · {service.Current.Period} · {service.Current.GroupName}";
@@ -54,20 +54,21 @@ public sealed class StudentImportViewModel:ObservableObject
     public void Preview()
     {
         if(rebuilding)return;
-        Rows.Clear();Error="";
+        Error="";
         try
         {
             if(SelectedSheet is null)throw new AcademicValidationException("El archivo no contiene una hoja con estudiantes.");
             if(DocumentColumn is null || !Columns.Any(c=>c.IsName))
             {
+                Rows.ReplaceAll([]);
                 Summary="Elige las columnas de nombre y documento en Corregir columnas. Se aplican a toda la lista.";
                 return;
             }
             var candidates=StudentImportPreview.Build(SelectedSheet,HeaderRow,DocumentColumn.Index,Columns.Where(c=>c.IsName).Select(c=>c.Index).ToList(),service.Current.Students);
-            foreach(var row in candidates)Rows.Add(new(row));
+            Rows.ReplaceAll(candidates.Select(row=>new ImportStudentRowViewModel(row)));
             Summary=$"{Rows.Count} estudiantes en el archivo · {Rows.Count(r=>r.CanImport)} listos para importar · {Rows.Count(r=>!r.CanImport)} omitidos";
         }
-        catch(AcademicValidationException ex){Error=ex.Message;Summary="Corrige las columnas o la primera fila de estudiantes.";}
+        catch(AcademicValidationException ex){Rows.ReplaceAll([]);Error=ex.Message;Summary="Corrige las columnas o la primera fila de estudiantes.";}
         finally{Raise(nameof(HasPreview));Raise(nameof(CanImport));Raise(nameof(ImportButtonText));Raise(nameof(MappingSummary));}
     }
     public bool Save()

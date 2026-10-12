@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using System.Collections.Specialized;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
 using GestorDocente.Application;
@@ -38,6 +39,21 @@ public class ExcelFlowTests
         Assert.Equal("Listado",vm.SelectedSheet!.Name);Assert.Equal(40,vm.Rows.Count);Assert.Equal(0,vm.HeaderRow);Assert.True(vm.CanImport);
         Assert.True(vm.Save());Assert.Equal(40,vm.ImportedCount);Assert.Equal(50,main.GradeRows.Count);Assert.Equal(50,main.AttendanceRows.Count);
         vm=new StudentImportViewModel(service,new([new("Listado",rows)]),"Listado.xlsx");Assert.False(vm.CanImport);Assert.False(vm.Save());Assert.Equal(50,service.Current.Students.Count);
+    }
+    [AvaloniaFact]
+    public void Rebuilding_preview_notifies_the_table_once_for_the_whole_batch()
+    {
+        var service=new WorkspaceService(new MemoryStore());
+        var rows=new[]{new WorkbookRow(1,new Dictionary<int,WorkbookCell>{{0,new("Nombre completo")},{1,new("Documento")}})}
+            .Concat(Enumerable.Range(1,300).Select(i=>new WorkbookRow(i+1,new Dictionary<int,WorkbookCell>
+            {{0,new($"Estudiante Ficticio {i}")},{1,new($"F-{i:0000}")}}))).ToList();
+        var vm=new StudentImportViewModel(service,new([new("Listado",rows)]),"Listado.xlsx");
+        Assert.Equal(300,vm.Rows.Count);
+        var changes=0;
+        vm.Rows.CollectionChanged+=(_,e)=>{Assert.Equal(NotifyCollectionChangedAction.Reset,e.Action);changes++;};
+        vm.Preview();
+        Assert.Equal(1,changes);
+        Assert.Equal(300,vm.Rows.Count);
     }
     private static string Letters(int value)=>$"{(char)('A'+value/26)}{(char)('A'+value%26)}";
     [AvaloniaFact]

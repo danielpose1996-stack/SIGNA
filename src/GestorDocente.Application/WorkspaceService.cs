@@ -4,7 +4,7 @@ using GestorDocente.Domain;
 namespace GestorDocente.Application;
 
 public enum WorkspaceChangeKind { Structure, Grade, Attendance, Students }
-public sealed record WorkspaceChange(WorkspaceChangeKind Kind,int Cut=0,string? StudentId=null);
+public sealed record WorkspaceChange(WorkspaceChangeKind Kind,int Cut=0,string? StudentId=null,string? ActivityId=null,int? Week=null,decimal? Grade=null,AttendanceState? Attendance=null);
 
 public sealed class WorkspaceService
 {
@@ -109,7 +109,7 @@ public sealed class WorkspaceService
             throw new AcademicValidationException("La actividad o subactividad no está activa en este corte.");
         if(value is not null) AcademicRules.ValidateGrade(value.Value);
         if(Cut(number).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activityId)?.Value==value)return;
-        Change(number,cut=> {cut.Grades.RemoveAll(x=>x.StudentId==studentId && x.ActivityId==activityId); if(value is not null) cut.Grades.Add(new(studentId,activityId,value.Value));},new(WorkspaceChangeKind.Grade,number,studentId));
+        Change(number,cut=> {cut.Grades.RemoveAll(x=>x.StudentId==studentId && x.ActivityId==activityId); if(value is not null) cut.Grades.Add(new(studentId,activityId,value.Value));},new(WorkspaceChangeKind.Grade,number,studentId,ActivityId:activityId,Grade:value));
     }
     public Task SetGradeAsync(int number,string studentId,string activityId,decimal? value)
     {
@@ -117,16 +117,23 @@ public sealed class WorkspaceService
         if(!Cut(number).Groups.Any(g=>g.Mode==EvaluationMode.Direct ? g.Id==activityId : g.Activities.Any(a=>a.Id==activityId)))
             throw new AcademicValidationException("La actividad o subactividad no está activa en este corte.");
         if(value is not null)AcademicRules.ValidateGrade(value.Value);
-        if(Cut(number).Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activityId)?.Value==value)return Task.CompletedTask;
-        return ChangeAsync(number,cut=>{cut.Grades.RemoveAll(x=>x.StudentId==studentId && x.ActivityId==activityId);if(value is not null)cut.Grades.Add(new(studentId,activityId,value.Value));},new(WorkspaceChangeKind.Grade,number,studentId));
+        return ChangeAsync(number,cut=>{cut.Grades.RemoveAll(x=>x.StudentId==studentId && x.ActivityId==activityId);if(value is not null)cut.Grades.Add(new(studentId,activityId,value.Value));},
+            new(WorkspaceChangeKind.Grade,number,studentId,ActivityId:activityId,Grade:value),
+            cut=>cut.Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activityId)?.Value==value);
     }
-    private async Task ChangeAsync(int number,Action<AcademicCut> action,WorkspaceChange change)
+    private async Task ChangeAsync(int number,Action<AcademicCut> action,WorkspaceChange change,Func<AcademicCut,bool>? unchanged=null)
     {
         EnsureWritable();_=Cut(number);var source=Current;configurationSaving=true;
         try
         {
-            var copy=await Task.Run(()=>{var next=Clone(source);action(next.Cuts.Single(x=>x.Number==number));WorkspaceIntegrity.Validate(next);store.Save(next);return next;});
-            Current=copy;
+            var result=await Task.Run(()=>
+            {
+                if(unchanged?.Invoke(source.Cuts.Single(x=>x.Number==number))==true)return (Next:source,Changed:false);
+                var next=Clone(source);action(next.Cuts.Single(x=>x.Number==number));WorkspaceIntegrity.Validate(next);store.Save(next);
+                return (Next:next,Changed:true);
+            });
+            if(!result.Changed)return;
+            Current=result.Next;
         }
         finally{configurationSaving=false;}
         Publish(change);
@@ -181,7 +188,8 @@ public sealed class WorkspaceService
         }
         else
         {
-            var grades=workspace.Students.Select(s=>(s.Id,Value:GradeCalculator.Group(cut,previous,s.Id))).ToList();
+            var index=new AcademicCutReadIndex(cut);
+            var grades=workspace.Students.Select(s=>(s.Id,Value:index.Group(previous,s.Id))).ToList();
             cut.Grades.RemoveAll(g=>g.ActivityId==next.Id);
             foreach(var grade in grades)if(grade.Value is {} value)cut.Grades.Add(new(grade.Id,next.Id,value));
         }
@@ -243,14 +251,15 @@ public sealed class WorkspaceService
         if(!Cut(number).Weeks.Any(x=>x.Number==week)) throw new AcademicValidationException("La semana no existe en este corte.");
         if(state is not null && (!Enum.IsDefined(state.Value) || state==AttendanceState.NoClass)) throw new AcademicValidationException("Selecciona P, A, J o T; para períodos sin clase, omite la semana.");
         if(Cut(number).Attendance.SingleOrDefault(x=>x.StudentId==studentId && x.WeekNumber==week)?.State==state)return;
-        Change(number,cut=> {cut.Attendance.RemoveAll(x=>x.StudentId==studentId && x.WeekNumber==week);if(state is not null)cut.Attendance.Add(new(studentId,week,state.Value));},new(WorkspaceChangeKind.Attendance,number,studentId));
+        Change(number,cut=> {cut.Attendance.RemoveAll(x=>x.StudentId==studentId && x.WeekNumber==week);if(state is not null)cut.Attendance.Add(new(studentId,week,state.Value));},new(WorkspaceChangeKind.Attendance,number,studentId,Week:week,Attendance:state));
     }
     public Task SetAttendanceAsync(int number,string studentId,int week,AttendanceState? state)
     {
         StudentExists(studentId);
         if(!Cut(number).Weeks.Any(x=>x.Number==week))throw new AcademicValidationException("La semana no existe en este corte.");
         if(state is not null && (!Enum.IsDefined(state.Value) || state==AttendanceState.NoClass))throw new AcademicValidationException("Selecciona P, A, J o T; para períodos sin clase, omite la semana.");
-        if(Cut(number).Attendance.SingleOrDefault(x=>x.StudentId==studentId && x.WeekNumber==week)?.State==state)return Task.CompletedTask;
-        return ChangeAsync(number,cut=>{cut.Attendance.RemoveAll(x=>x.StudentId==studentId && x.WeekNumber==week);if(state is not null)cut.Attendance.Add(new(studentId,week,state.Value));},new(WorkspaceChangeKind.Attendance,number,studentId));
+        return ChangeAsync(number,cut=>{cut.Attendance.RemoveAll(x=>x.StudentId==studentId && x.WeekNumber==week);if(state is not null)cut.Attendance.Add(new(studentId,week,state.Value));},
+            new(WorkspaceChangeKind.Attendance,number,studentId,Week:week,Attendance:state),
+            cut=>cut.Attendance.SingleOrDefault(x=>x.StudentId==studentId && x.WeekNumber==week)?.State==state);
     }
 }

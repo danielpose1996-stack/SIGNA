@@ -1,6 +1,6 @@
 namespace GestorDocente.Domain;
 
-/// <summary>Índice inmutable para proyectar una instantánea de corte sin recorrer todas las notas por celda.</summary>
+/// <summary>Índice de un corte; permite aplicar cambios individuales ya persistidos sin reconstruirlo.</summary>
 public sealed class AcademicCutReadIndex
 {
     private readonly AcademicCut cut;
@@ -30,6 +30,16 @@ public sealed class AcademicCutReadIndex
     }
     public AttendanceState? Attendance(string studentId,int week)=>
         attendance.TryGetValue((studentId,week),out var value) ? value : null;
+    public void ApplyGrade(string studentId,string activityId,decimal? value)
+    {
+        if(value is { } grade){AcademicRules.ValidateGrade(grade);grades[(studentId,activityId)]=grade;}
+        else grades.Remove((studentId,activityId));
+    }
+    public void ApplyAttendance(string studentId,int week,AttendanceState? state)
+    {
+        if(state is { } value)attendance[(studentId,week)]=value;
+        else attendance.Remove((studentId,week));
+    }
     public decimal? Group(EvaluationGroup group,string studentId)
     {
         if(group.Mode==EvaluationMode.Direct)return Grade(studentId,group.Id);
