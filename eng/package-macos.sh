@@ -9,14 +9,16 @@ publish="$base/publish";bundle="$base/SIGNA.app";stage="$base/dmg"
 release="$repo/artifacts/packages/release"
 [[ ! -e "$base" ]] || { echo 'Utiliza un checkout limpio para empaquetar' >&2; exit 1; }
 mkdir -p "$release" "$stage"
-dotnet publish src/GestorDocente.Desktop -c Release -r "$rid" --self-contained true -p:UseAppHost=true "-p:Version=$version" -p:NuGetLockFilePath=obj/release.packages.lock.json -o "$publish"
+dotnet publish src/GestorDocente.Desktop -c Release -r "$rid" --self-contained true -p:UseAppHost=true -p:PublishSingleFile=true "-p:Version=$version" -p:NuGetLockFilePath=obj/release.packages.lock.json -o "$publish"
 python3 eng/copy-licenses.py "$publish" "$rid"
 ditto "$publish/" "$bundle/Contents/MacOS/"
+# Documentación y licencias son recursos, no código del bundle.
+mv "$bundle/Contents/MacOS/Licenses" "$bundle/Contents/Resources/Licenses"
+mv "$bundle/Contents/MacOS/LICENSE" "$bundle/Contents/Resources/LICENSE"
 chmod +x "$bundle/Contents/MacOS/GestorDocente.Desktop"
 # Firma local de integridad, no certificado Developer ID ni notarización.
-# MacOS contiene también assemblies administrados: codesign los trata como
-# código anidado. Sellar todos los archivos antes del ejecutable/contenedor,
-# siguiendo el empaquetado manual de Avalonia; ditto conserva sus atributos.
+# Los assemblies están en el ejecutable single-file. Sellar los componentes
+# nativos antes del ejecutable/contenedor; ditto conserva los atributos.
 find "$bundle/Contents/MacOS" -type f ! -name 'GestorDocente.Desktop' -print0 | while IFS= read -r -d '' code_file; do
   codesign --force --sign - "$code_file"
 done

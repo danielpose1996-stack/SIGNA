@@ -19,7 +19,9 @@ for name in ['GestorDocente.Desktop','libSkiaSharp.dylib','libHarfBuzzSharp.dyli
         assert data[:4] in (b'\xca\xfe\xba\xbe',b'\xca\xfe\xba\xbf'),name
         size=20 if data[:4]==b'\xca\xfe\xba\xbe' else 32
         assert machine in [struct.unpack_from('>I',data,8+i*size)[0] for i in range(struct.unpack_from('>I',data,4)[0])],name
-assert (bundle/'Contents/MacOS/LICENSE').is_file()
+assert (bundle/'Contents/Resources/LICENSE').is_file()
+assert (bundle/'Contents/Resources/Licenses/DEPENDENCIES.md').is_file()
+assert not list((bundle/'Contents/MacOS').glob('*.dll')), 'Los assemblies deben estar dentro del ejecutable single-file'
 for file in bundle.rglob('*'):
     assert file.suffix.lower() not in ('.db','.sqlite','.sqlite3','.aulabk','.key','.pem','.pfx'),file
 print(f'{rid}: bundle, arquitectura, icono y licencias correctos')
