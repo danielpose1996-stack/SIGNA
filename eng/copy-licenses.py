@@ -13,7 +13,12 @@ destination=a.publish/'Licenses';destination.mkdir(exist_ok=True)
 shutil.copy2(root/'LICENSE',a.publish/'LICENSE')
 notices=['# Dependencias distribuidas con SIGNA','', 'SIGNA: licencia MIT. Las bibliotecas conservan sus licencias originales.','']
 packages={k:v['path'] for k,v in assets['libraries'].items() if v.get('type')=='package'}
-runtime=json.loads((a.publish/'GestorDocente.Desktop.runtimeconfig.json').read_text())['runtimeOptions']
+runtime_file=a.publish/'GestorDocente.Desktop.runtimeconfig.json'
+if not runtime_file.exists():
+    # En single-file el JSON se integra en el apphost; el generado por build
+    # sigue disponible y contiene la versión exacta utilizada por el SDK.
+    runtime_file=root/'src/GestorDocente.Desktop/bin/Release/net10.0'/a.rid/'GestorDocente.Desktop.runtimeconfig.json'
+runtime=json.loads(runtime_file.read_text())['runtimeOptions']
 version=next(f['version'] for f in runtime['includedFrameworks'] if f['name']=='Microsoft.NETCore.App')
 packages[f'Microsoft.NETCore.App.Runtime.{a.rid}/{version}']=f'microsoft.netcore.app.runtime.{a.rid}/{version}'
 for name,relative in sorted(packages.items()):
