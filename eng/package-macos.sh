@@ -14,9 +14,11 @@ python3 eng/copy-licenses.py "$publish" "$rid"
 ditto "$publish/" "$bundle/Contents/MacOS/"
 chmod +x "$bundle/Contents/MacOS/GestorDocente.Desktop"
 # Firma local de integridad, no certificado Developer ID ni notarización.
-# Las bibliotecas se firman antes del contenedor, preservando entitlements .NET.
-find "$bundle/Contents/MacOS" -name '*.dylib' -type f -print0 | while IFS= read -r -d '' library; do
-  codesign --force --sign - "$library"
+# MacOS contiene también assemblies administrados: codesign los trata como
+# código anidado. Sellar todos los archivos antes del ejecutable/contenedor,
+# siguiendo el empaquetado manual de Avalonia; ditto conserva sus atributos.
+find "$bundle/Contents/MacOS" -type f ! -name 'GestorDocente.Desktop' -print0 | while IFS= read -r -d '' code_file; do
+  codesign --force --sign - "$code_file"
 done
 codesign --force --sign - --entitlements eng/macos.entitlements "$bundle/Contents/MacOS/GestorDocente.Desktop"
 codesign --force --sign - --entitlements eng/macos.entitlements "$bundle"

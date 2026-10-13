@@ -3,5 +3,6 @@
     <ProjectReference Include="../GestorDocente.Application/GestorDocente.Application.csproj" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 </Project>

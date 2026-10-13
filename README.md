@@ -179,7 +179,7 @@ La base SQLite activa usa los permisos de la cuenta del sistema operativo y **no
 
 ## Icono oficial y distribución
 
-Los archivos originales ICO, PNG e ICNS están en `src/GestorDocente.Desktop/Assets/Branding`. Windows usa el ICO en todas las ventanas y en los recursos del ejecutable; Avalonia utiliza el PNG en otros sistemas. No se necesitan rutas externas. Windows no tiene instalador ni accesos directos propios; los accesos directos al ejecutable publicado heredan su icono. En Linux puedes registrar el acceso con el script opcional descrito abajo.
+Los archivos originales ICO, PNG e ICNS están en `src/GestorDocente.Desktop/Assets/Branding`. Windows usa el ICO en las ventanas, ejecutable, instalador y accesos directos; Avalonia utiliza el PNG en otros sistemas. No se necesitan rutas externas. Los paquetes Linux registran el acceso del menú; para una publicación portátil puedes usar el script opcional descrito abajo.
 
 Publicar para Windows x64, con el SDK de .NET 10:
 

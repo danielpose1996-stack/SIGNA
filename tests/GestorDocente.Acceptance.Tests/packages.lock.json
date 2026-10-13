@@ -173,14 +173,6 @@
           "Microsoft.TestPlatform.ObjectModel": "18.10.1"
         }
       },
-      "SkiaSharp.NativeAssets.Linux": {
-        "type": "Transitive",
-        "resolved": "2.88.9",
-        "contentHash": "cWSaJKVPWAaT/WIn9c8T5uT/l4ETwHxNJTkEOtNKjphNo8AW6TF9O32aRkxqw3l8GUdUo66Bu7EiqtFh/XG0Zg==",
-        "dependencies": {
-          "SkiaSharp": "2.88.9"
-        }
-      },
       "SkiaSharp.NativeAssets.macOS": {
         "type": "Transitive",
         "resolved": "2.88.9",
@@ -289,7 +281,8 @@
         "dependencies": {
           "GestorDocente.Application": "[1.0.0, )",
           "Microsoft.Data.Sqlite": "[10.0.12, )",
-          "SkiaSharp": "[2.88.9, )"
+          "SkiaSharp": "[2.88.9, )",
+          "SkiaSharp.NativeAssets.Linux": "[2.88.9, )"
         }
       },
       "Avalonia": {
@@ -353,6 +346,15 @@
         "dependencies": {
           "SkiaSharp.NativeAssets.Win32": "2.88.9",
           "SkiaSharp.NativeAssets.macOS": "2.88.9"
+        }
+      },
+      "SkiaSharp.NativeAssets.Linux": {
+        "type": "CentralTransitive",
+        "requested": "[2.88.9, )",
+        "resolved": "2.88.9",
+        "contentHash": "cWSaJKVPWAaT/WIn9c8T5uT/l4ETwHxNJTkEOtNKjphNo8AW6TF9O32aRkxqw3l8GUdUo66Bu7EiqtFh/XG0Zg==",
+        "dependencies": {
+          "SkiaSharp": "2.88.9"
         }
       },
       "Tmds.DBus.Protocol": {
