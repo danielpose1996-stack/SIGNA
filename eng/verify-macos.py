@@ -10,7 +10,9 @@ assert info['CFBundleName']=='SIGNA' and info['CFBundleVersion']==version
 assert info['CFBundleExecutable']=='GestorDocente.Desktop'
 assert (bundle/'Contents/Resources'/info['CFBundleIconFile']).read_bytes()==(root/'src/GestorDocente.Desktop/Assets/Branding/SIGNA_icono_macos.icns').read_bytes()
 machine={'osx-x64':0x01000007,'osx-arm64':0x0100000c}[rid]
-for name in ['GestorDocente.Desktop','libSkiaSharp.dylib','libHarfBuzzSharp.dylib','libe_sqlite3.dylib','libcoreclr.dylib']:
+# En .NET single-file el runtime CoreCLR forma parte del apphost; estas son
+# las bibliotecas nativas de terceros que permanecen fuera del ejecutable.
+for name in ['GestorDocente.Desktop','libSkiaSharp.dylib','libHarfBuzzSharp.dylib','libe_sqlite3.dylib']:
     data=(bundle/'Contents/MacOS'/name).read_bytes()
     magic=struct.unpack_from('<I',data,0)[0]
     if magic==0xfeedfacf:assert struct.unpack_from('<I',data,4)[0]==machine,name

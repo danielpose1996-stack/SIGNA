@@ -9,6 +9,11 @@ internal static class Program
     {
         CultureInfo.DefaultThreadCurrentCulture=CultureInfo.GetCultureInfo("es-CO");
         CultureInfo.DefaultThreadCurrentUICulture=CultureInfo.GetCultureInfo("es");
+        if(args.Length==1 && args[0]=="--version")
+        {
+            Console.WriteLine($"{ProductIdentity.Name} {typeof(Program).Assembly.GetName().Version}");
+            return;
+        }
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
     public static AppBuilder BuildAvaloniaApp()

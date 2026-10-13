@@ -96,6 +96,7 @@ sentinel="$data/prueba-empaquetado.txt"
 printf 'datos ficticios de prueba\n' > "$sentinel"
 sudo apt-get install -y "$release/SIGNA-$version-$rid.deb"
 test -x /usr/bin/signa && test -x /usr/lib/signa/GestorDocente.Desktop
+/usr/bin/signa --version | grep -F "SIGNA $version"
 cmp src/GestorDocente.Desktop/Assets/Branding/SIGNA_icono_512.png /usr/share/pixmaps/signa.png
 sudo apt-get remove -y signa
 grep -q 'datos ficticios de prueba' "$sentinel"

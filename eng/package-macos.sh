@@ -26,6 +26,7 @@ codesign --force --sign - --entitlements eng/macos.entitlements "$bundle/Content
 codesign --force --sign - --entitlements eng/macos.entitlements "$bundle"
 codesign --verify --deep --strict "$bundle"
 python3 eng/verify-macos.py "$bundle" "$rid" "$version"
+"$bundle/Contents/MacOS/GestorDocente.Desktop" --version | grep -F "SIGNA $version"
 ditto "$bundle" "$stage/SIGNA.app"
 ln -s /Applications "$stage/Applications"
 cp LICENSE "$stage/LICENCIA.txt"
