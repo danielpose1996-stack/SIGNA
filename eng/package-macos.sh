@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+version=${1:-1.0.0};rid=${2:-osx-arm64}
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+case "$rid" in osx-x64|osx-arm64) ;; *) exit 1;; esac
+repo=$(cd -- "$(dirname -- "$0")/.." && pwd);cd "$repo"
+base="$repo/artifacts/packages/macos/$rid"
+publish="$base/publish";bundle="$base/SIGNA.app";stage="$base/dmg"
+release="$repo/artifacts/packages/release"
+[[ ! -e "$base" ]] || { echo 'Utiliza un checkout limpio para empaquetar' >&2; exit 1; }
+mkdir -p "$release" "$stage"
+dotnet publish src/GestorDocente.Desktop -c Release -r "$rid" --self-contained true -p:UseAppHost=true "-p:Version=$version" -p:NuGetLockFilePath=obj/release.packages.lock.json -o "$publish"
+python3 eng/copy-licenses.py "$publish" "$rid"
+ditto "$publish/" "$bundle/Contents/MacOS/"
+chmod +x "$bundle/Contents/MacOS/GestorDocente.Desktop"
+# Firma local de integridad, no certificado Developer ID ni notarización.
+# Las bibliotecas se firman antes del contenedor, preservando entitlements .NET.
+find "$bundle/Contents/MacOS" -name '*.dylib' -type f -print0 | while IFS= read -r -d '' library; do
+  codesign --force --sign - "$library"
+done
+codesign --force --sign - --entitlements eng/macos.entitlements "$bundle/Contents/MacOS/GestorDocente.Desktop"
+codesign --force --sign - --entitlements eng/macos.entitlements "$bundle"
+codesign --verify --deep --strict "$bundle"
+python3 eng/verify-macos.py "$bundle" "$rid" "$version"
+ditto "$bundle" "$stage/SIGNA.app"
+ln -s /Applications "$stage/Applications"
+cp LICENSE "$stage/LICENCIA.txt"
+cp eng/INSTALL-macos.txt "$stage/INSTALAR.txt"
+image="$release/SIGNA-$version-$rid.dmg"
+hdiutil create -volname "SIGNA $version" -srcfolder "$stage" -ov -format UDZO "$image"
+hdiutil verify "$image"
+mount="$base/mounted"
+mkdir -p "$mount"
+hdiutil attach "$image" -readonly -nobrowse -mountpoint "$mount"
+trap 'hdiutil detach "$mount"' EXIT
+test -x "$mount/SIGNA.app/Contents/MacOS/GestorDocente.Desktop"
+test -L "$mount/Applications"
+cmp src/GestorDocente.Desktop/Assets/Branding/SIGNA_icono_macos.icns "$mount/SIGNA.app/Contents/Resources/SIGNA_icono_macos.icns"
+codesign --verify --deep --strict "$mount/SIGNA.app"

@@ -11,5 +11,6 @@
     <key>CFBundleVersion</key><string>__VERSION__</string>
     <key>CFBundleShortVersionString</key><string>__VERSION__</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>LSMinimumSystemVersion</key><string>15.0</string>
   </dict>
 </plist>

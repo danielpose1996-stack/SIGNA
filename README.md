@@ -8,7 +8,25 @@ Aplicación de escritorio independiente de cualquier institución para materias,
 
 SIGNA está pensado para que un docente conserve y consulte sus materias a lo largo de varios períodos académicos. La gestión diaria funciona sin internet: los datos se guardan en el computador y pueden trasladarse a otro equipo mediante respaldos locales cifrados. El repositorio contiene el software y sus pruebas; las bases de datos, listados reales de estudiantes y respaldos del docente no se publican.
 
+## Descargar e instalar
+
+Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
+
+| Sistema y arquitectura | Descarga |
+| --- | --- |
+| Windows x64 | `SIGNA-1.0.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.0.0-linux-x64.deb` o `SIGNA-1.0.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.0.0-linux-x64.rpm` o `SIGNA-1.0.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.0.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.0.0-osx-arm64.dmg` |
+
+Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
+
+Lee [las instrucciones completas](eng/INSTALL.md) y compara los hashes con `SHA256SUMS.txt` de la Release. **Esta distribución no tiene firma oficial de Windows ni certificado Apple Developer ID/notarización:** pueden aparecer advertencias de seguridad. La firma ad hoc de macOS comprueba integridad, sin acreditar al desarrollador. No se necesita desactivar las protecciones globales del equipo.
+
 ## Qué permite hacer
+
+Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas utilizar SIGNA.
 
 | Módulo | Funciones actuales |
 | --- | --- |

@@ -1,0 +1,19 @@
+SIGNA — Sistema Integral de Gestión de Notas y Asistencias
+
+1. Abre el archivo DMG correspondiente a tu Mac (Intel o Apple Silicon).
+2. Arrastra SIGNA.app al enlace Applications.
+3. Expulsa la imagen y abre SIGNA desde Aplicaciones.
+
+Esta primera distribución no tiene certificado Apple Developer ID ni
+notarización. macOS puede advertir que no puede verificar al desarrollador.
+Comprueba que descargaste el archivo de la Release oficial de SIGNA y
+verifica su SHA-256 con SHA256SUMS.txt. Si confías en el origen, consulta
+el procedimiento de Apple en Ajustes del Sistema > Privacidad y seguridad.
+No es necesario desactivar Gatekeeper ni eliminar la cuarentena global.
+
+https://support.apple.com/es-es/102445
+https://github.com/danielpose1996-stack/SIGNA/releases
+
+La aplicación funciona localmente sin inicio de sesión. Actualizar o
+eliminar SIGNA.app conserva los datos del docente en su carpeta de usuario.
+Haz un respaldo cifrado antes de actualizar o trasladar tu información.

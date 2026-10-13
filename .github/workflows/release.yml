@@ -1,0 +1,121 @@
+name: Instaladores y Release SIGNA
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión mayor.menor.parche sin prefijo v'
+        required: true
+        default: '1.0.0'
+permissions:
+  contents: read
+concurrency:
+  group: signa-release-${{ inputs.version }}
+  cancel-in-progress: false
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+jobs:
+  packages:
+    name: ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2025
+            rid: win-x64
+          - os: ubuntu-24.04
+            rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+          - os: macos-15-intel
+            rid: osx-x64
+          - os: macos-15
+            rid: osx-arm64
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_RID: ${{ matrix.rid }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Validar versión
+        shell: pwsh
+        run: |
+          if($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+$'){throw 'Versión inválida'}
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Dependencias de empaquetado Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm cpio libfontconfig1 libx11-6 libice6 libsm6
+      - name: Compilar y probar en el sistema nativo (Headless)
+        run: |
+          dotnet restore GestorDocente.slnx --locked-mode
+          dotnet build GestorDocente.slnx -c Release --no-restore
+          dotnet test GestorDocente.slnx -c Release --no-build --no-restore --logger trx --results-directory artifacts/test-results
+      - name: Crear y comprobar instalador Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./eng/package-windows.ps1 -Version $env:RELEASE_VERSION
+          ./eng/test-windows.ps1 -Version $env:RELEASE_VERSION
+      - name: Crear y comprobar paquetes Linux
+        if: runner.os == 'Linux'
+        run: bash eng/package-linux.sh "$RELEASE_VERSION" "$RELEASE_RID"
+      - name: Crear y comprobar DMG macOS
+        if: runner.os == 'macOS'
+        run: bash eng/package-macos.sh "$RELEASE_VERSION" "$RELEASE_RID"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: instaladores-${{ matrix.rid }}
+          path: artifacts/packages/release/*
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: pruebas-${{ matrix.rid }}
+          path: artifacts/test-results/*.trx
+          if-no-files-found: ignore
+          retention-days: 14
+  publish:
+    name: Verificar archivos y publicar Release
+    needs: packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: instaladores-*
+          path: artifacts/packages/release
+          merge-multiple: true
+      - name: Preparar hashes y publicar sin sobrescribir versiones
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v$RELEASE_VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "La Release $tag ya existe; no se sobrescribe" >&2
+            exit 1
+          fi
+          python3 eng/release-manifest.py artifacts/packages/release "$RELEASE_VERSION"
+          cp eng/INSTALL.md artifacts/packages/release/INSTALACION.md
+          gh release create "$tag" --target "$GITHUB_SHA" --title "SIGNA $RELEASE_VERSION" --notes-file eng/RELEASE.md --draft
+          gh release upload "$tag" artifacts/packages/release/*
+          gh release download "$tag" --dir artifacts/packages/verificar
+          (cd artifacts/packages/verificar && sha256sum --check SHA256SUMS.txt)
+          test "$(gh release view "$tag" --json assets --jq '.assets | length')" -eq 9
+          gh release edit "$tag" --draft=false --latest

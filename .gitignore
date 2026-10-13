@@ -36,6 +36,9 @@ Thumbs.db
 .tools/
 .demo-data/
 artifacts/logs/
+artifacts/packages/
+__pycache__/
+*.pyc
 
 # Diarios y variantes de bases de datos locales
 *.db-journal
