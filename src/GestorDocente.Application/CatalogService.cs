@@ -8,6 +8,10 @@ public interface ICatalogStore
     IReadOnlyList<CourseRecord> Courses(string semesterId);
     void AddSemester(AcademicSemester semester);
     void AddCourse(CourseRecord course,AcademicWorkspace workspace);
+    void UpdateCourse(CourseRecord original,CourseRecord updated);
+    void DeleteCourse(string courseId);
+    SemesterDeletionPreview InspectSemesterDeletion(string semesterId);
+    void DeleteSemester(SemesterDeletionPreview confirmed);
     IWorkspaceStore OpenCourse(string id);
 }
 
@@ -47,8 +51,55 @@ public sealed class CatalogService(ICatalogStore store)
         if(Courses(semesterId).Any(c=>string.Equals(c.Code,code,StringComparison.OrdinalIgnoreCase) && string.Equals(c.Group,group,StringComparison.OrdinalIgnoreCase)))
             throw new AcademicValidationException("Ya existe este código y grupo en el semestre. Para otra sección, indica un grupo diferente.");
         var course=new CourseRecord(Guid.NewGuid().ToString("N"),semesterId,code,name,school,group);
-        var workspace=new AcademicWorkspace {IsDemo=false,CourseId=course.Id,SemesterId=semesterId,CourseName=name,CourseCode=code,School=school,GroupName=group,Period=semester.Name,Cuts=Enumerable.Range(1,3).Select(n=>new AcademicCut{Number=n}).ToList()};
+        var workspace=new AcademicWorkspace {IsDemo=false,CourseId=course.Id,SemesterId=semesterId,CourseName=name,CourseCode=code,School=school,GroupName=group,Period=semester.Name,Cuts=AcademicRules.DefaultCuts()};
         store.AddCourse(course,workspace);return course;
+    }
+    public CourseRecord UpdateCourse(CourseRecord original,string semesterId,string code,string name,string school,string group)
+    {
+        var updated=UpdateCourseCore(original,semesterId,code,name,school,group);Publish(updated);return updated;
+    }
+    public async Task<CourseRecord> UpdateCourseAsync(CourseRecord original,string semesterId,string code,string name,string school,string group)
+    {
+        var updated=await Task.Run(()=>UpdateCourseCore(original,semesterId,code,name,school,group));Publish(updated);return updated;
+    }
+    private CourseRecord UpdateCourseCore(CourseRecord original,string semesterId,string code,string name,string school,string group)
+    {
+        if(string.IsNullOrWhiteSpace(original.Id) || original.StudentCount<0)
+            throw new AcademicValidationException("Selecciona una materia válida para editar.");
+        if(!Semesters.Any(s=>s.Id==semesterId))throw new AcademicValidationException("Selecciona un semestre existente.");
+        foreach(var (value,label) in new[]{(code,"código"),(name,"nombre de asignatura"),(school,"escuela")})
+            if(string.IsNullOrWhiteSpace(value))throw new AcademicValidationException($"El {label} es obligatorio.");
+        code=code.Trim();name=name.Trim();school=school.Trim();group=group.Trim();
+        if(Courses(semesterId).Any(c=>c.Id!=original.Id &&
+            string.Equals(c.Code,code,StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(c.Group,group,StringComparison.OrdinalIgnoreCase)))
+            throw new AcademicValidationException("Ya existe este código y grupo en el semestre. Indica un grupo diferente.");
+        var updated=original with{SemesterId=semesterId,Code=code,Name=name,School=school,Group=group};
+        store.UpdateCourse(original,updated);return updated;
+    }
+    public void DeleteCourse(string courseId)
+    {
+        if(string.IsNullOrWhiteSpace(courseId))throw new AcademicValidationException("Selecciona una materia válida.");
+        store.DeleteCourse(courseId);Publish(courseId);
+    }
+    public async Task DeleteCourseAsync(string courseId)
+    {
+        if(string.IsNullOrWhiteSpace(courseId))throw new AcademicValidationException("Selecciona una materia válida.");
+        await Task.Run(()=>store.DeleteCourse(courseId));Publish(courseId);
+    }
+    public SemesterDeletionPreview InspectSemesterDeletion(string semesterId)
+    {
+        if(string.IsNullOrWhiteSpace(semesterId))throw new AcademicValidationException("Selecciona un semestre válido.");
+        return store.InspectSemesterDeletion(semesterId);
+    }
+    public Task<SemesterDeletionPreview> InspectSemesterDeletionAsync(string semesterId)=>Task.Run(()=>InspectSemesterDeletion(semesterId));
+    public void DeleteSemester(SemesterDeletionPreview confirmed)
+    {
+        store.DeleteSemester(confirmed);Publish(confirmed);
+    }
+    public async Task DeleteSemesterAsync(SemesterDeletionPreview confirmed)
+    {
+        await Task.Run(()=>store.DeleteSemester(confirmed));Publish(confirmed);
     }
     private void Publish(object created)
     {

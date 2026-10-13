@@ -73,11 +73,17 @@ public sealed class ConfigurationViewModel:ObservableObject
         var items=Activities;var activity=new EvaluationActivity{Name=$"{group.Name} {group.Activities.Count+1}"};
         group.Activities.Add(activity);items.Add(activity);Error="";
     }
-    public void RemoveGroup(EvaluationGroup group){if(IsSaving)return;Groups.Remove(group);collections.Remove(group.Id);SelectedGroup=Groups.FirstOrDefault();}
+    public void RemoveGroup(EvaluationGroup group)
+    {
+        if(IsSaving || !Groups.Remove(group))return;
+        collections.Remove(group.Id);drafts.Remove(group.Id);
+        if(SelectedGroup==group)SelectedGroup=Groups.FirstOrDefault();
+        Error="";
+    }
     public void RemoveActivity(EvaluationActivity activity)
     {
         if(IsSaving || SelectedGroup is not {} group)return;
-        if(group.Activities.Remove(activity))Activities.Remove(activity);
+        if(group.Activities.Remove(activity)){Activities.Remove(activity);Error="";}
     }
     public bool Save()
     {

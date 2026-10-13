@@ -42,17 +42,20 @@ public sealed class AcademicCutReadIndex
     }
     public decimal? Group(EvaluationGroup group,string studentId)
     {
-        if(group.Mode==EvaluationMode.Direct)return Grade(studentId,group.Id);
+        if(group.Mode==EvaluationMode.Direct)return Grade(studentId,group.Id) ?? 0m;
         if(group.Activities.Count==0)return null;
         decimal sum=0;
         foreach(var activity in group.Activities)
         {
             var value=Grade(studentId,activity.Id);
-            if(value is null)return null;
-            sum+=value.Value;
+            sum+=value ?? 0m;
         }
         return sum/group.Activities.Count;
     }
+    public bool HasPendingGrades(EvaluationGroup group,string studentId)=>group.Mode==EvaluationMode.Direct
+        ? Grade(studentId,group.Id) is null
+        : group.Activities.Count==0 || group.Activities.Any(activity=>Grade(studentId,activity.Id) is null);
+    public bool HasPendingGrades(string studentId)=>cut.Groups.Count==0 || cut.Groups.Any(group=>HasPendingGrades(group,studentId));
     public decimal? Cut(string studentId)
     {
         if(!groupsValid)return null;

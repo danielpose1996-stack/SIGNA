@@ -1,0 +1,30 @@
+<Project>
+  <!-- El bundle es hermano de publish, nunca parte del origen de copia. -->
+  <Target Name="CreateSignaMacOSBundle" AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' == 'osx-x64' Or '$(RuntimeIdentifier)' == 'osx-arm64'">
+    <Error Condition="'$(UseAppHost)' != 'true'"
+           Text="SIGNA.app necesita un ejecutable nativo. Publica con UseAppHost=true." />
+    <Error Condition="!Exists('$(PublishDir)$(AssemblyName)')"
+           Text="No se encontró el ejecutable macOS publicado de SIGNA." />
+    <PropertyGroup>
+      <_SignaBundleDir>$(PublishDir)../SIGNA.app/Contents/</_SignaBundleDir>
+      <_SignaMacOSDir>$(_SignaBundleDir)MacOS/</_SignaMacOSDir>
+      <_SignaPlistTemplate>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Info.plist'))</_SignaPlistTemplate>
+      <_SignaPlist>$(_SignaPlistTemplate.Replace('__VERSION__', '$(Version)'))</_SignaPlist>
+    </PropertyGroup>
+    <ItemGroup>
+      <_SignaPublishedFile Include="$(PublishDir)**/*" />
+    </ItemGroup>
+    <MakeDir Directories="$(_SignaMacOSDir);$(_SignaBundleDir)Resources/" />
+    <Copy SourceFiles="@(_SignaPublishedFile)"
+          DestinationFiles="@(_SignaPublishedFile->'$(_SignaMacOSDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/Assets/Branding/SIGNA_icono_macos.icns"
+          DestinationFolder="$(_SignaBundleDir)Resources/" SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(_SignaBundleDir)Info.plist" Lines="$(_SignaPlist)"
+                      Overwrite="true" Encoding="UTF-8" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('OSX'))"
+          Command="chmod +x &quot;$(_SignaMacOSDir)$(AssemblyName)&quot;" />
+    <Message Importance="high" Text="SIGNA.app creado en $(PublishDir)../SIGNA.app (sin firma ni notarización)." />
+  </Target>
+</Project>

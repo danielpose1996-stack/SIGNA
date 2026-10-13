@@ -83,11 +83,12 @@ public class NavigationTests
     }
 
     [AvaloniaFact]
-    public void Course_card_and_backup_shortcut_have_working_bound_commands()
+    public void Course_card_and_sidebar_backup_have_working_bound_commands()
     {
         var vm = CreateViewModel();
         var window = new MainWindow { DataContext = vm };
         window.Show(); window.UpdateLayout();
+        vm.NavigateCommand.Execute("Materias"); window.UpdateLayout();
         var open = Assert.Single(window.GetVisualDescendants().OfType<Button>(),
             b => Equals(b.Content, "Abrir materia"));
         Assert.NotNull(open.Command);
@@ -97,7 +98,7 @@ public class NavigationTests
         Assert.True(vm.IsNotes);
         Assert.True(window.FindControl<Grid>("CourseHeader")!.IsVisible);
         vm.NavigateCommand.Execute("Inicio");
-        var backups = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "OpenBackups");
+        var backups = window.FindControl<Button>("BackupsNavigation")!;
         Assert.NotNull(backups.Command);
         backups.Command.Execute(backups.CommandParameter);
         Assert.True(vm.IsBackups);

@@ -11,15 +11,58 @@ public partial class MainWindow : Window
     public MainWindow() {InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();}
     private void Attach()
     {
-        if(observed is not null) {observed.ConfigurationRequested-=OpenConfiguration;observed.CatalogEditorRequested-=OpenCatalog;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.ExportRequested-=ExportReport;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;}
+        if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
+        if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
+        if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;}
         observed=DataContext as MainViewModel;
-        if(observed is not null) {observed.ConfigurationRequested+=OpenConfiguration;observed.CatalogEditorRequested+=OpenCatalog;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.ExportRequested+=ExportReport;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;}
+        if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
+        if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
+        if(observed is not null) {observed.PropertyChanged+=OnModelPropertyChanged;observed.ConfigurationRequested+=OpenConfiguration;observed.CutWeightsRequested+=OpenCutWeights;observed.CutDeletionRequested+=DeleteCut;observed.CatalogEditorRequested+=OpenCatalog;observed.CourseEditionRequested+=EditCourse;observed.CourseDeletionRequested+=DeleteCourse;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.StudentEditorRequested+=AddStudent;observed.StudentDetailsRequested+=ViewStudentDetails;observed.ExportRequested+=ExportReport;observed.AttendancePdfRequested+=ExportAttendancePdf;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;}
+        MinWidth=observed?.IsCourses==true ? 780 : 1100;
+    }
+    private void OnModelPropertyChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if(e.PropertyName==nameof(MainViewModel.Section))MinWidth=observed?.IsCourses==true ? 780 : 1100;
     }
     private async void OpenConfiguration()
     {
         if(observed is null)return;
         try{await ShowAcademicDialog(new ConfigurationWindow {DataContext=new ConfigurationViewModel(observed.Service,observed.SelectedCut)});}
         catch(Exception ex){observed.Message=SafeError(ex);}
+    }
+    private async void OpenAppearance()
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        try{model.Appearance.ResetDraft();await ShowAcademicDialog(new AppearanceWindow{DataContext=model.Appearance});}
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
+    private async void OpenCutWeights()
+    {
+        if(observed is null)return;
+        try{await ShowAcademicDialog(new CutWeightsWindow{DataContext=new CutWeightsViewModel(observed.Service)});}
+        catch(Exception ex){observed.Message=SafeError(ex);}
+    }
+    private async void DeleteCut(int number)
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        model.FileBusy=true;
+        try
+        {
+            var preview=model.Service.PreviewCutDeletion(number);
+            if(await ConfirmCutDeletionAsync(preview))
+            {
+                model.FileBusy=false;await model.DeleteCutAsync(preview,true);
+            }
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+        finally{model.FileBusy=false;}
+    }
+    public async Task<bool> ConfirmCutDeletionAsync(CutDeletionPreview preview)
+    {
+        var text=$"¿Eliminar definitivamente el Corte {preview.Number} de «{preview.CourseName}»?\n\nSe eliminarán sus actividades ({preview.ActivityCount}), subactividades ({preview.SubactivityCount}), notas ({preview.GradeCount}), semanas ({preview.WeekCount}) y registros de asistencia ({preview.AttendanceCount}), incluidos los retirados. Esta acción no se puede deshacer.\n\nLos cortes restantes se renumerarán y conservarán sus porcentajes. Deberás revisar que sumen 100 %. No puedes eliminar el último corte de la materia.";
+        ModalOverlay.IsVisible=true;
+        try{return await new ConfirmWindow(text,"Eliminar corte",scrollable:true){Title=$"Eliminar Corte {preview.Number}",Width=640,Height=385}.ShowDialog<bool>(this);}
+        finally{ModalOverlay.IsVisible=false;}
     }
     private async void OpenCatalog(bool semester)
     {
@@ -37,6 +80,58 @@ public partial class MainWindow : Window
         }
         catch(Exception ex){observed.Message=!string.IsNullOrWhiteSpace(vm.SavedSemesterId) ?
             $"El registro se guardó, pero falló el refresco ({SafeErrorCode.From(ex)}). Pulsa Actualizar." : SafeError(ex);}
+    }
+    private async void DeleteCourse(CourseSummary course)
+    {
+        if(observed is not {} model || model.FileBusy)return;
+        try
+        {
+            var question=$"¿Eliminar definitivamente «{course.Name}» ({course.Code}, {course.Period})? Se eliminarán sus estudiantes, notas y asistencias locales. Esta acción no se puede deshacer; crea un respaldo antes si deseas conservarlos.";
+            if(await new ConfirmWindow(question,"Eliminar materia"){Width=560,Height=250}.ShowDialog<bool>(this))await model.DeleteCourseAsync(course);
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
+    private async void EditCourse(CourseSummary course)
+    {
+        if(observed is not {} model || model.Catalog is not {} catalog || model.FileBusy)return;
+        try
+        {
+            if(model.Service.Current.CourseId==course.Id && model.Service.IsSaving)
+                throw new AcademicValidationException("Espera a que termine de guardarse la materia antes de editarla.");
+            var original=await Task.Run(()=>catalog.Courses(model.Home.SelectedSemester?.Id ?? "").FirstOrDefault(c=>c.Id==course.Id));
+            if(original is null)throw new AcademicValidationException("La materia ya no está en este período. Actualiza la lista.");
+            var editor=new CatalogEditorViewModel(catalog,model.Home.SelectedSemester,false,original);
+            await ShowAcademicDialog(new CatalogEditorWindow{DataContext=editor});
+            if(!string.IsNullOrEmpty(editor.SavedCourseId))
+            {
+                await model.RefreshEditedCourseAsync(editor.SavedCourseId,editor.SavedSemesterId);
+                if(!string.IsNullOrWhiteSpace(editor.Error))model.Message=editor.Error;
+            }
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
+    private async void DeleteSemester(AcademicSemester semester)
+    {
+        if(observed is not {} model || model.Catalog is not {} catalog || model.FileBusy)return;
+        model.FileBusy=true;
+        try
+        {
+            if(model.Service.IsSaving)throw new AcademicValidationException("Espera a que termine el guardado antes de eliminar un semestre.");
+            var preview=await catalog.InspectSemesterDeletionAsync(semester.Id);
+            var confirmed=await ConfirmSemesterDeletionAsync(preview);
+            if(confirmed){model.FileBusy=false;await model.DeleteSemesterAsync(preview);}
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+        finally{ModalOverlay.IsVisible=false;model.FileBusy=false;}
+    }
+    public async Task<bool> ConfirmSemesterDeletionAsync(SemesterDeletionPreview preview)
+    {
+        var contents=preview.CourseCount==0 ? "Este semestre no contiene materias ni registros asociados." :
+            $"Materias: {preview.CourseCount}. Registros de estudiantes: {preview.StudentCount}. Notas: {preview.GradeCount}. Asistencias: {preview.AttendanceCount}. Todos esos datos se eliminarán permanentemente.";
+        var message=$"¿Eliminar el semestre {preview.Semester.Name}?\n\n{contents}\n\nEsta acción no se puede deshacer. Crea un respaldo antes si deseas conservar la información. Los otros semestres se conservan.";
+        ModalOverlay.IsVisible=true;
+        try{return await new ConfirmWindow(message,"Eliminar semestre"){Title=$"Eliminar semestre {preview.Semester.Name}",Width=620,Height=330}.ShowDialog<bool>(this);}
+        finally{ModalOverlay.IsVisible=false;}
     }
     private async void OpenWeeks()
     {
@@ -68,7 +163,8 @@ public partial class MainWindow : Window
         try {await dialog.ShowDialog(this);} finally {ModalOverlay.IsVisible=false;}
     }
     private static FilePickerFileType ExcelType=>new("Libro de Excel (.xlsx)"){Patterns=["*.xlsx"],MimeTypes=["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]};
-    private static FilePickerFileType BackupType=>new("Respaldo cifrado de AulaRegistro (.aulabk)"){Patterns=["*.aulabk"]};
+    private static FilePickerFileType PdfType=>new("Documento PDF (.pdf)"){Patterns=["*.pdf"],MimeTypes=["application/pdf"]};
+    private static FilePickerFileType BackupType=>new("Respaldo cifrado de SIGNA (.aulabk)"){Patterns=["*.aulabk"]};
     private async Task<string?> RequestBackupPassword(string title,bool confirmation)
     {
         ModalOverlay.IsVisible=true;
@@ -83,14 +179,14 @@ public partial class MainWindow : Window
         {
             var password=await RequestBackupPassword("Contraseña del respaldo",true);
             if(password is null)return;
-            var suggested=$"aula-registro-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.aulabk";
+            var suggested=$"signa-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.aulabk";
             using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Crear respaldo cifrado",SuggestedFileName=suggested,DefaultExtension="aulabk",FileTypeChoices=[BackupType]});
             if(file is null)return;
             var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige una carpeta local para el respaldo.");
             if(!path.EndsWith(".aulabk",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("El respaldo debe usar la extensión .aulabk.");
             model.BackupStatus="Creando y verificando el respaldo cifrado…";
             var result=await Task.Run(()=>backup.Create(path,password));
-            model.BackupStatus=$"Respaldo verificado: {result.Path} · {result.CourseCount} materias, {result.StudentCount} estudiantes.";
+            model.BackupStatus=$"Respaldo completo verificado: {result.Path} · {result.SemesterCount} semestres, {result.CourseCount} materias, {result.StudentCount} estudiantes.";
         }
         catch(Exception ex){model.BackupStatus=SafeError(ex);}
         finally{model.FileBusy=false;}
@@ -111,8 +207,8 @@ public partial class MainWindow : Window
             if(password is null)return;
             model.BackupStatus="Verificando contraseña e integridad…";
             var inspection=await Task.Run(()=>backup.Inspect(path,password));
-            var question=$"Se reemplazará el catálogo local con {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes del respaldo. Antes se conservará una copia preventiva cifrada de los datos actuales. Cierra otras instancias del programa. ¿Restaurar ahora?";
-            if(!await new ConfirmWindow(question,"Restaurar respaldo").ShowDialog<bool>(this))
+            var question=$"Se reemplazará toda la información local con {inspection.SemesterCount} semestres, {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes del respaldo, incluyendo contactos, cortes, porcentajes, actividades, notas y asistencias. Antes se conservará una copia preventiva cifrada de los datos actuales. Cierra otras instancias del programa. ¿Restaurar ahora?";
+            if(!await new ConfirmWindow(question,"Restaurar respaldo",scrollable:true){Width=620,Height=300}.ShowDialog<bool>(this))
             {model.BackupStatus="Restauración cancelada. Los datos actuales se conservan.";return;}
             model.BackupStatus="Guardando copia preventiva y restaurando…";
             var result=await Task.Run(()=>backup.Restore(path,password));
@@ -122,7 +218,7 @@ public partial class MainWindow : Window
             next.NavigateCommand.Execute("Respaldos");
             next.BackupStatus=result.PreviousCopyWasRaw ?
                 $"Restauración completa. El archivo anterior dañado se conservó cifrado en {result.PreviousBackupPath}; puede no ser una base válida." :
-                $"Restauración completa: {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior cifrada: {result.PreviousBackupPath}.";
+                $"Restauración completa: {result.SemesterCount} semestres, {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior cifrada: {result.PreviousBackupPath}.";
             next.Message="Respaldo restaurado. Selecciona una materia para continuar.";
         }
         catch(Exception ex)
@@ -155,6 +251,18 @@ public partial class MainWindow : Window
         catch(Exception ex){model.Message=SafeError(ex);}
         finally{model.FileBusy=false;}
     }
+    private async void AddStudent()
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        try{await ShowAcademicDialog(new StudentEditorWindow{DataContext=new StudentEditorViewModel(model.Service)});}
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
+    private async void ViewStudentDetails(Student student)
+    {
+        if(observed is not {} model)return;
+        try{await ShowAcademicDialog(new StudentDetailsWindow{DataContext=new StudentDetailsViewModel(student,model.Service)});}
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
     private async void ExportReport()
     {
         if(observed is not {} model || model.ReportExporter is null || model.FileBusy)return;
@@ -173,6 +281,30 @@ public partial class MainWindow : Window
             var source=model.Service.Current;
             var bytes=await Task.Run(()=>model.ReportExporter.Export(WorkspaceService.Clone(source),cut,kind));
             await Task.Run(()=>ReportFile.Save(path,bytes,overwrite));model.Message=$"Reporte Excel guardado: {file.Name}. Incluye toda la lista del corte {cut}.";
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+        finally{model.FileBusy=false;}
+    }
+    private async void ExportAttendancePdf()
+    {
+        if(observed is not {} model || model.AttendancePdfExporter is not {} exporter || model.SelectedStudent is not {} selected || model.FileBusy)return;
+        model.FileBusy=true;
+        try
+        {
+            var cut=model.SelectedCut;var studentId=selected.Student.Id;var course=model.Service.Current;
+            var code=new string(course.CourseCode.Select(c=>Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
+            var document=new string(selected.Document.Select(c=>Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
+            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Guardar reporte individual de asistencia",SuggestedFileName=$"asistencia-{code}-corte-{cut}-{document}.pdf",DefaultExtension="pdf",FileTypeChoices=[PdfType]});
+            if(file is null)return;
+            var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Selecciona una carpeta local para el PDF.");
+            if(!path.EndsWith(".pdf",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("El reporte debe guardarse con extensión .pdf.");
+            var overwrite=File.Exists(path);
+            if(overwrite && !await new ConfirmWindow("El archivo ya existe. ¿Reemplazar este reporte con los datos actuales?","Reemplazar reporte").ShowDialog<bool>(this))return;
+            model.Message="Generando reporte PDF…";
+            var snapshot=WorkspaceService.Clone(course);
+            var bytes=await Task.Run(()=>exporter.Export(snapshot,cut,studentId));
+            await Task.Run(()=>ReportFile.Save(path,bytes,overwrite));
+            model.Message=$"Reporte PDF guardado: {file.Name}. Estudiante: {selected.FullName}, corte {cut}.";
         }
         catch(Exception ex){model.Message=SafeError(ex);}
         finally{model.FileBusy=false;}

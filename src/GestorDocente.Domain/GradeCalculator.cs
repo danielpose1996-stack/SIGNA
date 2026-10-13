@@ -1,16 +1,28 @@
 namespace GestorDocente.Domain;
 public static class GradeCalculator
 {
+    public static decimal? Final(AcademicWorkspace workspace,string studentId)
+    {
+        return Final(workspace.Cuts.Select(c=>(Cut(c,studentId),c.Weight)),workspace.CutWeightsPending);
+    }
+    public static decimal? Final(IEnumerable<(decimal? Grade,decimal Weight)> cutResults,bool weightsPending=false)
+    {
+        var results=cutResults.ToArray();
+        AcademicRules.ValidateCutWeightValues(results.Select(c=>c.Weight).ToArray());
+        foreach(var result in results)if(result.Grade is {} value)AcademicRules.ValidateGrade(value);
+        if(weightsPending)return null;
+        AcademicRules.ValidateCutWeights(results.Select(c=>c.Weight));
+        return results.Sum(c=>(c.Grade ?? 0m)*c.Weight/100m);
+    }
     public static decimal? Group(AcademicCut cut,EvaluationGroup group,string studentId)
     {
-        if(group.Mode==EvaluationMode.Direct)return Value(cut,studentId,group.Id);
+        if(group.Mode==EvaluationMode.Direct)return Value(cut,studentId,group.Id) ?? 0m;
         if(group.Activities.Count==0)return null;
         decimal total=0;
         foreach(var activity in group.Activities)
         {
             var grade=Value(cut,studentId,activity.Id);
-            if(grade is null)return null;
-            total+=grade.Value;
+            total+=grade ?? 0m;
         }
         return total/group.Activities.Count;
     }

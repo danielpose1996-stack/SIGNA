@@ -29,7 +29,7 @@ public partial class RecoveryStartupWindow:Window
         try
         {
             var kind=new FilePickerFileType("Respaldo cifrado (.aulabk)"){Patterns=["*.aulabk"]};
-            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Elegir respaldo de AulaRegistro",AllowMultiple=false,FileTypeFilter=[kind]});
+            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Elegir respaldo de SIGNA",AllowMultiple=false,FileTypeFilter=[kind]});
             if(files.Count==0)return;
             using var file=files[0];
             var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige un archivo local de respaldo.");
@@ -38,14 +38,14 @@ public partial class RecoveryStartupWindow:Window
             var backup=new EncryptedLocalBackupService(databasePath);
             Status.Text="Verificando el respaldo…";
             var inspection=await Task.Run(()=>backup.Inspect(path,password));
-            if(!await new ConfirmWindow($"Se restaurarán {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes. El catálogo local actual será reemplazado tras conservar una copia cifrada. ¿Continuar?","Restaurar respaldo").ShowDialog<bool>(this))return;
+            if(!await new ConfirmWindow($"Se restaurarán {inspection.SemesterCount} semestres, {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes, con todos sus contactos, cortes, porcentajes, actividades, notas y asistencias. Toda la información local actual será reemplazada tras conservar una copia cifrada. ¿Continuar?","Restaurar respaldo",scrollable:true){Width=620,Height=300}.ShowDialog<bool>(this))return;
             Status.Text="Conservando el archivo actual y restaurando…";
             var result=await Task.Run(()=>backup.Restore(path,password));
             replaced=true;
             var next=App.CreateProductionViewModel();
             next.BackupStatus=result.PreviousCopyWasRaw ?
                 $"Restauración completa. El archivo anterior dañado se conservó cifrado en {result.PreviousBackupPath}; puede no ser una base válida." :
-                $"Restauración completa: {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior: {result.PreviousBackupPath}.";
+                $"Restauración completa: {result.SemesterCount} semestres, {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior: {result.PreviousBackupPath}.";
             next.NavigateCommand.Execute("Respaldos");
             if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {

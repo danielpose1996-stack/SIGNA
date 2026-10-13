@@ -12,7 +12,7 @@ using Xunit;
 namespace GestorDocente.Acceptance.Tests;
 public sealed class TestAppBuilder
 {
-    public static AppBuilder BuildAvaloniaApp()=>AppBuilder.Configure<App>().UseHeadless(new AvaloniaHeadlessPlatformOptions());
+    public static AppBuilder BuildAvaloniaApp()=>AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions{UseHeadlessDrawing=false});
 }
 public class WindowTests
 {
@@ -21,6 +21,7 @@ public class WindowTests
     {
         var service=new WorkspaceService(new MemoryStore());var main=new MainWindow{DataContext=new MainViewModel(service)};main.Show();
         var dialog=new ConfigurationWindow{DataContext=new ConfigurationViewModel(service,1)};var task=main.ShowAcademicDialog(dialog);
+        Assert.NotNull(main.Icon);Assert.Same(main.Icon,dialog.Icon);
         Assert.True(dialog.IsVisible);Assert.Equal(main,dialog.Owner);Assert.True(main.FindControl<Border>("ModalOverlay")!.IsVisible);
         dialog.Close();await task;Assert.False(main.FindControl<Border>("ModalOverlay")!.IsVisible);main.Close();
     }
@@ -28,6 +29,10 @@ public class WindowTests
     public void Both_views_load_and_remain_attached_during_navigation()
     {
         var vm=new MainViewModel(new WorkspaceService(new MemoryStore()));var window=new MainWindow{DataContext=vm};window.Show();
+        Assert.Equal("SIGNA — Sistema Integral de Gestión de Notas y Asistencias",window.Title);
+        Assert.NotNull(window.Icon);Assert.Same(Avalonia.Application.Current!.Resources["SignaWindowIcon"],window.Icon);
+        Assert.Contains(Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(window).OfType<TextBlock>(),t=>t.Text=="SIGNA");
+        Assert.Contains(Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(window).OfType<TextBlock>(),t=>t.Text=="Sistema Integral de Gestión de Notas y Asistencias");
         vm.Page="Asistencias";window.UpdateLayout();Assert.True(vm.IsAttendance);
         vm.Page="Notas";window.Width=1100;window.Height=700;window.UpdateLayout();Assert.True(vm.IsNotes);Assert.NotNull(window.Content);window.Close();
     }

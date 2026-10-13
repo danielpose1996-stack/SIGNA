@@ -8,10 +8,145 @@ namespace GestorDocente.Infrastructure.Tests;
 public class CatalogTests
 {
     [Fact]
+    public void Editing_course_preserves_students_grades_and_attendance_when_moving_semester()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));
+            var first=catalog.CreateSemester(2026,1);var second=catalog.CreateSemester(2026,2);
+            var original=catalog.CreateCourse(first.Id,"MAT-1","Materia anterior","Escuela A","G1");
+            var workspace=catalog.Open(original.Id);
+            workspace.ImportStudents([new("F-01","Estudiante ficticio")]);
+            var student=workspace.Current.Students.Single();
+            workspace.ConfigureGroups(1,[new(){Id="parcial",Name="Parcial",Weight=100}]);
+            workspace.SetGrade(1,student.Id,"parcial",4.2m);
+            workspace.AddWeek(1,WeekKind.Class);workspace.SetAttendance(1,student.Id,1,AttendanceState.Present);
+            var updated=catalog.UpdateCourse(original,second.Id,"MAT-2","Materia editada","Escuela B","G2");
+            Assert.Equal(original.Id,updated.Id);
+            Assert.Empty(catalog.Courses(first.Id));
+            Assert.Equal("Materia editada",Assert.Single(catalog.Courses(second.Id)).Name);
+            var reopened=catalog.Open(original.Id).Current;
+            Assert.Equal("2026-2",reopened.Period);Assert.Equal("MAT-2",reopened.CourseCode);
+            Assert.Equal(student,reopened.Students.Single());
+            Assert.Equal(4.2m,reopened.Cuts[0].Grades.Single().Value);
+            Assert.Equal(AttendanceState.Present,reopened.Cuts[0].Attendance.Single().State);
+        });
+    }
+    [Fact]
+    public void Editing_course_rejects_duplicate_or_stale_metadata_without_partial_change()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));
+            var term=catalog.CreateSemester(2026,1);
+            var original=catalog.CreateCourse(term.Id,"ONE","Primera","Escuela","A");
+            catalog.CreateCourse(term.Id,"TWO","Segunda","Escuela","A");
+            Assert.Throws<AcademicValidationException>(()=>catalog.UpdateCourse(original,term.Id,"TWO","Primera","Escuela","A"));
+            Assert.Equal("ONE",catalog.Open(original.Id).Current.CourseCode);
+            var destination=catalog.CreateSemester(2026,2);
+            catalog.CreateCourse(destination.Id,"ONE","En destino","Escuela","A");
+            Assert.Throws<AcademicValidationException>(()=>catalog.UpdateCourse(original,destination.Id,"ONE","Primera","Escuela","A"));
+            Assert.Equal(term.Id,catalog.Open(original.Id).Current.SemesterId);
+            var edited=catalog.UpdateCourse(original,term.Id,"NEXT","Nueva","Escuela","A");
+            Assert.Throws<AcademicValidationException>(()=>catalog.UpdateCourse(original,term.Id,"OTHER","Desactualizada","Escuela","A"));
+            Assert.Equal(edited.Code,catalog.Open(original.Id).Current.CourseCode);
+        });
+    }
+    [Fact]
+    public void Failed_course_edit_rolls_back_catalog_and_workspace_together()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));
+            var term=catalog.CreateSemester(2026,1);
+            var original=catalog.CreateCourse(term.Id,"SAFE","Materia original","Escuela","A");
+            using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
+            {
+                db.Open();using var command=db.CreateCommand();
+                command.CommandText="CREATE TRIGGER reject_workspace_edit BEFORE UPDATE ON course_workspaces BEGIN SELECT RAISE(ABORT, 'fallo simulado'); END";
+                command.ExecuteNonQuery();
+            }
+            Assert.Throws<Microsoft.Data.Sqlite.SqliteException>(()=>catalog.UpdateCourse(original,term.Id,"NEW","Materia nueva","Otra escuela","B"));
+            Assert.Equal("SAFE",Assert.Single(catalog.Courses(term.Id)).Code);
+            Assert.Equal("Materia original",catalog.Open(original.Id).Current.CourseName);
+        });
+    }
+    [Fact]
+    public void Deleting_one_course_removes_its_workspace_but_preserves_other_courses_and_semester()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));var semester=catalog.CreateSemester(2026,1);
+            var removed=catalog.CreateCourse(semester.Id,"DEL","Materia ficticia A","Escuela","");
+            var kept=catalog.CreateCourse(semester.Id,"KEEP","Materia ficticia B","Escuela","");
+            catalog.Open(removed.Id).ImportStudents([new("F-1","Alumna ficticia")]);
+            Assert.Throws<AcademicValidationException>(()=>catalog.DeleteCourse("inexistente"));
+            Assert.Equal(2,catalog.Courses(semester.Id).Count);
+            catalog.DeleteCourse(removed.Id);
+            Assert.Single(catalog.Courses(semester.Id));
+            Assert.Equal(kept.Id,catalog.Courses(semester.Id).Single().Id);
+            Assert.Throws<AcademicValidationException>(()=>catalog.Open(removed.Id));
+            Assert.Empty(catalog.Open(kept.Id).Current.Students);
+            Assert.Single(catalog.Semesters);
+        });
+    }
+    [Fact]
+    public void Failed_course_delete_rolls_back_its_workspace_and_grades()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));var semester=catalog.CreateSemester(2026,1);
+            var course=catalog.CreateCourse(semester.Id,"SAFE","Materia ficticia","Escuela","");
+            catalog.Open(course.Id).ImportStudents([new("F-1","Alumna ficticia")]);
+            using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
+            {
+                db.Open();using var command=db.CreateCommand();
+                command.CommandText="CREATE TRIGGER prevent_course_delete BEFORE DELETE ON courses BEGIN SELECT RAISE(ABORT, 'simulated failure'); END";
+                command.ExecuteNonQuery();
+            }
+            Assert.Throws<Microsoft.Data.Sqlite.SqliteException>(()=>catalog.DeleteCourse(course.Id));
+            Assert.Single(catalog.Courses(semester.Id));
+            Assert.Single(catalog.Open(course.Id).Current.Students);
+        });
+    }
+    [Fact]
     public void Imported_students_survive_reopening_without_leaking_to_other_course()
     {
         WithDatabase(path=>{var catalog=new CatalogService(new SqliteCatalogStore(path));var term=catalog.CreateSemester(2026,2);var a=catalog.CreateCourse(term.Id,"A","Materia A","Escuela","");var b=catalog.CreateCourse(term.Id,"B","Materia B","Escuela","");
             catalog.Open(a.Id).ImportStudents([new("000012","Estudiante ficticio")]);Assert.Equal("000012",catalog.Open(a.Id).Current.Students.Single().Document);Assert.Empty(catalog.Open(b.Id).Current.Students);Assert.Equal(1,catalog.Courses(term.Id).Single(c=>c.Id==a.Id).StudentCount);
+        });
+    }
+    [Fact]
+    public void Calculating_pending_grades_never_writes_zeros_or_changes_sqlite_revision()
+    {
+        WithDatabase(path=>
+        {
+            var catalog=new CatalogService(new SqliteCatalogStore(path));
+            var semester=catalog.CreateSemester(2026,1);
+            var course=catalog.CreateCourse(semester.Id,"PEND","Materia ficticia","Escuela","");
+            var service=catalog.Open(course.Id);
+            service.ImportStudents([new("F-001","Estudiante ficticio")]);
+            var student=service.Current.Students.Single();
+            service.ConfigureGroups(1,[new(){Id="g",Name="Talleres",Weight=40,Mode=EvaluationMode.SubActivities,
+                Activities=[new(){Id="a",Name="Taller 1"},new(){Id="b",Name="Taller 2"}]},
+                new(){Id="p",Name="Parcial",Weight=60}]);
+            service.SetGrade(1,student.Id,"a",4m);
+            (long Revision,string Payload) Snapshot()
+            {
+                using var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False");
+                db.Open();using var command=db.CreateCommand();
+                command.CommandText="SELECT revision,payload FROM course_workspaces WHERE course_id=$id";
+                command.Parameters.AddWithValue("$id",course.Id);
+                using var row=command.ExecuteReader();Assert.True(row.Read());
+                return (row.GetInt64(0),row.GetString(1));
+            }
+            var before=Snapshot();
+            var reopened=catalog.Open(course.Id);
+            Assert.Equal(0.8m,GradeCalculator.Cut(reopened.Cut(1),student.Id));
+            Assert.Equal(0.8m,new AcademicCutReadIndex(reopened.Cut(1)).Cut(student.Id));
+            Assert.Equal(0.8m,AcademicReportProjection.Build(reopened.Current,1,AcademicReportKind.Notes).Rows.Single()[^2]);
+            Assert.Equal(before,Snapshot());
+            Assert.Single(catalog.Open(course.Id).Cut(1).Grades);
         });
     }
     [Fact]
@@ -80,7 +215,7 @@ public class CatalogTests
             var course=catalog.CreateCourse(term.Id,"D","Evaluación directa","Escuela","");var service=catalog.Open(course.Id);
             service.ImportStudents([new("00012345","Estudiante ficticio")]);var student=service.Current.Students.Single().Id;
             service.ConfigureGroups(1,[new(){Id="g",Name="Parcial",Weight=100}]);service.SetGrade(1,student,"g",4.5m);
-            var reopened=catalog.Open(course.Id);Assert.Equal(2,reopened.Current.SchemaVersion);Assert.Empty(reopened.Cut(1).Groups[0].Activities);Assert.Equal(4.5m,GradeCalculator.Cut(reopened.Cut(1),student));
+            var reopened=catalog.Open(course.Id);Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,reopened.Current.SchemaVersion);Assert.Empty(reopened.Cut(1).Groups[0].Activities);Assert.Equal(4.5m,GradeCalculator.Cut(reopened.Cut(1),student));
             reopened.ConfigureGroups(1,[new(){Id="g",Name="Parcial",Weight=100,Mode=EvaluationMode.SubActivities,Activities=[new(){Id="a",Name="Parte 1"},new(){Id="b",Name="Parte 2"}]}]);
             reopened.SetGrade(1,student,"b",3.5m);reopened=catalog.Open(course.Id);
             Assert.Equal(4m,GradeCalculator.Cut(reopened.Cut(1),student));Assert.Equal(2,reopened.Cut(1).Groups[0].Activities.Count);
@@ -139,12 +274,12 @@ public class CatalogTests
             {
                 db.Open();using var cmd=db.CreateCommand();cmd.CommandText="UPDATE course_workspaces SET schema_version=1,payload=$payload WHERE course_id=$id";cmd.Parameters.AddWithValue("$payload",json.ToJsonString());cmd.Parameters.AddWithValue("$id",course.Id);cmd.ExecuteNonQuery();
             }
-            var reopened=catalog.Open(course.Id);Assert.Equal(2,reopened.Current.SchemaVersion);Assert.Equal(legacy.Students,reopened.Current.Students);Assert.Equal(legacy.Cuts[0].Grades,reopened.Cut(1).Grades);Assert.Equal(legacy.Cuts[0].Attendance,reopened.Cut(1).Attendance);
+            var reopened=catalog.Open(course.Id);Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,reopened.Current.SchemaVersion);Assert.Equal(legacy.Students,reopened.Current.Students);Assert.Equal(legacy.Cuts[0].Grades,reopened.Cut(1).Grades);Assert.Equal(legacy.Cuts[0].Attendance,reopened.Cut(1).Attendance);
             using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
             {
-                db.Open();using var cmd=db.CreateCommand();cmd.CommandText="SELECT schema_version,revision,payload FROM course_workspaces WHERE course_id=$id";cmd.Parameters.AddWithValue("$id",course.Id);using var reader=cmd.ExecuteReader();Assert.True(reader.Read());Assert.Equal(2,reader.GetInt32(0));Assert.Equal(1,reader.GetInt64(1));Assert.DoesNotContain("Rubric",reader.GetString(2));
+                db.Open();using var cmd=db.CreateCommand();cmd.CommandText="SELECT schema_version,revision,payload FROM course_workspaces WHERE course_id=$id";cmd.Parameters.AddWithValue("$id",course.Id);using var reader=cmd.ExecuteReader();Assert.True(reader.Read());Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,reader.GetInt32(0));Assert.Equal(1,reader.GetInt64(1));Assert.DoesNotContain("Rubric",reader.GetString(2));
             }
-            Assert.Equal(2,catalog.Open(course.Id).Current.SchemaVersion);
+            Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,catalog.Open(course.Id).Current.SchemaVersion);
         });
     }
     private static void WithDatabase(Action<string> test)

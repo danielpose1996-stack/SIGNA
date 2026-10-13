@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 namespace GestorDocente.Application;
 
-public sealed record StudentImportMapping(int HeaderRow,int DocumentColumn,IReadOnlyList<int> NameColumns);
+public sealed record StudentImportMapping(int HeaderRow,int DocumentColumn,IReadOnlyList<int> NameColumns,int? EmailColumn=null,int? PhoneColumn=null);
 
 /// <summary>Suggests a roster layout; the teacher sees the complete preview before saving.</summary>
 public static class StudentImportDetector
@@ -14,7 +14,7 @@ public static class StudentImportDetector
         {
             var names=row.Cells.Where(c=>IsNameHeader(c.Value.Text)).Select(c=>c.Key).Order().ToList();
             var documents=row.Cells.Where(c=>IsDocumentHeader(c.Value.Text)).Select(c=>c.Key).ToList();
-            if(documents.Count==1 && names.Count>0 && !names.Contains(documents[0]))return new(row.Number,documents[0],names);
+            if(documents.Count==1 && names.Count>0 && !names.Contains(documents[0]))return new(row.Number,documents[0],names,Contact(row,"email"),Contact(row,"phone"));
         }
         foreach(var row in rows.Take(50))
         {
@@ -24,7 +24,14 @@ public static class StudentImportDetector
                          select (Name:name.Key,Document:document.Key)).ToList();
             var following=rows.Where(r=>r.Number>=row.Number).Take(20).ToList();
             matches=matches.Where(m=>following.Count(r=>LooksLikeName(r.Cells.GetValueOrDefault(m.Name)) && LooksLikeDocument(r.Cells.GetValueOrDefault(m.Document)))>=Math.Ceiling(following.Count*0.6)).ToList();
-            if(matches.Count==1)return new(row.Number-1,matches[0].Document,[matches[0].Name]);
+            if(matches.Count==1)
+            {
+                var match=matches[0];
+                var columns=following.SelectMany(r=>r.Cells.Keys).Distinct().Where(c=>c!=match.Document && c!=match.Name).ToArray();
+                var emails=columns.Where(c=>following.Count(r=>LooksLikeEmail(r.Cells.GetValueOrDefault(c)))>=Math.Ceiling(following.Count*0.6)).ToArray();
+                var phones=columns.Where(c=>following.Count(r=>LooksLikePhone(r.Cells.GetValueOrDefault(c)))>=Math.Ceiling(following.Count*0.6)).ToArray();
+                return new(row.Number-1,match.Document,[match.Name],emails.Length==1 ? emails[0] : null,phones.Length==1 ? phones[0] : null);
+            }
         }
         return null;
     }
@@ -38,6 +45,15 @@ public static class StudentImportDetector
         var text=Normalize(value);
         return text.Contains("documento") || text.Contains("identificacion") || text.Contains("identidad") || text.Contains("cedula") || text is "cc" or "ced" or "dni" or "document" or "id";
     }
+    private static int? Contact(WorkbookRow row,string kind)
+    {
+        var candidates=row.Cells.Where(c=>kind=="email" ? IsEmailHeader(c.Value.Text) : IsPhoneHeader(c.Value.Text)).Select(c=>(int?)c.Key).ToArray();
+        return candidates.Length==1 ? candidates[0] : null;
+    }
+    public static bool IsEmailHeader(string value){var text=Normalize(value);return text.Contains("correo") || text.Contains("email") || text.Contains("e-mail");}
+    public static bool IsPhoneHeader(string value){var text=Normalize(value);return text.Contains("celular") || text.Contains("telefono") || text is "movil" or "phone" or "mobile";}
+    private static bool LooksLikeEmail(WorkbookCell? cell)=>cell is {IsFormula:false} && System.Net.Mail.MailAddress.TryCreate(cell.Text.Trim(),out var mail) && mail.Address.Contains('@') && mail.Address==cell.Text.Trim();
+    private static bool LooksLikePhone(WorkbookCell? cell)=>cell is {IsFormula:false} && cell.Text.Count(char.IsDigit) is >=7 and <=15 && cell.Text.All(c=>char.IsDigit(c) || char.IsWhiteSpace(c) || c is '+' or '-' or '(' or ')');
     private static bool LooksLikeName(WorkbookCell? cell)
     {
         if(cell is null || cell.IsFormula)return false;

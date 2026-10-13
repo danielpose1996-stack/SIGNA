@@ -9,7 +9,7 @@ if exist "%~dp0.tools\dotnet\dotnet.exe" (
   set "DOTNET_ROOT=%~dp0.tools\dotnet"
   set "AULA_DOTNET=%~dp0.tools\dotnet\dotnet.exe"
 )
-echo Preparando Gestor Academico Docente...
+echo Preparando SIGNA...
 "%AULA_DOTNET%" build "%~dp0src\GestorDocente.Desktop" --no-incremental
 if errorlevel 1 (
   echo No se pudo compilar la aplicacion. Revisa el error anterior.

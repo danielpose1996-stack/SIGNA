@@ -10,19 +10,25 @@ public sealed class WeeksViewModel : ObservableObject
     private readonly int cut;
     private string error="";
     private bool isSaving;
+    private bool markAllPresent;
+    public bool MarkAllPresent {get=>markAllPresent;set=>Set(ref markAllPresent,value);}
     public string Error {get=>error;private set=>Set(ref error,value);}
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value)){Raise(nameof(CanAdd));Raise(nameof(CanEdit));}}}
     public bool CanEdit=>!IsSaving;
     public IReadOnlyList<WeekKindOption> Kinds {get;}=[new("Semana de clase",WeekKind.Class),new("Semana de actividades",WeekKind.Activities)];
     public WeekKindOption SelectedKind {get;set;}
+    private DateTime? selectedDate;
+    public DateTime? SelectedDate {get=>selectedDate;set=>Set(ref selectedDate,value);}
+    public RelayCommand ClearDateCommand {get;}
+    private DateOnly? WeekDate=>SelectedDate is {} date ? DateOnly.FromDateTime(date) : null;
     public AttendanceWeek? SelectedWeek {get;set;}
     public ObservableCollection<AttendanceWeek> Weeks {get;}=[];
     public bool CanAdd=>Weeks.Count<9 && !IsSaving;
     public string CountLabel=>$"{Weeks.Count} de 9 semanas · Corte {cut}";
-    public WeeksViewModel(WorkspaceService service,int cut){this.service=service;this.cut=cut;SelectedKind=Kinds[0];Refresh();}
-    public void Add()=>Try(()=>service.AddWeek(cut,SelectedKind.Kind));
+    public WeeksViewModel(WorkspaceService service,int cut){this.service=service;this.cut=cut;SelectedKind=Kinds[0];ClearDateCommand=new(_=>SelectedDate=null);Refresh();}
+    public void Add()=>Try(()=>{service.AddWeek(cut,SelectedKind.Kind,WeekDate,MarkAllPresent);MarkAllPresent=false;});
     public void Remove()=>Try(()=>{if(SelectedWeek is {} week)service.RemoveWeek(cut,week.Number);});
-    public Task AddAsync()=>TryAsync(()=>service.AddWeekAsync(cut,SelectedKind.Kind));
+    public Task AddAsync()=>TryAsync(async()=>{await service.AddWeekAsync(cut,SelectedKind.Kind,WeekDate,MarkAllPresent);SelectedDate=null;MarkAllPresent=false;});
     public Task RemoveAsync()=>TryAsync(()=>SelectedWeek is {} week ? service.RemoveWeekAsync(cut,week.Number) : Task.CompletedTask);
     private void Try(Action action){var before=service.Current;try{action();Error="";Refresh();}catch(Exception ex){Error=WeekError(ex,service.Current!=before);if(service.Current!=before)Refresh();}}
     private async Task TryAsync(Func<Task> action)

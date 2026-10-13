@@ -4,10 +4,12 @@ using GestorDocente.Domain;
 
 namespace GestorDocente.Desktop.ViewModels;
 
-public sealed record CourseSummary(string Name, string Code, string Group, string Period, int StudentCount, bool IsDemo, string Id="",string School="")
+public sealed record CourseSummary(string Name, string Code, string Group, string Period, int StudentCount, bool IsDemo, string Id="",string School="",int CutCount=3)
 {
     public string Details => $"Código: {Code}   ·   Período: {Period}{(Group.Length>0 ? $"   ·   Grupo: {Group}" : "")}";
-    public string StudentsLabel => $"{StudentCount} estudiantes · 3 cortes";
+    public string StudentsLabel => $"{StudentCount} estudiantes · {CutCount} cortes";
+    public string GroupLabel=>string.IsNullOrWhiteSpace(Group) ? "Sin grupo" : Group;
+    public bool CanDelete=>!IsDemo && !string.IsNullOrWhiteSpace(Id);
 }
 
 public sealed class HomeViewModel : ObservableObject
@@ -40,7 +42,7 @@ public sealed class HomeViewModel : ObservableObject
         this.catalog=catalog;
         RefreshCommand=new(_=>_ = RefreshAsync(),_=>catalog is not null && !IsLoading);
         if(catalog is null)Refresh();else _ = RefreshAsync();
-        if(catalog is null)service.ChangedDetailed += change=>{if(change.Kind==WorkspaceChangeKind.Students)Refresh();};
+        if(catalog is null)service.ChangedDetailed += change=>{if(change.Kind is WorkspaceChangeKind.Students or WorkspaceChangeKind.Structure)Refresh();};
         else catalog.Changed+=()=>_ = RefreshAsync();
     }
 
@@ -54,7 +56,7 @@ public sealed class HomeViewModel : ObservableObject
         var workspace = service.Current;
         if (!string.IsNullOrWhiteSpace(workspace.CourseName))
             Courses.Add(new(workspace.CourseName, workspace.CourseCode, workspace.GroupName,
-                workspace.Period, workspace.Students.Count, workspace.IsDemo));
+                workspace.Period, workspace.Students.Count, workspace.IsDemo, CutCount:workspace.Cuts.Count));
         Raise(nameof(HasCourses));
         Raise(nameof(IsEmpty));
     }
@@ -71,7 +73,7 @@ public sealed class HomeViewModel : ObservableObject
                 var semesters=catalog.Semesters;
                 var selected=semesters.FirstOrDefault(s=>s.Id==previous) ?? semesters.FirstOrDefault();
                 var courses=selected is null ? [] : catalog.Courses(selected.Id)
-                    .Select(c=>new CourseSummary(c.Name,c.Code,c.Group,selected.Name,c.StudentCount,false,c.Id,c.School)).ToArray();
+                    .Select(c=>new CourseSummary(c.Name,c.Code,c.Group,selected.Name,c.StudentCount,false,c.Id,c.School,c.CutCount)).ToArray();
                 return (semesters,selected,courses);
             });
             if(version!=refreshVersion)return;
@@ -98,7 +100,7 @@ public sealed class HomeViewModel : ObservableObject
         try
         {
             var courses=semester is null ? [] : await Task.Run(()=>catalog.Courses(semester.Id)
-                .Select(c=>new CourseSummary(c.Name,c.Code,c.Group,semester.Name,c.StudentCount,false,c.Id,c.School)).ToArray());
+                .Select(c=>new CourseSummary(c.Name,c.Code,c.Group,semester.Name,c.StudentCount,false,c.Id,c.School,c.CutCount)).ToArray());
             if(version!=refreshVersion)return;
             Courses.Clear();foreach(var course in courses)Courses.Add(course);
         }

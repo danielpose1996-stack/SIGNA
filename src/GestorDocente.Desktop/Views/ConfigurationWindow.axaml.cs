@@ -42,12 +42,24 @@ public partial class ConfigurationWindow:Window
         if(Model is not {} model || model.IsSaving)return;
         try{CommitTables();model.AddActivity();}catch(Exception ex){model.ReportSaveError(ex);}
     }
-    private async void RemoveGroup(object? sender,RoutedEventArgs e)
+    private async void RemoveGroupAtRow(object? sender,RoutedEventArgs e)
     {
-        if(Model?.SelectedGroup is {} group && await new ConfirmWindow($"¿Retirar «{group.Name}»? Al guardar, sus notas y subactividades quedarán recuperables. Ajusta las otras actividades para sumar 100 %.").ShowDialog<bool>(this))Model.RemoveGroup(group);
+        if(sender is not Button {DataContext:EvaluationGroup group} || Model is not {} model || model.IsSaving)return;
+        try
+        {
+            CommitTables();
+            if(await new ConfirmWindow($"¿Retirar «{group.Name}»? Al guardar, sus notas y subactividades quedarán recuperables. Ajusta las otras actividades para sumar 100 %.").ShowDialog<bool>(this))model.RemoveGroup(group);
+        }
+        catch(Exception ex){model.ReportSaveError(ex);}
     }
-    private async void RemoveActivity(object? sender,RoutedEventArgs e)
+    private async void RemoveActivityAtRow(object? sender,RoutedEventArgs e)
     {
-        if(ActivitiesTable.SelectedItem is EvaluationActivity activity && await new ConfirmWindow($"¿Retirar «{activity.Name}»? Sus notas quedarán recuperables y cambiará el promedio.").ShowDialog<bool>(this))Model?.RemoveActivity(activity);
+        if(sender is not Button {DataContext:EvaluationActivity activity} || Model is not {} model || model.IsSaving)return;
+        try
+        {
+            CommitTables();
+            if(await new ConfirmWindow($"¿Retirar «{activity.Name}»? Al guardar, sus notas quedarán recuperables y cambiará el promedio.").ShowDialog<bool>(this))model.RemoveActivity(activity);
+        }
+        catch(Exception ex){model.ReportSaveError(ex);}
     }
 }

@@ -29,8 +29,9 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
             Snapshot(snapshot);
             var details=ValidateDatabase(snapshot);
             Encrypt(snapshot,staged,password);
+            _=Inspect(staged,password);
             File.Move(staged,target);
-            return new(target,details.Courses,details.Students);
+            return new(target,details.Courses,details.Students,details.Semesters);
         }
         finally{DeleteTemporary(snapshot);DeleteTemporary(staged);}
     }
@@ -43,7 +44,7 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
         {
             Decrypt(Path.GetFullPath(archive),snapshot,password);
             var details=ValidateDatabase(snapshot);
-            return new(Path.GetFullPath(archive),details.Courses,details.Students);
+            return new(Path.GetFullPath(archive),details.Courses,details.Students,details.Semesters);
         }
         finally{DeleteTemporary(snapshot);}
     }
@@ -70,7 +71,7 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
                 raw=CreateRecovery(previous,password);
             }
             File.Move(incoming,source,true);
-            return new(previous,details.Courses,details.Students,raw);
+            return new(previous,details.Courses,details.Students,raw,details.Semesters);
         }
         finally{DeleteTemporary(incoming);}
     }
@@ -126,31 +127,7 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
         input.Open();output.Open();input.BackupDatabase(output);
     }
 
-    private static (int Courses,int Students) ValidateDatabase(string path)
-    {
-        using(var db=new SqliteConnection(new SqliteConnectionStringBuilder{DataSource=path,Mode=SqliteOpenMode.ReadOnly,Pooling=false}.ToString()))
-        {
-            db.Open();
-            using var command=db.CreateCommand();
-            command.CommandText="PRAGMA user_version";
-            if(Convert.ToInt32(command.ExecuteScalar())!=1)throw new AcademicValidationException("La versión de la base de respaldo no es compatible.");
-            command.CommandText="PRAGMA integrity_check";
-            if(!string.Equals(command.ExecuteScalar()?.ToString(),"ok",StringComparison.OrdinalIgnoreCase))
-                throw new AcademicValidationException("La base del respaldo no supera la verificación de integridad.");
-            command.CommandText="PRAGMA foreign_key_check";
-            using var foreignKeys=command.ExecuteReader();
-            if(foreignKeys.Read())throw new AcademicValidationException("El respaldo contiene relaciones incompletas.");
-        }
-        var catalog=new CatalogService(new SqliteCatalogStore(path));
-        var courses=0;var students=0;
-        foreach(var semester in catalog.Semesters)
-            foreach(var course in catalog.Courses(semester.Id))
-            {
-                var workspace=catalog.Open(course.Id).Current;
-                courses++;students+=workspace.Students.Count;
-            }
-        return(courses,students);
-    }
+    private static (int Semesters,int Courses,int Students) ValidateDatabase(string path)=>SqliteBackupValidator.Validate(path);
 
     private static void Encrypt(string snapshot,string destination,string password)
     {

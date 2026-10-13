@@ -3,7 +3,15 @@
     <OutputType>WinExe</OutputType>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/Branding/SIGNA_icono_windows.ico</ApplicationIcon>
+    <Product>SIGNA</Product>
+    <AssemblyTitle>SIGNA — Sistema Integral de Gestión de Notas y Asistencias</AssemblyTitle>
+    <Description>Sistema Integral de Gestión de Notas y Asistencias</Description>
   </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/Branding/SIGNA_icono_windows.ico" />
+    <AvaloniaResource Include="Assets/Branding/SIGNA_icono_512.png" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../GestorDocente.Application/GestorDocente.Application.csproj" />
     <ProjectReference Include="../GestorDocente.Infrastructure/GestorDocente.Infrastructure.csproj" />
@@ -14,4 +22,6 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
   </ItemGroup>
+  <Import Project="Packaging/macOS/Bundle.targets" />
+  <Import Project="Packaging/Linux/Publish.targets" />
 </Project>

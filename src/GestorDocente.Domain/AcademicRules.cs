@@ -1,6 +1,20 @@
 namespace GestorDocente.Domain;
 public static class AcademicRules
 {
+    public static decimal DefaultCutWeight(int number)=>number switch {1 or 2=>30m,3=>40m,_=>0m};
+    public static List<AcademicCut> DefaultCuts()=>Enumerable.Range(1,3).Select(n=>new AcademicCut{Number=n,Weight=DefaultCutWeight(n)}).ToList();
+    public static void ValidateCutWeights(IEnumerable<decimal> weights)
+    {
+        var values=weights.ToArray();
+        ValidateCutWeightValues(values);
+        if(values.Sum()!=100)
+            throw new AcademicValidationException("Los porcentajes de todos los cortes deben estar entre 0 y 100 y sumar exactamente 100 %.");
+    }
+    public static void ValidateCutWeightValues(IReadOnlyList<decimal> values)
+    {
+        if(values.Count==0 || values.Any(w=>w is <0 or >100))
+            throw new AcademicValidationException("La materia debe conservar al menos un corte y sus porcentajes deben estar entre 0 y 100 %.");
+    }
     public static void ValidateGrade(decimal value)
     {
         if(value is <0 or >5)throw new AcademicValidationException("La nota debe estar entre 0,0 y 5,0.");

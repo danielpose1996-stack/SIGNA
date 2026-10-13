@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.DashboardView">
+  <ScrollViewer DataContext="{Binding Dashboard}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="24,0,24,24" Spacing="16">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="Rendimiento por materia" Classes="section" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <ComboBox Width="145" ItemsSource="{Binding Semesters}" SelectedItem="{Binding SelectedSemester,Mode=TwoWay}" IsVisible="{Binding HasCatalog}" AutomationProperties.Name="Período de estadísticas" />
+          <Button Content="Actualizar" Command="{Binding RefreshCommand}" />
+        </StackPanel>
+      </Grid>
+      <TextBlock Text="Cada barra muestra el promedio del corte sobre 5,0. Las notas pendientes cuentan como 0,0 en ese promedio. Consulta la nota final ponderada en Nota consolidada dentro de la materia." Classes="muted" TextWrapping="Wrap" />
+      <TextBlock Text="Calculando resultados…" IsVisible="{Binding IsLoading}" Classes="muted" />
+      <Border Background="#FFF0F0" Padding="12" CornerRadius="5" IsVisible="{Binding Error,Converter={StaticResource HasText}}"><TextBlock Text="{Binding Error}" Foreground="#A52828" TextWrapping="Wrap" /></Border>
+      <ItemsControl ItemsSource="{Binding Courses}">
+        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="card" Width="350" Padding="18" Margin="0,0,12,12">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="30,*"><c:VectorIcon Kind="chart" Width="23" Height="23" Stroke="{DynamicResource Primary}" /><TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
+                <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding StudentsLabel}" Classes="muted" FontSize="12" />
+                <ItemsControl ItemsSource="{Binding Cuts}"><ItemsControl.ItemTemplate><DataTemplate>
+                  <StackPanel Spacing="3" Margin="0,4">
+                    <Grid ColumnDefinitions="60,*,Auto"><TextBlock Text="{Binding Number,StringFormat='Corte {0}'}" FontWeight="SemiBold" FontSize="12" /><Border Grid.Column="1" Background="{DynamicResource Line}" Width="160" Height="8" CornerRadius="4" HorizontalAlignment="Left" VerticalAlignment="Center"><Border Background="{DynamicResource Primary}" Width="{Binding BarWidth}" Height="8" CornerRadius="4" HorizontalAlignment="Left" /></Border><TextBlock Grid.Column="2" Text="{Binding Average}" FontWeight="SemiBold" FontSize="12" /></Grid>
+                    <TextBlock Text="{Binding Coverage}" Classes="muted" FontSize="11" /><TextBlock Text="{Binding Range}" Classes="muted" FontSize="11" />
+                  </StackPanel>
+                </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Border Classes="card" Padding="20" IsVisible="{Binding IsEmpty}"><TextBlock Text="Todavía no hay materias en este período. Créala desde Mis Materias para consultar sus estadísticas." TextWrapping="Wrap" /></Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

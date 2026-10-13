@@ -1,34 +1,31 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.BackupsView">
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24,0,24,24" Spacing="20">
-      <Border Background="#EAF3FF" BorderBrush="#D4E5FA" BorderThickness="1" CornerRadius="8" Padding="18">
-        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="#0067F5" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="#45638E" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="#143875" /></StackPanel></Grid>
+      <Border Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="18">
+        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="{DynamicResource Primary}" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="{DynamicResource Muted}" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" /></StackPanel></Grid>
       </Border>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
         <Border Classes="card" Padding="24">
           <StackPanel Spacing="17">
-            <c:VectorIcon Kind="backup" Stroke="#0067F5" Width="34" Height="34" HorizontalAlignment="Left" />
+            <c:VectorIcon Kind="backup" Stroke="{DynamicResource Primary}" Width="34" Height="34" HorizontalAlignment="Left" />
             <TextBlock Text="Respaldo local" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Una copia que tú conservas" Classes="muted" />
-            <TextBlock Text="Elige un archivo nuevo .aulabk para conservarlo en este equipo, una memoria externa o subirlo manualmente a tu Drive." TextWrapping="Wrap" />
-            <Border Background="#F1F6FD" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Sin cuenta y sin internet" FontWeight="SemiBold" /><TextBlock Text="La copia incluirá materias, estudiantes, notas y asistencias. Se verifica antes de cifrarse." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
-            <Button Classes="primary" Content="Crear respaldo cifrado" Command="{Binding CreateBackupCommand}" HorizontalAlignment="Left" />
+            <TextBlock Text="Selecciona dónde guardar un archivo nuevo .aulabk: una carpeta de este equipo o una memoria externa." TextWrapping="Wrap" />
+            <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Toda la información de SIGNA" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="Semestres, materias, estudiantes con sus contactos, cortes y porcentajes, actividades, subactividades, calificaciones y asistencias, incluidas las fechas registradas. Se verifican los datos y sus relaciones." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
+            <Button x:Name="CreateLocalBackupButton" Classes="primary" Content="Crear respaldo cifrado" Command="{Binding CreateBackupCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="card" Padding="24">
           <StackPanel Spacing="17">
-            <c:VectorIcon Kind="cloud" Stroke="#0067F5" Width="34" Height="34" HorizontalAlignment="Left" />
-            <TextBlock Text="Google Drive" FontSize="21" FontWeight="SemiBold" />
-            <Border Background="#F1F6FD" Padding="10,4" CornerRadius="4" HorizontalAlignment="Left"><TextBlock Text="Opcional · Sin conexión configurada" FontSize="12" /></Border>
-            <TextBlock Text="Si lo deseas, podrás conectar tu cuenta de Google y enviar una copia desde el programa a tu Drive." TextWrapping="Wrap" />
-            <TextBlock Text="La autorización se abrirá en el navegador. Seguirás trabajando localmente si decides no conectarlo." Classes="muted" FontSize="13" TextWrapping="Wrap" />
-            <TextBlock Text="Conectar y enviar · Pendiente de un incremento posterior" Foreground="#806326" FontSize="12" TextWrapping="Wrap" />
+            <c:VectorIcon Kind="restore" Width="34" Height="34" Stroke="{DynamicResource Primary}" HorizontalAlignment="Left" />
+            <TextBlock Text="Restaurar una copia" FontSize="21" FontWeight="SemiBold" />
+            <TextBlock Text="Continúa tu trabajo en este u otro computador" Classes="muted" TextWrapping="Wrap" />
+            <TextBlock Text="Selecciona un archivo .aulabk y escribe su contraseña. Se verifica el cifrado, la integridad de SQLite y todas las relaciones antes de recuperar los datos." TextWrapping="Wrap" />
+            <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Reemplazo con confirmación" FontWeight="SemiBold" /><TextBlock Text="La restauración recupera todo el catálogo respaldado y reemplaza los datos actuales. Antes se conserva una copia preventiva cifrada. Cierra otras instancias del programa." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
+            <Button x:Name="RestoreLocalBackupButton" Content="Elegir copia y restaurar" Command="{Binding RestoreBackupCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
       </Grid>
-      <Border Classes="card" Padding="20">
-        <Grid ColumnDefinitions="40,*"><c:VectorIcon Kind="restore" Width="28" Height="28" Stroke="#0067F5" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Spacing="8"><TextBlock Text="Restaurar una copia" Classes="section" /><TextBlock Text="Se comprueba la contraseña, integridad y compatibilidad antes de reemplazar la base. Se guarda una copia preventiva cifrada de los datos actuales." Classes="muted" TextWrapping="Wrap" /><Button Content="Elegir copia y restaurar" Command="{Binding RestoreBackupCommand}" HorizontalAlignment="Left" /></StackPanel></Grid>
-      </Border>
       <Button Content="Volver a Inicio" Command="{Binding NavigateCommand}" CommandParameter="Inicio" HorizontalAlignment="Left" />
     </StackPanel>
   </ScrollViewer>

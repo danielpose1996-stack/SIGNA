@@ -69,7 +69,7 @@ public class ExcelFlowTests
         vm.Columns[0].IsName=false;Assert.Empty(vm.Rows);Assert.False(vm.CanImport);
     }
     [AvaloniaFact]
-    public void Two_line_headers_fit_at_application_scale_125_percent()
+    public void Wrapped_headers_fit_at_application_scale_125_percent()
     {
         var previous=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_UI_SCALE");Environment.SetEnvironmentVariable("GESTOR_DOCENTE_UI_SCALE","1.25");
         try
@@ -77,13 +77,19 @@ public class ExcelFlowTests
             var vm=new MainViewModel(new WorkspaceService(new MemoryStore()));var window=new MainWindow{DataContext=vm,Width=1500,Height=950};window.Show();vm.OpenCourseCommand.Execute(null);window.UpdateLayout();
             var view=window.FindControl<NotesView>("RetainedNotes")!;var table=view.FindControl<DataGrid>("GradesTable")!;
             var final=(TextBlock)table.Columns.First(c=>c.Header is TextBlock t && t.Text=="Nota del\ncorte").Header!;
-            Assert.True(final.DesiredSize.Height<=table.ColumnHeaderHeight-8);Assert.Equal(Avalonia.Media.TextWrapping.NoWrap,final.TextWrapping);
+            table.ScrollIntoView(vm.GradeRows[0],table.Columns.First(c=>ReferenceEquals(c.Header,final)));window.UpdateLayout();
+            Assert.True(final.DesiredSize.Height<=final.Bounds.Height+.5);Assert.Equal(Avalonia.Media.TextWrapping.Wrap,final.TextWrapping);
             Assert.All(table.Columns.Select(c=>c.Header).OfType<TextBlock>(),h=>Assert.True(h.Text!.Split('\n').Length<=2));
             vm.Page="Asistencias";window.UpdateLayout();var attendance=window.FindControl<AttendanceView>("RetainedAttendance")!.FindControl<DataGrid>("AttendanceTable")!;
-            Assert.All(attendance.Columns.Select(c=>c.Header).OfType<TextBlock>(),h=>Assert.True(h.DesiredSize.Height<=attendance.ColumnHeaderHeight-8));window.Close();
+            foreach(var column in attendance.Columns)
+            {
+                attendance.ScrollIntoView(vm.AttendanceRows[0],column);window.UpdateLayout();
+                if(column.Header is TextBlock header)Assert.True(header.DesiredSize.Height<=header.Bounds.Height+.5);
+            }
+            window.Close();
         }
         finally{Environment.SetEnvironmentVariable("GESTOR_DOCENTE_UI_SCALE",previous);}
     }
-    private static StudentWorkbook Book()=>new([new("Listado",[new(3,new Dictionary<int,WorkbookCell>{{0,new("Documento")},{1,new("Nombres")},{2,new("Apellidos")},{3,new("Correo")}}),new(4,new Dictionary<int,WorkbookCell>{{0,new("000123")},{1,new("Ana")},{2,new("Ficticia")},{3,new("ignorado")}})])]);
+    private static StudentWorkbook Book()=>new([new("Listado",[new(3,new Dictionary<int,WorkbookCell>{{0,new("Documento")},{1,new("Nombres")},{2,new("Apellidos")},{3,new("Correo")}}),new(4,new Dictionary<int,WorkbookCell>{{0,new("000123")},{1,new("Ana")},{2,new("Ficticia")},{3,new("ficticia@example.test")}})])]);
     private sealed class MemoryStore:IWorkspaceStore{private AcademicWorkspace data=DemoWorkspaceFactory.Create();public AcademicWorkspace? Load()=>data;public void Save(AcademicWorkspace value)=>data=WorkspaceService.Clone(value);}
 }

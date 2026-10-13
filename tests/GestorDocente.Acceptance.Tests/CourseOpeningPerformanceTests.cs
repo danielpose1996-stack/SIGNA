@@ -18,7 +18,7 @@ public class CourseOpeningPerformanceTests
         var initial=new WorkspaceService(new StaticStore(new AcademicWorkspace
         {
             IsDemo=false,CourseName="",CourseCode="",GroupName="",Period="",
-            Cuts=Enumerable.Range(1,3).Select(i=>new AcademicCut{Number=i}).ToList()
+            Cuts=AcademicRules.DefaultCuts()
         }));
         var vm=new MainViewModel(initial,catalog);
         var course=new CourseSummary("Materia ficticia","F-1","","2026-1",0,false,"course","Escuela");
@@ -45,7 +45,7 @@ public class CourseOpeningPerformanceTests
         var original=new WorkspaceService(new StaticStore(new AcademicWorkspace
         {
             IsDemo=false,CourseName="",CourseCode="",GroupName="",Period="",
-            Cuts=Enumerable.Range(1,3).Select(i=>new AcademicCut{Number=i}).ToList()
+            Cuts=AcademicRules.DefaultCuts()
         }));
         var vm=new MainViewModel(original,catalog);
         await vm.OpenCourseAsync(new CourseSummary("Materia ficticia","F-1","","2026-1",0,false,"course","Escuela"));
@@ -67,7 +67,7 @@ public class CourseOpeningPerformanceTests
             var initial=new WorkspaceService(new StaticStore(new AcademicWorkspace
             {
                 IsDemo=false,CourseName="",CourseCode="",GroupName="",Period="",
-                Cuts=Enumerable.Range(1,3).Select(i=>new AcademicCut{Number=i}).ToList()
+                Cuts=AcademicRules.DefaultCuts()
             }));
             var vm=new MainViewModel(initial,catalog);
             await vm.Home.RefreshAsync();
@@ -91,6 +91,10 @@ public class CourseOpeningPerformanceTests
         public IReadOnlyList<CourseRecord> Courses(string semesterId)=>[new("course","term","F-1","Materia ficticia","Escuela","")];
         public void AddSemester(AcademicSemester semester)=>throw new NotSupportedException();
         public void AddCourse(CourseRecord course,AcademicWorkspace workspace)=>throw new NotSupportedException();
+        public void UpdateCourse(CourseRecord original,CourseRecord updated)=>throw new NotSupportedException();
+        public SemesterDeletionPreview InspectSemesterDeletion(string semesterId)=>throw new NotSupportedException();
+        public void DeleteSemester(SemesterDeletionPreview confirmed)=>throw new NotSupportedException();
+        public void DeleteCourse(string courseId)=>throw new NotSupportedException();
         public IWorkspaceStore OpenCourse(string id)=>new WaitingStore(gate,entered,fail);
     }
     private sealed class WaitingStore(ManualResetEventSlim gate,ManualResetEventSlim entered,bool fail):IWorkspaceStore
@@ -101,7 +105,7 @@ public class CourseOpeningPerformanceTests
             if(fail)throw new IOException("Fallo de almacenamiento ficticio");
             return new AcademicWorkspace{IsDemo=false,CourseId="course",SemesterId="term",CourseName="Materia ficticia",
                 CourseCode="F-1",GroupName="",School="Escuela",Period="2026-1",
-                Cuts=Enumerable.Range(1,3).Select(i=>new AcademicCut{Number=i}).ToList()};
+                Cuts=AcademicRules.DefaultCuts()};
         }
         public void Save(AcademicWorkspace value)=>throw new InvalidOperationException();
     }

@@ -29,7 +29,8 @@ public class EvaluationStabilityTests
         confirm.Close(true);await modal.WaitAsync(TimeSpan.FromSeconds(10));window.UpdateLayout();
         Assert.True(window.IsVisible);Assert.Equal(EvaluationMode.SubActivities,service.Cut(1).Groups[0].Mode);
         Assert.Equal(4m,service.Cut(1).Grades.Single(g=>g.ActivityId==vm.Activities[0].Id && g.StudentId=="s1").Value);
-        Assert.Null(GradeCalculator.Cut(service.Cut(1),"s1"));window.Close();
+        Assert.Equal(4m/service.Cut(1).Groups[0].Activities.Count,GradeCalculator.Cut(service.Cut(1),"s1"));
+        Assert.Equal("Pendiente",main.GradeRows[0].Completion);window.Close();
     }
 
     [AvaloniaFact]

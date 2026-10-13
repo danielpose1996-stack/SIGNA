@@ -89,7 +89,7 @@ public sealed class GradeRowViewModel
         GroupTotals=data.Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(index.Group(g,student.Id)));
         Cells=data.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id,index));
         var total=index.Cut(student.Id);
-        Total=AcademicFormatting.Grade(total);Completion=total is null ? "Pendiente" : "Completo";
+        Total=AcademicFormatting.Grade(total);Completion=total is null || index.HasPendingGrades(student.Id) ? "Pendiente" : "Completo";
     }
 }
 public sealed record AttendanceOption(string Label,AttendanceState? State);
@@ -131,9 +131,14 @@ public sealed class AttendanceRowViewModel
     public string FullName=>Student.FullName;
     public Dictionary<int,AttendanceCellViewModel> Cells {get;}
     public AttendanceSummary Summary {get;}
-    public string Total=>$"{Summary.Present} P / {Summary.Recorded}";
-    public string Percentage=>"Por definir";
-    public string Status=>Summary.Recorded==0 ? "Sin registros" : "Registrado";
+    public string Total=>$"{Summary.Attended} / {Summary.Evaluable}";
+    public string Percentage=>AttendanceFormatting.Percentage(Summary.Percentage);
+    public string Status=>AttendanceFormatting.Status(Summary.Classification);
+    public string StatusTone=>Summary.Classification switch
+    {
+        AttendanceClassification.Excellent=>"#078653",AttendanceClassification.Good=>"#0067D9",
+        AttendanceClassification.Regular=>"#966800",AttendanceClassification.Low=>"#B53742",_=>"#60779D"
+    };
     public ObservableCollection<WeeklyDetail> WeeklyDetails {get;}
     public AttendanceRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
     {

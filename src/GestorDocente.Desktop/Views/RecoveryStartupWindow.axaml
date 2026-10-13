@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.RecoveryStartupWindow" Title="AulaRegistro · recuperar datos locales" Width="680" Height="340" MinWidth="540" MinHeight="280" WindowStartupLocation="CenterScreen">
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.RecoveryStartupWindow" Title="SIGNA · recuperar datos locales" Width="680" Height="340" MinWidth="540" MinHeight="280" WindowStartupLocation="CenterScreen">
   <Grid RowDefinitions="Auto,*,Auto" Margin="28" RowSpacing="16">
     <StackPanel Spacing="10"><TextBlock Text="No se pudo abrir el catálogo local" FontSize="23" FontWeight="SemiBold" /><TextBlock x:Name="Explanation" TextWrapping="Wrap" /><TextBlock Text="Puedes restaurar un archivo .aulabk con tu contraseña. El archivo actual se conservará cifrado antes del reemplazo si es posible leerlo; cierra otras instancias del programa." TextWrapping="Wrap" Classes="muted" /></StackPanel>
     <TextBlock x:Name="Status" Grid.Row="1" TextWrapping="Wrap" Classes="error" />

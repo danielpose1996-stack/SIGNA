@@ -4,9 +4,9 @@
       <TextBlock Text="Importar estudiantes" FontSize="23" FontWeight="SemiBold" />
       <TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" />
       <TextBlock Text="{Binding SourceName}" FontSize="12" />
-      <TextBlock Text="Revisa la lista y pulsa Importar todos. Solo se guardan nombre y documento." FontSize="13" TextWrapping="Wrap" />
+      <TextBlock Text="Revisa la lista y pulsa Importar todos. Se guardan nombre, documento y contactos disponibles; las notas existentes se conservan." FontSize="13" TextWrapping="Wrap" />
     </StackPanel>
-    <Border Grid.Row="1" Background="#EDF5FF" BorderBrush="#D5E5FA" BorderThickness="1" CornerRadius="6" Padding="12,9">
+    <Border Grid.Row="1" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="6" Padding="12,9">
       <StackPanel Spacing="4"><TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding MappingSummary}" FontSize="12" Classes="muted" TextWrapping="Wrap" /></StackPanel>
     </Border>
     <Expander Grid.Row="2" x:Name="ColumnSettings" Header="Corregir columnas" IsExpanded="{Binding SettingsExpanded,Mode=TwoWay}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
@@ -17,6 +17,7 @@
             <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Primera fila de estudiantes" FontSize="12" /><NumericUpDown Value="{Binding FirstDataRow,Mode=TwoWay}" Minimum="1" Maximum="10000" FormatString="0" AutomationProperties.Name="Primera fila de estudiantes" /></StackPanel>
             <StackPanel Grid.Column="2" Spacing="4"><TextBlock Text="Columna de documento" FontSize="12" /><ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding DocumentColumn,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Columna de documento"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" /></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
           </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12"><StackPanel Spacing="4"><TextBlock Text="Correo electrónico (opcional)" FontSize="12" /><ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding EmailColumn,Mode=TwoWay}" HorizontalAlignment="Stretch" /><Button Content="No importar correo" Command="{Binding ClearEmailCommand}" /></StackPanel><StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Celular (opcional)" FontSize="12" /><ComboBox ItemsSource="{Binding Columns}" SelectedItem="{Binding PhoneColumn,Mode=TwoWay}" HorizontalAlignment="Stretch" /><Button Content="No importar celular" Command="{Binding ClearPhoneCommand}" /></StackPanel></Grid>
           <TextBlock Text="Columnas del nombre completo: elige una o combina nombres y apellidos. Esta selección se aplica a TODOS los estudiantes." FontSize="12" TextWrapping="Wrap" />
           <ItemsControl ItemsSource="{Binding Columns}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><CheckBox Content="{Binding Name}" IsChecked="{Binding IsName,Mode=TwoWay}" Margin="0,0,16,5" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
         </StackPanel>
@@ -30,7 +31,7 @@
       </DataGrid.Columns>
     </DataGrid>
     <StackPanel Grid.Row="4" Spacing="8">
-      <TextBlock Text="Los registros duplicados o incompletos se omiten. Los alumnos existentes y sus notas se conservan." FontSize="12" Classes="muted" TextWrapping="Wrap" />
+      <TextBlock Text="Duplicados e incompletos se omiten. Los contactos indicados pueden actualizar estudiantes existentes; sus nombres y notas se conservan." FontSize="12" Classes="muted" TextWrapping="Wrap" />
       <TextBlock Text="{Binding Error}" Classes="error" TextWrapping="Wrap" />
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" /><Button Classes="primary" Content="{Binding ImportButtonText}" Click="Save" IsEnabled="{Binding CanImport}" /></StackPanel>
     </StackPanel>

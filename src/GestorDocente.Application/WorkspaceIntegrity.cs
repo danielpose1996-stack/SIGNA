@@ -24,12 +24,15 @@ public static class WorkspaceIntegrity
         if(root.ValueKind!=JsonValueKind.Object ||
            !HasArray(root,"Students") || !HasArray(root,"Cuts"))Invalid();
         var version=root.TryGetProperty("SchemaVersion",out var value) && value.TryGetInt32(out var parsed) ? parsed : 0;
-        if(version==2)
+        if(version is <1 or >AcademicWorkspace.CurrentSchemaVersion)Invalid();
+        if(version>=4 && (!root.TryGetProperty("CutWeightsPending",out var pending) || pending.ValueKind is not (JsonValueKind.True or JsonValueKind.False)))Invalid();
+        if(version>=2)
             foreach(var cut in root.GetProperty("Cuts").EnumerateArray())
             {
                 if(cut.ValueKind!=JsonValueKind.Object)Invalid();
                 foreach(var key in new[]{"Groups","Grades","Weeks","Attendance","RemovedActivities","RemovedGroups","RemovedWeeks"})
                     if(!HasArray(cut,key))Invalid();
+                if(version>=3 && (!cut.TryGetProperty("Weight",out var weight) || !weight.TryGetDecimal(out _)))Invalid();
             }
         return JsonSerializer.Deserialize<AcademicWorkspace>(payload) ?? throw new AcademicValidationException("La materia almacenada está dañada.");
     }
@@ -37,19 +40,26 @@ public static class WorkspaceIntegrity
         value.TryGetProperty(key,out var array) && array.ValueKind==JsonValueKind.Array;
     public static void Validate(AcademicWorkspace data)
     {
-        if(data.SchemaVersion!=2 || data.Students is null || data.Cuts is null ||
-           data.Students.Count>5000 || data.Cuts.Count!=3 ||
-           !data.Cuts.Select(c=>c?.Number).Order().SequenceEqual(new int?[]{1,2,3}))
+        if(data.SchemaVersion is <2 or >AcademicWorkspace.CurrentSchemaVersion || data.Students is null || data.Cuts is null ||
+           data.Students.Count>5000 || data.Cuts.Count<1 || (data.SchemaVersion<4 && data.Cuts.Count<3) || (data.SchemaVersion==2 && data.Cuts.Count!=3) ||
+           !data.Cuts.Select(c=>c?.Number).Order().SequenceEqual(Enumerable.Range(1,data.Cuts.Count).Select(n=>(int?)n)))
             Invalid();
+        if(data.SchemaVersion==3)AcademicRules.ValidateCutWeights(data.Cuts.Select(c=>c.Weight));
+        if(data.SchemaVersion>=4)
+        {
+            var weights=data.Cuts.Select(c=>c.Weight).ToArray();
+            AcademicRules.ValidateCutWeightValues(weights);
+            if(data.CutWeightsPending!=(weights.Sum()!=100))Invalid();
+        }
 
         var ids=new HashSet<string>(StringComparer.Ordinal);
         var documents=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach(var student in data.Students)
         {
             if(student is null || string.IsNullOrWhiteSpace(student.Id) ||
-               string.IsNullOrWhiteSpace(student.Document) || student.Document.Length>80 ||
-               string.IsNullOrWhiteSpace(student.FullName) || student.FullName.Length>240 ||
-               !ids.Add(student.Id) || !documents.Add(student.Document.Trim()))Invalid();
+               !ids.Add(student.Id))Invalid();
+            StudentRules.Validate(student,data.SchemaVersion<5);
+            if(student.Document.Length>0 && !documents.Add(student.Document.Trim()))Invalid();
         }
         foreach(var cut in data.Cuts)ValidateCut(cut,ids);
     }

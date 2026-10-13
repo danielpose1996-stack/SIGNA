@@ -12,7 +12,11 @@ public sealed class MainViewModel : ObservableObject
     public CatalogService? Catalog {get;}
     public IStudentWorkbookReader? WorkbookReader {get;}
     public IAcademicReportExporter? ReportExporter {get;}
+    public IAttendancePdfExporter? AttendancePdfExporter {get;}
     public ILocalBackupService? LocalBackup {get;}
+    public AppearanceViewModel Appearance{get;}
+    public RelayCommand PersonalizeCommand{get;}
+    public event Action? AppearanceRequested;
     private readonly Dictionary<string,(int Cut,string Page,string Search,string? Student)> courseStates=[];
     private readonly List<GradeRowViewModel> allGradeRows=[];
     private readonly List<AttendanceRowViewModel> allAttendanceRows=[];
@@ -21,24 +25,43 @@ public sealed class MainViewModel : ObservableObject
     private decimal?[] courseTotals=[];
     private decimal courseTotalSum;
     private int completedStudents;
+    private AttendanceSummary groupAttendanceSummary=new(0,0,0,0);
+    public AttendanceSummary GroupAttendanceSummary=>groupAttendanceSummary;
+    public decimal? GroupAttendancePercentage=>groupAttendanceSummary.Percentage;
+    public string GroupAttendanceLabel=>GroupAttendancePercentage is null ? "Sin registros" : AttendanceFormatting.Percentage(GroupAttendancePercentage);
     private sealed record CourseProjection(AcademicCutReadIndex Index,List<GradeRowViewModel> Grades,List<AttendanceRowViewModel> Attendance,Dictionary<string,int> Positions,decimal?[] Totals);
     public HomeViewModel Home {get;}
+    public DashboardViewModel Dashboard {get;}
+    public ConsolidatedViewModel Consolidated {get;}=new();
+    public IReadOnlyList<CutColumn> Cuts=>Service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutColumn(c.Number,c.Weight,c.Number==SelectedCut)).ToArray();
+    public string SelectedCutWeight=>$"Peso en nota final: {Service.Cut(SelectedCut).Weight:0.##} %";
     private NavigationSection section=NavigationSection.Home;
     private int selectedCut=1;
     private string page="Notas",search="",message="",saveStatus="Datos ficticios · cambios guardados solo en la demostración";
     private AttendanceRowViewModel? selectedStudent;
     public event Action? ConfigurationRequested;
+    public event Action? CutWeightsRequested;
+    public event Action<int>? CutDeletionRequested;
     public event Action<bool>? CatalogEditorRequested;
     public event Action? WeekEditorRequested;
     public event Action? RecoveryRequested;
     public event Action? ImportRequested;
+    public event Action? StudentEditorRequested;
+    public event Action<Student>? StudentDetailsRequested;
+    public RelayCommand AddStudentCommand{get;}
+    public RelayCommand ViewStudentDetailsCommand{get;}
     public event Action? ExportRequested;
+    public event Action? AttendancePdfRequested;
+    public event Action<CourseSummary>? CourseDeletionRequested;
+    public event Action<CourseSummary>? CourseEditionRequested;
+    public event Action<AcademicSemester>? SemesterDeletionRequested;
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
+    public RelayCommand ExportAttendancePdfCommand{get;}
     public RelayCommand CreateBackupCommand{get;}
     public RelayCommand RestoreBackupCommand{get;}
     private string backupStatus="Elige dónde guardar una copia cifrada. Conservarás la contraseña para restaurarla.";
@@ -48,17 +71,20 @@ public sealed class MainViewModel : ObservableObject
     public string StorageLabel=>IsDemo ? "DEMOSTRACIÓN · DATOS FICTICIOS" : "DATOS LOCALES";
     public bool HasOpenCourse=>!string.IsNullOrWhiteSpace(Service.Current.CourseName);
     private bool detailVisible;
-    public bool DetailVisible {get=>detailVisible;set=>Set(ref detailVisible,value);}
+    public bool DetailVisible {get=>detailVisible;set{if(Set(ref detailVisible,value))Raise(nameof(DetailHidden));}}
     public bool DetailHidden=>!DetailVisible;
     public RelayCommand ToggleDetailCommand {get;}
     public RelayCommand NewSemesterCommand {get;}
     public RelayCommand NewCourseCommand {get;}
+    public RelayCommand DeleteCourseCommand {get;}
+    public RelayCommand EditCourseCommand {get;}
+    public RelayCommand DeleteSemesterCommand {get;}
     public RelayCommand RecoveryCommand {get;}
     public RelayCommand ReloadCourseCommand {get;}
     public int SelectedCut
     {
         get=>selectedCut;
-        set {_=Service.Cut(value);if(Set(ref selectedCut,value)){Rebuild();Raise(nameof(CutLabel));}}
+        set {_=Service.Cut(value);if(Set(ref selectedCut,value)){Rebuild();Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(Cuts));}}
     }
     public string CutLabel=>$"Corte {SelectedCut}";
     public NavigationSection Section
@@ -67,9 +93,10 @@ public sealed class MainViewModel : ObservableObject
         private set
         {
             if(!Set(ref section,value))return;
-            foreach(var name in new[] {nameof(IsHome),nameof(IsCourses),nameof(IsHomeOrCourses),nameof(IsBackups),
+            if(value==NavigationSection.Home)_=Dashboard.RefreshAsync();
+            foreach(var name in new[] {nameof(IsHome),nameof(IsCourses),nameof(IsBackups),
                 nameof(IsAcademicNavigation),nameof(IsCourseContext),nameof(IsGlobalContext),
-                nameof(IsNotes),nameof(IsAttendance),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
+                nameof(IsNotes),nameof(IsAttendance),nameof(IsConsolidated),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
         }
     }
     // La última pestaña académica se mantiene independiente de las páginas globales.
@@ -78,20 +105,20 @@ public sealed class MainViewModel : ObservableObject
         get=>page;
         set
         {
-            if(value is not ("Notas" or "Asistencias"))throw new ArgumentException("Selecciona Notas o Asistencias.",nameof(value));
+            if(value is not ("Notas" or "Asistencias" or "Nota consolidada"))throw new ArgumentException("Selecciona una pestaña académica válida.",nameof(value));
             Section=NavigationSection.Academic;
-            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));}
+            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));Raise(nameof(IsConsolidated));}
         }
     }
     public bool IsHome=>Section==NavigationSection.Home;
     public bool IsCourses=>Section==NavigationSection.Courses;
-    public bool IsHomeOrCourses=>IsHome || IsCourses;
     public bool IsBackups=>Section==NavigationSection.Backups;
     public bool IsAcademicNavigation=>Section==NavigationSection.Academic;
     public bool IsCourseContext=>IsAcademicNavigation;
     public bool IsGlobalContext=>!IsCourseContext;
     public bool IsNotes=>IsCourseContext && Page=="Notas";
     public bool IsAttendance=>IsCourseContext && Page=="Asistencias";
+    public bool IsConsolidated=>IsCourseContext && Page=="Nota consolidada";
     public string PageTitle=>Section switch
     {
         NavigationSection.Home=>"Inicio", NavigationSection.Courses=>"Mis Materias",
@@ -99,7 +126,7 @@ public sealed class MainViewModel : ObservableObject
     };
     public string PageSubtitle=>Section switch
     {
-        NavigationSection.Home=>"Abre una materia y continúa tu trabajo académico.",
+        NavigationSection.Home=>"Estadísticas de notas por materia y por cada corte académico.",
         NavigationSection.Courses=>"Selecciona una materia para trabajar en sus notas y asistencias.",
         NavigationSection.Backups=>"Conserva una copia de tu trabajo y recupérala cuando la necesites.", _=>""
     };
@@ -126,44 +153,62 @@ public sealed class MainViewModel : ObservableObject
             // Las tablas pueden enviar null al refrescar sus elementos; el detalle
             // conserva su selección mientras existan estudiantes visibles.
             if(value is null && AttendanceRows.Count>0)return;
-            Set(ref selectedStudent,value);
+            if(Set(ref selectedStudent,value))ExportAttendancePdfCommand.Refresh();
         }
     }
     public RelayCommand NavigateCommand {get;}
     public RelayCommand OpenCourseCommand {get;}
     public RelayCommand CutCommand {get;}
+    public RelayCommand AddCutCommand {get;}
+    public RelayCommand DeleteCutCommand {get;}
+    public bool CanDeleteCut=>HasOpenCourse && Service.Current.Cuts.Count>1 && !FileBusy && !Service.IsSaving;
+    public string DeleteCutHint=>Service.Current.Cuts.Count<=1 ? "No puedes eliminar el último corte de la materia." : "Eliminar corte: requiere confirmación y elimina sus notas y asistencias.";
+    public RelayCommand ConfigureCutWeightsCommand {get;}
     public RelayCommand AddWeekCommand {get;}
     public RelayCommand ManageWeeksCommand {get;}
     public RelayCommand ConfigureCommand {get;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null)
     {
         Service=service;
+        Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
+        PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
         Catalog=catalog;
-        WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;
+        WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;AttendancePdfExporter=attendancePdfExporter;
         if(localBackup is null)BackupStatus="Los respaldos se habilitan en el catálogo local, fuera de la demostración.";
         ImportStudentsCommand=new(_=>ImportRequested?.Invoke(),_=>HasOpenCourse && WorkbookReader is not null && !FileBusy);
+        AddStudentCommand=new(_=>StudentEditorRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
+        ViewStudentDetailsCommand=new(value=>{if(value is Student student)StudentDetailsRequested?.Invoke(student);},_=>HasOpenCourse && !FileBusy);
         ExportReportCommand=new(_=>ExportRequested?.Invoke(),_=>HasOpenCourse && ReportExporter is not null && !FileBusy);
+        ExportAttendancePdfCommand=new(_=>AttendancePdfRequested?.Invoke(),_=>HasOpenCourse && SelectedStudent is not null && AttendancePdfExporter is not null && !FileBusy);
         CreateBackupCommand=new(_=>BackupRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         RestoreBackupCommand=new(_=>RestoreRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         Home=new(service,catalog);
+        Dashboard=new(catalog,()=>Service.Current);
         OpenCourseCommand=new(parameter=>_ = OpenCourseAsync(parameter as CourseSummary),_=>!FileBusy && (HasOpenCourse || Home.HasCourses));
-        NewSemesterCommand=new(_=>CatalogEditorRequested?.Invoke(true),_=>Catalog is not null);
-        NewCourseCommand=new(_=>CatalogEditorRequested?.Invoke(false),_=>Home.CanCreateCourse);
+        NewSemesterCommand=new(_=>CatalogEditorRequested?.Invoke(true),_=>Catalog is not null && !FileBusy);
+        NewCourseCommand=new(_=>CatalogEditorRequested?.Invoke(false),_=>Home.CanCreateCourse && !FileBusy);
+        DeleteSemesterCommand=new(_=>{if(Home.SelectedSemester is { } semester)SemesterDeletionRequested?.Invoke(semester);},
+            _=>Catalog is not null && Home.SelectedSemester is not null && !FileBusy);
+        EditCourseCommand=new(value=>{if(value is CourseSummary course)CourseEditionRequested?.Invoke(course);},_=>Catalog is not null && !FileBusy);
+        DeleteCourseCommand=new(value=>{if(value is CourseSummary course)CourseDeletionRequested?.Invoke(course);},_=>Catalog is not null && !FileBusy);
         ReloadCourseCommand=new(_=>_ = ReloadCourseAsync(),_=>Catalog is not null && HasOpenCourse && !FileBusy);
         ToggleDetailCommand=new(_=>{DetailVisible=!DetailVisible;Raise(nameof(DetailHidden));});
         RecoveryCommand=new(_=>RecoveryRequested?.Invoke());
-        Home.PropertyChanged+=(_,_)=>{OpenCourseCommand.Refresh();NewCourseCommand.Refresh();};
+        Home.PropertyChanged+=(_,_)=>{OpenCourseCommand.Refresh();NewCourseCommand.Refresh();DeleteSemesterCommand.Refresh();};
         NavigateCommand=new(parameter=> {
             if(parameter is "Inicio")Section=NavigationSection.Home;
             else if(parameter is "Materias")Section=NavigationSection.Courses;
             else if(parameter is "Respaldos")Section=NavigationSection.Backups;
             else if(parameter is "Académico")OpenCourseCommand.Execute(null);
-            else if(parameter is "Notas" or "Asistencias") {if(HasOpenCourse)Page=(string)parameter;}
-            else if(parameter is "Estudiantes" && HasOpenCourse)ImportStudentsCommand.Execute(null);
+            else if(parameter is "Reportes" && HasOpenCourse){Page="Asistencias";DetailVisible=true;Raise(nameof(DetailHidden));}
+            else if(parameter is "Notas" or "Asistencias" or "Nota consolidada") {if(HasOpenCourse)Page=(string)parameter;}
             else Message="Esta sección pertenece a un incremento posterior. Puedes trabajar en Notas y Asistencias.";
         },_=>!FileBusy);
         CutCommand=new(parameter=> {if(int.TryParse(parameter?.ToString(),out var number))SelectedCut=number;},_=>!FileBusy);
+        AddCutCommand=new(_=>_ = AddCutAsync(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
+        DeleteCutCommand=new(value=>{if(CanDeleteCut && value is int number && Service.Current.Cuts.Any(c=>c.Number==number))CutDeletionRequested?.Invoke(number);},value=>CanDeleteCut && value is int number && Service.Current.Cuts.Any(c=>c.Number==number));
+        ConfigureCutWeightsCommand=new(_=>CutWeightsRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         AddWeekCommand=new(_=>WeekEditorRequested?.Invoke(),_=>CanAddWeek);
         ManageWeeksCommand=new(_=>WeekEditorRequested?.Invoke());
         ConfigureCommand=new(_=>ConfigurationRequested?.Invoke(),_=>!FileBusy);
@@ -172,10 +217,53 @@ public sealed class MainViewModel : ObservableObject
         Service.RefreshFailed+=OnRefreshFailed;
         SaveStatus=IsDemo ? "Cambios guardados solo en la demostración" : "Guardado en este equipo · sin cuenta requerida";
         Rebuild();
+        Consolidated.Refresh(Service.Current);
+    }
+    public async Task AddCutAsync()
+    {
+        if(FileBusy || Service.IsSaving)return;
+        FileBusy=true;var before=Service.Current;
+        try
+        {
+            var number=await Service.AddCutAsync();SelectedCut=number;
+            Message=$"Corte {number} creado. Su peso inicial es 0 %; puedes ajustarlo en Nota consolidada → Configurar porcentajes.";
+            if(Catalog is not null)await Home.RefreshAsync();else Home.Refresh();
+        }
+        catch(Exception ex){Message=Service.Current!=before || ex is AcademicRefreshException ? "El corte se guardó, pero falló el refresco. Pulsa Actualizar." : ex is AcademicValidationException ? ex.Message : $"No se agregó el corte ({SafeErrorCode.From(ex)}). Reintenta.";}
+        finally{FileBusy=false;}
+    }
+    public async Task DeleteCutAsync(CutDeletionPreview preview,bool confirmed=false)
+    {
+        if(!confirmed || FileBusy)return;
+        FileBusy=true;var before=Service.Current;
+        try
+        {
+            await Service.DeleteCutAsync(preview,true);
+            Message=$"Corte {preview.Number} eliminado. Los cortes restantes se renumeraron y conservan sus porcentajes. Revisa la ponderación para completar el 100 %.";
+            if(Catalog is not null)await Home.RefreshAsync();else Home.Refresh();
+            FileBusy=false;
+            CutWeightsRequested?.Invoke();
+        }
+        catch(Exception ex)
+        {
+            Message=Service.Current!=before || ex is AcademicRefreshException ? "El corte se eliminó, pero falló el refresco. Pulsa Actualizar y revisa los porcentajes." :
+                ex is AcademicValidationException ? ex.Message : $"No se eliminó el corte ({SafeErrorCode.From(ex)}). Los datos se conservaron; reintenta.";
+        }
+        finally{FileBusy=false;}
     }
     private void OnChanged(WorkspaceChange change)
     {
         SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";
+        if(change.RemovedCut is {} removed)
+        {
+            selectedCut=selectedCut>removed ? selectedCut-1 : Math.Min(selectedCut,Service.Current.Cuts.Count);
+            Raise(nameof(SelectedCut));Raise(nameof(CutLabel));
+        }
+        if(change.Kind==WorkspaceChangeKind.Grade)Consolidated.ApplyGrade(change);
+        else if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students)
+        {
+            Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutWeight));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
+        }
         if(change.Cut==SelectedCut && change.StudentId is { } studentId && change.Kind is WorkspaceChangeKind.Grade or WorkspaceChangeKind.Attendance)
         {
             if(readIndex is null){Rebuild();return;}
@@ -205,12 +293,17 @@ public sealed class MainViewModel : ObservableObject
                 index.ApplyAttendance(studentId,change.Week.Value,change.Attendance);
                 if(studentPositions.TryGetValue(studentId,out var position))
                 {
+                    var selectedId=SelectedStudent?.Student.Id;
                     var prior=allAttendanceRows[position];
                     var updated=new AttendanceRowViewModel(Service,SelectedCut,prior.Student,prior.Number,index);
+                    UpdateGroupAttendance(prior.Summary,updated.Summary);
                     allAttendanceRows[position]=updated;
                     var visiblePosition=AttendanceRows.ToList().FindIndex(r=>r.Student.Id==studentId);
                     if(visiblePosition>=0)AttendanceRows[visiblePosition]=updated;
-                    if(SelectedStudent?.Student.Id==studentId)SelectedStudent=updated;
+                    // DataGrid puede seleccionar la fila siguiente al reemplazar un elemento.
+                    // Restaurar la selección previa después de publicar la fila persistida.
+                    if(selectedId is not null && studentPositions.TryGetValue(selectedId,out var selectedPosition))
+                        SelectedStudent=allAttendanceRows[selectedPosition];
                 }
             }
             return;
@@ -252,16 +345,96 @@ public sealed class MainViewModel : ObservableObject
         catch(Exception ex){Message=ex is AcademicRefreshException or AcademicValidationException ? ex.Message : $"No se pudo abrir la materia ({SafeErrorCode.From(ex)}). Revisa el archivo local y reintenta.";}
         finally{if(FileBusy){FileBusy=false;if(SaveStatus=="Abriendo materia…")SaveStatus="Materia anterior conservada · revisa el aviso";}}
     }
+    public async Task DeleteCourseAsync(CourseSummary course)
+    {
+        if(Catalog is null || !course.CanDelete || FileBusy)return;
+        if(Service.IsSaving){Message="Espera a que termine de guardarse la materia antes de eliminarla.";return;}
+        FileBusy=true;
+        var deleted=false;
+        try
+        {
+            await Catalog.DeleteCourseAsync(course.Id);
+            deleted=true;
+            courseStates.Remove(course.Id);
+            if(Service.Current.CourseId==course.Id)
+            {
+                var empty=new WorkspaceService(new EmptyWorkspaceStore());
+                SwitchCourse(empty,(1,"Notas","",null),BuildProjection(empty,1));
+                Section=NavigationSection.Courses;
+            }
+            await Home.RefreshAsync();
+            Message=$"Se eliminó «{course.Name}» y sus datos de este equipo.";
+            SaveStatus="Catálogo actualizado en este equipo";
+        }
+        catch(Exception ex)
+        {
+            Message=deleted || ex is AcademicRefreshException
+                ? $"La materia se eliminó, pero falló la actualización de la pantalla ({SafeErrorCode.From(ex)}). Pulsa Actualizar en Mis Materias."
+                : ex is AcademicValidationException ? ex.Message : $"No se pudo eliminar la materia ({SafeErrorCode.From(ex)}). Actualiza e inténtalo de nuevo.";
+        }
+        finally{FileBusy=false;}
+    }
+    public async Task RefreshEditedCourseAsync(string courseId,string semesterId)
+    {
+        if(Catalog is null)return;
+        if(Service.Current.CourseId==courseId)
+        {
+            if(Service.IsSaving)throw new AcademicValidationException("Espera a que termine el guardado de la materia antes de editarla.");
+            var saved=(SelectedCut,Page,Search,SelectedStudent?.Student.Id);
+            var (next,projection)=await Task.Run(()=>
+            {
+                var loaded=Catalog.Open(courseId);
+                return (loaded,BuildProjection(loaded,saved.SelectedCut));
+            });
+            SwitchCourse(next,saved,projection);
+        }
+        await Home.RefreshAsync();
+        var selected=Home.Semesters.FirstOrDefault(s=>s.Id==semesterId);
+        if(selected is not null && Home.SelectedSemester?.Id!=semesterId)
+        {
+            Home.SelectedSemester=selected;
+            await Home.RefreshAsync();
+        }
+        Message="Materia editada y guardada en este equipo.";
+    }
+    public async Task DeleteSemesterAsync(SemesterDeletionPreview confirmed)
+    {
+        if(Catalog is null || FileBusy)return;
+        if(Service.IsSaving){Message="Espera a que termine de guardarse la materia antes de eliminar el semestre.";return;}
+        FileBusy=true;var committed=false;string? refreshWarning=null;
+        try
+        {
+            try{await Catalog.DeleteSemesterAsync(confirmed);committed=true;}
+            catch(AcademicRefreshException ex){committed=true;refreshWarning=ex.Message;}
+            foreach(var course in confirmed.Courses)courseStates.Remove(course.Id);
+            if(Service.Current.SemesterId==confirmed.Semester.Id)
+            {
+                var empty=new WorkspaceService(new EmptyWorkspaceStore());
+                SwitchCourse(empty,(1,"Notas","",null),BuildProjection(empty,1));
+                Section=NavigationSection.Courses;
+            }
+            await Home.RefreshAsync();
+            Message=refreshWarning ?? $"Se eliminó el semestre {confirmed.Semester.Name} y sus {confirmed.CourseCount} materias de este equipo.";
+            SaveStatus="Catálogo actualizado en este equipo";
+        }
+        catch(Exception ex)
+        {
+            Message=committed ? $"El semestre se eliminó, pero falló la actualización de pantalla ({SafeErrorCode.From(ex)}). Vuelve a abrir Mis Materias." :
+                ex is AcademicValidationException ? ex.Message : $"No se pudo eliminar el semestre ({SafeErrorCode.From(ex)}). Los cambios se revirtieron; actualiza e inténtalo de nuevo.";
+        }
+        finally{FileBusy=false;}
+    }
     private void SwitchCourse(WorkspaceService next,(int Cut,string Page,string Search,string? Student) saved,CourseProjection projection)
     {
         Service.ChangedDetailed-=OnChanged;Service.RefreshFailed-=OnRefreshFailed;
         Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
         selectedCut=saved.Cut;page=saved.Page;search=saved.Search;selectedStudent=null;
         ShowProjection(projection);
+        Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutWeight));Raise(nameof(IsConsolidated));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
         if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
         foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);
         SaveStatus="Materia abierta · datos guardados en este equipo";
-        ReloadCourseCommand.Refresh();ImportStudentsCommand.Refresh();ExportReportCommand.Refresh();
+        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();
     }
     private async Task ReloadCourseAsync()
     {
@@ -321,6 +494,9 @@ public sealed class MainViewModel : ObservableObject
         Raise(nameof(Groups));Raise(nameof(Weeks));
         allGradeRows.Clear();allAttendanceRows.Clear();studentPositions.Clear();
         allGradeRows.AddRange(projection.Grades);allAttendanceRows.AddRange(projection.Attendance);
+        groupAttendanceSummary=new(allAttendanceRows.Sum(r=>r.Summary.Present),allAttendanceRows.Sum(r=>r.Summary.Absent),
+            allAttendanceRows.Sum(r=>r.Summary.Justified),allAttendanceRows.Sum(r=>r.Summary.Late));
+        PublishGroupAttendance();
         foreach(var (id,position) in projection.Positions)studentPositions.Add(id,position);
         ApplySearchFilter();
         UpdateCourseAverage(projection.Totals);
@@ -355,5 +531,17 @@ public sealed class MainViewModel : ObservableObject
     {
         CourseAverage=courseTotals.Length>0 && completedStudents==courseTotals.Length ? AcademicFormatting.Grade(courseTotalSum/courseTotals.Length) : "Pendiente";
         Raise(nameof(CourseAverage));
+    }
+    private void UpdateGroupAttendance(AttendanceSummary previous,AttendanceSummary next)
+    {
+        groupAttendanceSummary=new(groupAttendanceSummary.Present-previous.Present+next.Present,
+            groupAttendanceSummary.Absent-previous.Absent+next.Absent,
+            groupAttendanceSummary.Justified-previous.Justified+next.Justified,
+            groupAttendanceSummary.Late-previous.Late+next.Late);
+        PublishGroupAttendance();
+    }
+    private void PublishGroupAttendance()
+    {
+        Raise(nameof(GroupAttendanceSummary));Raise(nameof(GroupAttendancePercentage));Raise(nameof(GroupAttendanceLabel));
     }
 }

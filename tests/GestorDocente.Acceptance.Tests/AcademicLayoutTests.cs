@@ -21,7 +21,8 @@ public class AcademicLayoutTests
         var notes=window.FindControl<NotesView>("RetainedNotes")!;
         var notesTable=notes.FindControl<DataGrid>("GradesTable")!;
         Assert.Equal(100,vm.GradeRows.Count);Assert.True(notesTable.Bounds.Height>=330,$"Notas: {notesTable.Bounds.Height}");
-        Assert.Equal(3,notesTable.FrozenColumnCount);Assert.Equal(34,notesTable.RowHeight);
+        Assert.Equal(4,notesTable.FrozenColumnCount);Assert.True(double.IsNaN(notesTable.RowHeight));
+        Assert.All(notesTable.GetVisualDescendants().OfType<DataGridRow>().Where(r=>r.Bounds.Height>0),r=>Assert.InRange(r.Bounds.Height,30,45));
         vm.Page="Asistencias";window.UpdateLayout();
         var attendance=window.FindControl<AttendanceView>("RetainedAttendance")!;
         var table=attendance.FindControl<DataGrid>("AttendanceTable")!;

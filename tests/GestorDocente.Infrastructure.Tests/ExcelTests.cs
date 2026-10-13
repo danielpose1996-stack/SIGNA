@@ -28,6 +28,12 @@ public class ExcelTests
         using var zip=new ZipArchive(new MemoryStream(new XlsxReportExporter().Export(data,1,AcademicReportKind.Notes)));
         using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();var doc=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
         Assert.Empty(doc.Descendants(ns+"f"));Assert.Contains(doc.Descendants(ns+"t"),e=>e.Value=="00123");Assert.Contains(doc.Descendants(ns+"t"),e=>e.Value=="=SUM(1,2)");Assert.Contains(doc.Descendants(ns+"c"),c=>(string?)c.Attribute("r")=="D6" && !c.Elements().Any());
+        var report=AcademicReportProjection.Build(data,1,AcademicReportKind.Notes);
+        var directColumn=Enumerable.Range(0,report.Columns.Count).Single(i=>report.Columns[i].Title.StartsWith("Nota Parcial",StringComparison.Ordinal));
+        var directCell=XlsxReportExporter.Column(directColumn+1)+"6";
+        Assert.Contains(doc.Descendants(ns+"c"),c=>(string?)c.Attribute("r")==directCell && !c.Elements().Any());
+        var totalCell=XlsxReportExporter.Column(report.Columns.Count-2)+"6";
+        Assert.Contains(doc.Descendants(ns+"c"),c=>(string?)c.Attribute("r")==totalCell && (string?)c.Element(ns+"v")=="0");
     }
     [Fact]
     public void File_writer_does_not_overwrite_existing_report_without_explicit_permission()

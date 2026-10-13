@@ -19,11 +19,19 @@ public sealed class InformationWindow : Window
 }
 public sealed class ConfirmWindow : Window
 {
-    public ConfirmWindow(string text,string action="Eliminar del borrador")
+    public ConfirmWindow(string text,string action="Eliminar del borrador",bool scrollable=false)
     {
         Title="Confirmar cambio";Width=460;Height=220;CanResize=false;WindowStartupLocation=WindowStartupLocation.CenterOwner;
         var cancel=new Button {Content="Cancelar"};cancel.Click+=(_,_)=>Close(false);
         var confirm=new Button {Content=action};confirm.Classes.Add("primary");confirm.Click+=(_,_)=>Close(true);
-        Content=new StackPanel {Margin=new(24),Spacing=25,Children={new TextBlock {Text=text,TextWrapping=TextWrapping.Wrap},new StackPanel {Orientation=Orientation.Horizontal,Spacing=10,HorizontalAlignment=HorizontalAlignment.Right,Children={cancel,confirm}}}};
+        var message=new TextBlock {Text=text,TextWrapping=TextWrapping.Wrap};
+        var buttons=new StackPanel {Orientation=Orientation.Horizontal,Spacing=10,HorizontalAlignment=HorizontalAlignment.Right,Children={cancel,confirm}};
+        if(scrollable)
+        {
+            var grid=new Grid{Margin=new(24),RowDefinitions=new("*,Auto"),RowSpacing=18};
+            grid.Children.Add(new ScrollViewer{Content=message,VerticalScrollBarVisibility=Avalonia.Controls.Primitives.ScrollBarVisibility.Auto});
+            Grid.SetRow(buttons,1);grid.Children.Add(buttons);Content=grid;
+        }
+        else Content=new StackPanel {Margin=new(24),Spacing=25,Children={message,buttons}};
     }
 }

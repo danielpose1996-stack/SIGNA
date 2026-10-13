@@ -1,0 +1,2 @@
+# Los lanzadores Unix deben conservar LF también al clonar desde Windows.
+*.sh text eol=lf

@@ -1,0 +1,14 @@
+<Project>
+  <Target Name="PrepareSignaLinuxDesktop" AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' == 'linux-x64' Or '$(RuntimeIdentifier)' == 'linux-arm64'">
+    <Error Condition="'$(UseAppHost)' != 'true'"
+           Text="La distribución Linux de SIGNA requiere UseAppHost=true." />
+    <Error Condition="!Exists('$(PublishDir)$(AssemblyName)')"
+           Text="No se encontró el ejecutable Linux publicado de SIGNA." />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/Assets/Branding/SIGNA_icono_512.png;$(MSBuildThisFileDirectory)Registrar-icono.sh"
+          DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+          Command="chmod +x &quot;$(PublishDir)$(AssemblyName)&quot; &quot;$(PublishDir)Registrar-icono.sh&quot;" />
+    <Message Importance="high" Text="SIGNA Linux preparado con el icono oficial y Registrar-icono.sh (registro opcional por usuario)." />
+  </Target>
+</Project>

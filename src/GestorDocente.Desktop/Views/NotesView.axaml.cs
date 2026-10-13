@@ -10,7 +10,8 @@ namespace GestorDocente.Desktop.Views;
 public partial class NotesView : UserControl
 {
     private MainViewModel? observed;
-    public NotesView() {InitializeComponent();DataContextChanged+=(_,_)=>Attach();}
+    private TableColumnLayout? columnLayout;
+    public NotesView() {InitializeComponent();DataContextChanged+=(_,_)=>Attach();GradesTable.SizeChanged+=(_,_)=>columnLayout?.Refresh();}
     private void Attach()
     {
         if(observed is not null)observed.PropertyChanged-=Changed;
@@ -25,23 +26,28 @@ public partial class NotesView : UserControl
         GradesTable.Columns.Add(Text("#","Number",40));
         GradesTable.Columns.Add(Text("Documento","Document",112));
         GradesTable.Columns.Add(Text("Nombre del estudiante","FullName",230));
+        GradesTable.Columns.Add(new DataGridTemplateColumn{Header=TablePresentation.Header("Detalles"),Width=new(100),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new Button{Content="Ver detalles",FontSize=11,Padding=new(5,3),Margin=new(3,2),Command=observed.ViewStudentDetailsCommand,CommandParameter=row!.Student})});
         foreach(var group in observed.Service.Cut(observed.SelectedCut).Groups)
         {
         if(group.Mode==EvaluationMode.Direct)
         {
             var id=group.Id;
-            GradesTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header($"{group.Name}\n{group.Weight:0.##} %"),Width=new(110),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new GradeEditor {DataContext=row!.Cells[id]})});
+            var title=$"{group.Name}\n{group.Weight:0.##} %";
+            GradesTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header(title),Width=new(TablePresentation.HeaderWidth(title)),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new GradeEditor {DataContext=row!.Cells[id]})});
             continue;
         }
         foreach(var activity in group.Activities)
         {
             var id=activity.Id;
-            GradesTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header($"{activity.Name}\n{group.Name}"),Width=new(100),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new GradeEditor {DataContext=row!.Cells[id]})});
+            var title=$"{activity.Name}\n{group.Name}";
+            GradesTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.Header(title),Width=new(TablePresentation.HeaderWidth(title)),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new GradeEditor {DataContext=row!.Cells[id]})});
         }
-        GradesTable.Columns.Add(Text($"Promedio {group.Name}\n{group.Weight:0.##} %",$"GroupTotals[{group.Id}]",110));
+        var averageTitle=$"Promedio {group.Name}\n{group.Weight:0.##} %";
+        GradesTable.Columns.Add(Text(averageTitle,$"GroupTotals[{group.Id}]",TablePresentation.HeaderWidth(averageTitle)));
         }
         GradesTable.Columns.Add(Text("Nota del\ncorte","Total",105));
         GradesTable.Columns.Add(Text("Estado","Completion",100));
+        columnLayout=new(GradesTable,observed.Service.Current.Students);
     }
     private static DataGridTemplateColumn Text(string title,string path,double width)=>TablePresentation.Text(title,path,width);
 }

@@ -1,41 +1,34 @@
-<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Styles.Resources>
-    <SolidColorBrush x:Key="Ink">#10205C</SolidColorBrush>
-    <SolidColorBrush x:Key="Muted">#60779D</SolidColorBrush>
-    <SolidColorBrush x:Key="Primary">#0067F5</SolidColorBrush>
-    <SolidColorBrush x:Key="Line">#DFE8F4</SolidColorBrush>
-    <SolidColorBrush x:Key="Surface">#FFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="Canvas">#F5F8FC</SolidColorBrush>
-    <SolidColorBrush x:Key="DataGridRowSelectedBackgroundBrush">#DEECFF</SolidColorBrush>
-  </Styles.Resources>
-  <Style Selector="Window"><Setter Property="Background" Value="{StaticResource Canvas}" /><Setter Property="FontFamily" Value="Segoe UI, Inter, Arial" /><Setter Property="FontSize" Value="14" /><Setter Property="Foreground" Value="{StaticResource Ink}" /></Style>
-  <Style Selector="TextBlock"><Setter Property="Foreground" Value="{StaticResource Ink}" /></Style>
-  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{StaticResource Muted}" /></Style>
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls">
+  <Style Selector="Window"><Setter Property="Icon" Value="{DynamicResource SignaWindowIcon}" /><Setter Property="Background" Value="{DynamicResource Canvas}" /><Setter Property="FontFamily" Value="Segoe UI, Inter, Arial" /><Setter Property="FontSize" Value="14" /><Setter Property="Foreground" Value="{DynamicResource Ink}" /></Style>
+  <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Ink}" /></Style>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource Muted}" /></Style>
   <Style Selector="TextBlock.section"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="FontSize" Value="16" /></Style>
   <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="#B32135" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="FontSize" Value="12" /></Style>
-  <Style Selector="Border.card"><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="{StaticResource Line}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="8" /><Setter Property="Padding" Value="16" /></Style>
-  <Style Selector="Button"><Setter Property="CornerRadius" Value="5" /><Setter Property="MinHeight" Value="34" /><Setter Property="Padding" Value="12,7" /><Setter Property="Foreground" Value="{StaticResource Ink}" /><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="#CCDCEE" /><Setter Property="BorderThickness" Value="1" /></Style>
-  <Style Selector="Button:pointerover"><Setter Property="Background" Value="#EAF3FF" /></Style>
-  <Style Selector="Button.primary"><Setter Property="Background" Value="{StaticResource Primary}" /><Setter Property="Foreground" Value="White" /><Setter Property="BorderBrush" Value="{StaticResource Primary}" /></Style>
-  <Style Selector="Button.primary:pointerover"><Setter Property="Background" Value="#0055D0" /></Style>
+  <Style Selector="Border.card"><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="{DynamicResource Line}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="8" /><Setter Property="Padding" Value="16" /></Style>
+  <Style Selector="Button"><Setter Property="CornerRadius" Value="5" /><Setter Property="MinHeight" Value="34" /><Setter Property="Padding" Value="12,7" /><Setter Property="Foreground" Value="{DynamicResource Ink}" /><Setter Property="Background" Value="White" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /><Setter Property="BorderThickness" Value="1" /></Style>
+  <Style Selector="Button:pointerover"><Setter Property="Background" Value="{DynamicResource Soft}" /></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource Primary}" /><Setter Property="Foreground" Value="White" /><Setter Property="BorderBrush" Value="{DynamicResource Primary}" /></Style>
+  <Style Selector="Button.primary:pointerover"><Setter Property="Background" Value="{DynamicResource PrimaryHover}" /></Style>
   <Style Selector="Button.quiet"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Style>
   <Style Selector="Button.nav"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Left" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Height" Value="48" /><Setter Property="Margin" Value="0,3" /><Setter Property="Padding" Value="18,8" /></Style>
-  <Style Selector="Button.nav.active"><Setter Property="Background" Value="#D4E7FF" /><Setter Property="Foreground" Value="#005BD5" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
-  <Style Selector="Button.nav.active /template/ ContentPresenter"><Setter Property="Background" Value="#D4E7FF" /></Style>
-  <Style Selector="Button.nav.active TextBlock"><Setter Property="Foreground" Value="#005BD5" /></Style>
+  <Style Selector="Button.nav.active"><Setter Property="Background" Value="{DynamicResource StrongSelected}" /><Setter Property="Foreground" Value="{DynamicResource PrimaryHover}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="Button.nav.active /template/ ContentPresenter"><Setter Property="Background" Value="{DynamicResource StrongSelected}" /></Style>
+  <Style Selector="Button.nav.active TextBlock"><Setter Property="Foreground" Value="{DynamicResource PrimaryHover}" /></Style>
   <Style Selector="Button.nav:disabled /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="Opacity" Value="0.65" /></Style>
   <Style Selector="Button.tab:disabled /template/ ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="Opacity" Value="0.65" /></Style>
   <Style Selector="Button.tab"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="CornerRadius" Value="0" /><Setter Property="Height" Value="38" /><Setter Property="Padding" Value="16,4" /></Style>
-  <Style Selector="Button.tab.active"><Setter Property="Foreground" Value="{StaticResource Primary}" /><Setter Property="BorderBrush" Value="{StaticResource Primary}" /><Setter Property="BorderThickness" Value="0,0,0,3" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
-  <Style Selector="Button.cut"><Setter Property="MinWidth" Value="85" /><Setter Property="Background" Value="#F4F7FC" /></Style>
-  <Style Selector="Button.cut.active"><Setter Property="Background" Value="{StaticResource Primary}" /><Setter Property="Foreground" Value="White" /></Style>
-  <Style Selector="TextBox"><Setter Property="CornerRadius" Value="4" /><Setter Property="BorderBrush" Value="#CEDCEE" /><Setter Property="MinHeight" Value="34" /><Setter Property="SelectionBrush" Value="#BCD9FF" /></Style>
-  <Style Selector="NumericUpDown"><Setter Property="MinHeight" Value="32" /><Setter Property="BorderBrush" Value="#CEDCEE" /></Style>
-  <Style Selector="ComboBox"><Setter Property="MinHeight" Value="32" /><Setter Property="BorderBrush" Value="#CEDCEE" /></Style>
-  <Style Selector="DataGrid"><Setter Property="BorderThickness" Value="0" /><Setter Property="Background" Value="White" /><Setter Property="RowHeight" Value="34" /><Setter Property="ColumnHeaderHeight" Value="52" /><Setter Property="GridLinesVisibility" Value="All" /><Setter Property="HorizontalGridLinesBrush" Value="#E1EAF4" /><Setter Property="VerticalGridLinesBrush" Value="#E1EAF4" /><Setter Property="HeadersVisibility" Value="Column" /><Setter Property="CanUserReorderColumns" Value="False" /><Setter Property="CanUserSortColumns" Value="False" /></Style>
-  <Style Selector="DataGridColumnHeader"><Setter Property="Background" Value="#EDF3FA" /><Setter Property="Foreground" Value="{StaticResource Ink}" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="FontSize" Value="12" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="Padding" Value="8,4" /></Style>
-  <Style Selector="DataGridRow"><Setter Property="Background" Value="White" /><Setter Property="Foreground" Value="#2B4274" /></Style>
-  <Style Selector="DataGridRow:nth-child(odd)"><Setter Property="Background" Value="#F2F6FC" /></Style>
-  <Style Selector="DataGridRow:selected"><Setter Property="Background" Value="#DEECFF" /></Style>
+  <Style Selector="Button.tab.active"><Setter Property="Foreground" Value="{DynamicResource Primary}" /><Setter Property="BorderBrush" Value="{DynamicResource Primary}" /><Setter Property="BorderThickness" Value="0,0,0,3" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="Button.cut"><Setter Property="MinWidth" Value="85" /><Setter Property="Background" Value="{DynamicResource Canvas}" /></Style>
+  <Style Selector="Button.cut.active"><Setter Property="Background" Value="{DynamicResource Primary}" /><Setter Property="Foreground" Value="White" /></Style>
+  <Style Selector="TextBox"><Setter Property="CornerRadius" Value="4" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /><Setter Property="MinHeight" Value="34" /><Setter Property="SelectionBrush" Value="{DynamicResource InputSelection}" /></Style>
+  <Style Selector="NumericUpDown"><Setter Property="MinHeight" Value="32" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /></Style>
+  <Style Selector="ComboBox"><Setter Property="MinHeight" Value="32" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /></Style>
+  <Style Selector="DataGrid"><Setter Property="BorderThickness" Value="0" /><Setter Property="Background" Value="White" /><Setter Property="RowHeight" Value="34" /><Setter Property="ColumnHeaderHeight" Value="52" /><Setter Property="GridLinesVisibility" Value="All" /><Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource Line}" /><Setter Property="VerticalGridLinesBrush" Value="{DynamicResource Line}" /><Setter Property="HeadersVisibility" Value="Column" /><Setter Property="CanUserReorderColumns" Value="False" /><Setter Property="CanUserSortColumns" Value="False" /></Style>
+  <Style Selector="DataGridColumnHeader"><Setter Property="Background" Value="{DynamicResource Header}" /><Setter Property="Foreground" Value="{DynamicResource Ink}" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="FontSize" Value="12" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="Padding" Value="8,4" /></Style>
+  <Style Selector="DataGridRow"><Setter Property="Background" Value="White" /><Setter Property="Foreground" Value="{DynamicResource Ink}" /></Style>
+  <Style Selector="DataGridRow:nth-child(odd)"><Setter Property="Background" Value="{DynamicResource AlternateRow}" /></Style>
+  <Style Selector="DataGridRow:selected"><Setter Property="Background" Value="{DynamicResource Selected}" /></Style>
   <Style Selector="DataGridCell"><Setter Property="Padding" Value="4,3" /></Style>
+  <Style Selector="c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource IconInk}" /></Style>
+  <Style Selector="c|AttendanceRing"><Setter Property="TextBrush" Value="{DynamicResource Ink}" /><Setter Property="TrackBrush" Value="{DynamicResource Line}" /></Style>
 </Styles>

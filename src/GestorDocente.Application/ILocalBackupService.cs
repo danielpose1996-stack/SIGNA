@@ -1,7 +1,7 @@
 namespace GestorDocente.Application;
 
-public sealed record LocalBackupResult(string Path,int CourseCount,int StudentCount);
-public sealed record LocalRestoreResult(string PreviousBackupPath,int CourseCount,int StudentCount,bool PreviousCopyWasRaw=false);
+public sealed record LocalBackupResult(string Path,int CourseCount,int StudentCount,int SemesterCount=0);
+public sealed record LocalRestoreResult(string PreviousBackupPath,int CourseCount,int StudentCount,bool PreviousCopyWasRaw=false,int SemesterCount=0);
 
 public interface ILocalBackupService
 {

@@ -4,19 +4,19 @@
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate><DataTemplate>
         <Button Command="{Binding ConfigureCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,8,0" Height="36" Padding="8,3" Background="White" ToolTip.Tip="{Binding TypeLabel}">
-          <Grid ColumnDefinitions="*,Auto,14" ColumnSpacing="8"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" /><TextBlock Grid.Column="1" Text="{Binding WeightLabel}" Foreground="#0067F5" FontSize="12" VerticalAlignment="Center" /><c:VectorIcon Grid.Column="2" Kind="settings" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
+          <Grid ColumnDefinitions="*,Auto,14" ColumnSpacing="8"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" /><TextBlock Grid.Column="1" Text="{Binding WeightLabel}" Foreground="{DynamicResource Primary}" FontSize="12" VerticalAlignment="Center" /><c:VectorIcon Grid.Column="2" Kind="settings" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
         </Button>
       </DataTemplate></ItemsControl.ItemTemplate>
     </ItemsControl>
     <Border Grid.Row="2" Classes="card" Padding="0">
       <Grid RowDefinitions="48,*,28">
-        <Grid ColumnDefinitions="300,*,Auto" Margin="10,5">
+        <Grid ColumnDefinitions="220,*,Auto" Margin="10,5">
           <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante o documento…" AutomationProperties.Name="Filtrar tabla de notas" />
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"><Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Actividades y porcentajes" Command="{Binding ConfigureCommand}" /><Button Classes="quiet" Content="Recuperar retirados" Command="{Binding RecoveryCommand}" /></StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"><Button Classes="quiet" Content="Agregar estudiante" Command="{Binding AddStudentCommand}" /><Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Actividades y porcentajes" Command="{Binding ConfigureCommand}" /><Button Classes="quiet" Content="Recuperar retirados" Command="{Binding RecoveryCommand}" /></StackPanel>
         </Grid>
-        <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" SelectionMode="Single" />
+        <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="4" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" />
         <TextBlock Grid.Row="1" Text="{Binding EmptyTableMessage}" Classes="muted" IsVisible="{Binding IsEmpty}" TextWrapping="Wrap" MaxWidth="500" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <Border Grid.Row="2" Background="#EDF3FA" Padding="12,4"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Enter: guardar nota · Subactividades: promedio simple · Promedio del curso" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="13" /></Grid></Border>
+        <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,4"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Enter: guardar nota · Subactividades: promedio simple · Vacías: 0,0 en el cálculo · Promedio del curso" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="13" /></Grid></Border>
       </Grid>
     </Border>
   </Grid>

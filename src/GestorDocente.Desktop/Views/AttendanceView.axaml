@@ -1,36 +1,51 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.AttendanceView">
   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
     <Border Classes="card" Padding="0">
-      <Grid RowDefinitions="48,*,28">
-        <Grid ColumnDefinitions="240,*,Auto" Margin="10,4">
-          <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" />
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
+      <Grid RowDefinitions="Auto,*,Auto">
+        <WrapPanel Orientation="Horizontal" Margin="10,4">
+          <TextBox Width="240" Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" Margin="0,0,8,4" />
+          <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
             <Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Semanas" Command="{Binding ManageWeeksCommand}" ToolTip.Tip="Agregar o retirar semanas de clase y de actividades" />
             <Button Classes="quiet" Content="Recuperar" Command="{Binding RecoveryCommand}" />
             <Button Classes="quiet" Content="Detalle" Command="{Binding ToggleDetailCommand}" ToolTip.Tip="Mostrar u ocultar el detalle del estudiante seleccionado" />
           </StackPanel>
-        </Grid>
-        <DataGrid Grid.Row="1" x:Name="AttendanceTable" ItemsSource="{Binding AttendanceRows}" SelectedItem="{Binding SelectedStudent,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" SelectionMode="Single" />
+          <Grid ColumnDefinitions="36,*" ColumnSpacing="8" Width="170" Margin="12,0,0,4" IsVisible="{Binding DetailHidden}" ToolTip.Tip="Porcentaje global: (P + T) / (P + T + A). J, sin clase y pendientes se excluyen.">
+            <c:AttendanceRing Percentage="{Binding GroupAttendancePercentage}" Width="36" Height="36" AutomationProperties.Name="Porcentaje general de asistencia" />
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center"><TextBlock Text="Asistencia general" Classes="muted" FontSize="11" /><TextBlock Text="{Binding GroupAttendanceLabel}" FontSize="12" FontWeight="SemiBold" /></StackPanel>
+          </Grid>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" x:Name="AttendanceTable" ItemsSource="{Binding AttendanceRows}" SelectedItem="{Binding SelectedStudent,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" />
         <TextBlock Grid.Row="1" Text="{Binding EmptyTableMessage}" IsVisible="{Binding IsEmpty}" Classes="muted" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="500" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="10,4"><TextBlock Text="P Presente · A Ausente · J Justificada · T Tarde · — Sin diligenciar" Classes="muted" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding StudentCount,StringFormat='Estudiantes: {0}'}" FontSize="11" /></Grid>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="10,4"><TextBlock Text="P Presente · A Ausente · J Justificada · T Tarde · — Sin diligenciar" Classes="muted" FontSize="11" TextWrapping="Wrap" /><TextBlock Grid.Column="1" Text="{Binding StudentCount,StringFormat='Estudiantes: {0}'}" FontSize="11" /></Grid>
       </Grid>
     </Border>
     <ScrollViewer Grid.Column="1" Width="300" IsVisible="{Binding DetailVisible}" HorizontalScrollBarVisibility="Disabled">
       <StackPanel Spacing="12">
+        <Border Classes="card" Padding="12">
+          <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="8"><c:VectorIcon Kind="chart" Stroke="{DynamicResource Primary}" Width="22" Height="22" /><TextBlock Text="Resumen de asistencia" Classes="section" /></StackPanel>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+              <Border Background="{DynamicResource Canvas}" CornerRadius="5" Padding="10"><StackPanel Spacing="8"><TextBlock Text="Total estudiantes" FontSize="11" Classes="muted" TextWrapping="Wrap" /><TextBlock Text="{Binding StudentCount}" FontSize="26" FontWeight="Bold" /></StackPanel></Border>
+              <Border Grid.Column="1" Background="{DynamicResource Canvas}" CornerRadius="5" Padding="6"><StackPanel Spacing="4"><TextBlock Text="Asistencia general" FontSize="11" TextAlignment="Center" /><c:AttendanceRing x:Name="GroupAttendanceRing" Percentage="{Binding GroupAttendancePercentage}" Width="82" Height="82" HorizontalAlignment="Center" AutomationProperties.Name="Gráfico de asistencia general" /></StackPanel></Border>
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto"><TextBlock Text="P + T / evaluables" Classes="muted" FontSize="11" /><StackPanel Grid.Column="1" Orientation="Horizontal"><TextBlock Text="{Binding GroupAttendanceSummary.Attended}" FontSize="11" /><TextBlock Text=" / " FontSize="11" /><TextBlock Text="{Binding GroupAttendanceSummary.Evaluable}" FontSize="11" /></StackPanel></Grid>
+          </StackPanel>
+        </Border>
         <Border Classes="card">
           <StackPanel Spacing="12">
-            <StackPanel Orientation="Horizontal" Spacing="8"><c:VectorIcon Kind="users" Stroke="#0067F5" Width="22" Height="22" /><TextBlock Text="Detalle del estudiante" Classes="section" /></StackPanel>
-            <ComboBox ItemsSource="{Binding AttendanceRows}" SelectedItem="{Binding SelectedStudent,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Seleccionar estudiante"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding FullName}" FontSize="12" /></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+            <StackPanel Orientation="Horizontal" Spacing="8"><c:VectorIcon Kind="users" Stroke="{DynamicResource Primary}" Width="22" Height="22" /><TextBlock Text="Detalle del estudiante" Classes="section" /></StackPanel>
+            <ComboBox ItemsSource="{Binding AttendanceRows}" SelectedItem="{Binding SelectedStudent,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Seleccionar estudiante"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding FullName}" FontSize="12" TextWrapping="Wrap" MaxWidth="230" ToolTip.Tip="{Binding FullName}" /></DataTemplate></ComboBox.ItemTemplate></ComboBox>
             <StackPanel DataContext="{Binding SelectedStudent}" Spacing="7">
               <Grid ColumnDefinitions="100,*"><TextBlock Text="Documento:" Classes="muted" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding Document}" FontSize="12" /></Grid>
               <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" TextWrapping="Wrap" />
               <Grid ColumnDefinitions="100,*"><TextBlock Text="Registrados:" Classes="muted" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding Summary.Recorded}" FontSize="12" /></Grid>
-              <TextBlock Text="Porcentaje: pendiente de política aprobada" Classes="muted" FontSize="11" TextWrapping="Wrap" />
-              <Button Classes="primary" IsEnabled="False" ToolTip.Tip="Generación PDF pendiente de especificación" HorizontalAlignment="Stretch"><StackPanel Orientation="Horizontal" Spacing="9"><c:VectorIcon Kind="document" Stroke="White" Width="20" Height="20" /><TextBlock Text="Generar reporte PDF" Foreground="White" FontSize="12" /></StackPanel></Button>
-              <TextBlock Text="PDF pendiente de implementación" Classes="muted" FontSize="10" HorizontalAlignment="Center" />
-              <Border Height="1" Background="#E1EAF4" Margin="0,3" />
+              <Grid ColumnDefinitions="100,*"><TextBlock Text="Asistencias:" Classes="muted" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding Total}" FontSize="12" /></Grid>
+              <Grid ColumnDefinitions="100,*"><TextBlock Text="Porcentaje:" Classes="muted" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding Percentage}" FontSize="12" FontWeight="SemiBold" /></Grid>
+              <Grid ColumnDefinitions="100,*"><TextBlock Text="Estado:" Classes="muted" FontSize="12" /><TextBlock Grid.Column="1" Text="{Binding Status}" Foreground="{Binding StatusTone}" FontSize="12" FontWeight="SemiBold" /></Grid>
+              <Button x:Name="AttendancePdfButton" Classes="primary" Command="{Binding DataContext.ExportAttendancePdfCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" ToolTip.Tip="Guardar el reporte individual de este estudiante y corte en PDF" HorizontalAlignment="Stretch"><StackPanel Orientation="Horizontal" Spacing="9"><c:VectorIcon Kind="document" Stroke="White" Width="20" Height="20" /><TextBlock Text="Generar reporte PDF" Foreground="White" FontSize="12" /></StackPanel></Button>
+              <Border Height="1" Background="{DynamicResource Line}" Margin="0,3" />
               <TextBlock Text="Registro por semana" FontWeight="SemiBold" FontSize="13" />
-              <ItemsControl ItemsSource="{Binding WeeklyDetails}"><ItemsControl.ItemTemplate><DataTemplate><Grid ColumnDefinitions="*,35,85" Margin="0,4"><TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Center" /><Border Grid.Column="1" Background="#EDF4FC" CornerRadius="3" Padding="5"><TextBlock Text="{Binding Code}" FontSize="12" HorizontalAlignment="Center" /></Border><TextBlock Grid.Column="2" Text="{Binding Description}" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" /></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+              <ItemsControl ItemsSource="{Binding WeeklyDetails}"><ItemsControl.ItemTemplate><DataTemplate><Grid ColumnDefinitions="*,35,85" Margin="0,4"><TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Center" /><Border Grid.Column="1" Background="{DynamicResource Header}" CornerRadius="3" Padding="5"><TextBlock Text="{Binding Code}" FontSize="12" HorizontalAlignment="Center" /></Border><TextBlock Grid.Column="2" Text="{Binding Description}" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center" /></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
               <TextBlock Text="Resumen de estados" FontWeight="SemiBold" FontSize="13" Margin="0,8,0,0" />
               <UniformGrid Columns="4">
                 <Border Background="#E9FBF1" CornerRadius="4" Margin="0,0,5,0" Padding="5,10"><StackPanel Spacing="5"><TextBlock Text="P" Foreground="#078653" HorizontalAlignment="Center" /><TextBlock Text="{Binding Summary.Present}" FontWeight="Bold" HorizontalAlignment="Center" /><TextBlock Text="Presente" FontSize="9" HorizontalAlignment="Center" /></StackPanel></Border>

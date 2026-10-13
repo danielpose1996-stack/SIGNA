@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.ConsolidatedView">
+  <Border Classes="card" Padding="0">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <WrapPanel Margin="10,6" Orientation="Horizontal">
+        <TextBox Width="260" Watermark="Buscar estudiante o documento…" Text="{Binding Consolidated.Search,Mode=TwoWay}" Margin="0,0,12,4" AutomationProperties.Name="Filtrar nota consolidada" />
+        <Button Content="Configurar porcentajes" Command="{Binding ConfigureCutWeightsCommand}" Margin="0,0,8,4" />
+      </WrapPanel>
+      <Grid Grid.Row="1">
+        <DataGrid x:Name="ConsolidatedTable" ItemsSource="{Binding Consolidated.Rows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" RowHeight="NaN" ColumnHeaderHeight="NaN" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+        <TextBlock Text="No hay estudiantes que mostrar. Importa el listado en Notas o ajusta la búsqueda." IsVisible="{Binding Consolidated.IsEmpty}" Classes="muted" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Margin="20" />
+      </Grid>
+      <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,8"><StackPanel Spacing="4"><TextBlock Text="{Binding Consolidated.WeightsLabel}" FontSize="11" TextWrapping="Wrap" /><TextBlock Text="{Binding Consolidated.CalculationNote}" Classes="muted" FontSize="11" TextWrapping="Wrap" /></StackPanel></Border>
+    </Grid>
+  </Border>
+</UserControl>

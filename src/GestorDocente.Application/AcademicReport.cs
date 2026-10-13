@@ -26,19 +26,25 @@ public static class AcademicReportProjection
             var row=new List<object?>{++index,student.Document,student.FullName};
             if(kind==AcademicReportKind.Notes)
             {
-                foreach(var group in cut.Groups){foreach(var activity in group.Activities)row.Add(readIndex.Grade(student.Id,activity.Id));row.Add(readIndex.Group(group,student.Id));}
-                var total=readIndex.Cut(student.Id);row.Add(total);row.Add(total is null ? "Pendiente" : "Completo");
+                foreach(var group in cut.Groups)
+                {
+                    foreach(var activity in group.Activities)row.Add(readIndex.Grade(student.Id,activity.Id));
+                    row.Add(group.Mode==EvaluationMode.Direct
+                        ? readIndex.Grade(student.Id,group.Id)
+                        : readIndex.Group(group,student.Id));
+                }
+                var total=readIndex.Cut(student.Id);row.Add(total);row.Add(total is null || readIndex.HasPendingGrades(student.Id) ? "Pendiente" : "Completo");
             }
             else
             {
                 var states=cut.Weeks.Select(w=>readIndex.Attendance(student.Id,w.Number)).ToList();
                 row.AddRange(states.Select(s=>(object?)(s switch{AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"})));
-                var summary=AttendanceSummary.From(states);row.AddRange(new object?[]{summary.Present,summary.Absent,summary.Justified,summary.Late,summary.Recorded,states.Count(s=>s is null),"Pendiente de política"});
+                var summary=AttendanceSummary.From(states);row.AddRange(new object?[]{summary.Present,summary.Absent,summary.Justified,summary.Late,summary.Recorded,states.Count(s=>s is null),summary.Percentage});
             }
             rows.Add(row);
         }
         return new(kind==AcademicReportKind.Notes ? "Notas" : "Asistencias",$"{workspace.CourseName} · Corte {number}",
             $"Código: {workspace.CourseCode} · Período: {workspace.Period} · Escuela: {workspace.School} · Grupo: {workspace.GroupName}",
-            kind==AcademicReportKind.Notes ? "Instantánea de valores guardados. Celdas vacías: nota pendiente. Los tres cortes aún no tienen pesos finales definidos." : "P: Presente · A: Ausente · J: Justificada · T: Tarde. Sin diligenciar no es ausencia. Porcentaje pendiente de política.",columns,rows);
+            kind==AcademicReportKind.Notes ? "Celdas vacías: pendientes y con valor 0,0 solo en el cálculo. La nota final ponderada está disponible en Nota consolidada." : "Asistencia: (P + T) / (P + T + A) × 100. J, sin clase y pendientes se excluyen del denominador.",columns,rows);
     }
 }

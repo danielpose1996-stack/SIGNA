@@ -29,7 +29,7 @@ public sealed class SqliteWorkspaceStore : IWorkspaceStore
         using var connection=Open(); using var command=connection.CreateCommand();
         command.CommandText="SELECT schema_version,payload FROM demo_workspace WHERE id=1;";
         using var reader=command.ExecuteReader(); if(!reader.Read())return null;
-        if(reader.GetInt32(0) is not (1 or 2))throw new AcademicValidationException("Versión de demostración incompatible. Los datos no se reemplazaron.");
+        if(reader.GetInt32(0) is <1 or >AcademicWorkspace.CurrentSchemaVersion)throw new AcademicValidationException("Versión de demostración incompatible. Los datos no se reemplazaron.");
         var payload=reader.GetString(1);
         var workspace=WorkspaceIntegrity.Deserialize(payload);
         if(workspace.SchemaVersion!=reader.GetInt32(0) || !workspace.IsDemo)throw new AcademicValidationException("La versión o los datos de demostración no corresponden al archivo local.");
@@ -38,14 +38,15 @@ public sealed class SqliteWorkspaceStore : IWorkspaceStore
     }
     public void Save(AcademicWorkspace workspace)
     {
-        if(!workspace.IsDemo || workspace.SchemaVersion!=2)throw new AcademicValidationException("Este almacenamiento admite únicamente la demostración versión 2.");
+        if(!workspace.IsDemo || workspace.SchemaVersion!=AcademicWorkspace.CurrentSchemaVersion)throw new AcademicValidationException("Este almacenamiento admite únicamente el formato actual de demostración.");
         WorkspaceIntegrity.Validate(workspace);
         var payload=JsonSerializer.Serialize(workspace);
         using var connection=Open(); using var transaction=connection.BeginTransaction(); using var command=connection.CreateCommand();
         command.Transaction=transaction;
         command.CommandText=lastPayload is null ?
-            "INSERT INTO demo_workspace(id,schema_version,payload) VALUES(1,2,$payload)" :
-            "UPDATE demo_workspace SET schema_version=2,payload=$payload WHERE id=1 AND payload=$previous";
+            "INSERT INTO demo_workspace(id,schema_version,payload) VALUES(1,$schema,$payload)" :
+            "UPDATE demo_workspace SET schema_version=$schema,payload=$payload WHERE id=1 AND payload=$previous";
+        command.Parameters.AddWithValue("$schema",workspace.SchemaVersion);
         command.Parameters.AddWithValue("$payload",payload);
         if(lastPayload is not null)command.Parameters.AddWithValue("$previous",lastPayload);
         try

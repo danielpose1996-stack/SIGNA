@@ -8,7 +8,7 @@ public static class DemoWorkspaceFactory
         var workspace=new AcademicWorkspace{Students=names.Select((name,i)=>new Student($"s{i+1}",$"DEMO-{i+1:000}",name)).ToList()};
         for(int number=1;number<=3;number++)
         {
-            var cut=new AcademicCut{Number=number,Groups=[
+            var cut=new AcademicCut{Number=number,Weight=AcademicRules.DefaultCutWeight(number),Groups=[
                 new(){Id="t",Name="Talleres",Weight=30,Mode=EvaluationMode.SubActivities,Activities=[Activity("t1","Taller 1"),Activity("t2","Taller 2"),Activity("t3","Taller 3")]},
                 new(){Id="q",Name="Quices",Weight=20,Mode=EvaluationMode.SubActivities,Activities=[Activity("q1","Quiz 1"),Activity("q2","Quiz 2")]},
                 new(){Id="p",Name="Parcial",Weight=30},

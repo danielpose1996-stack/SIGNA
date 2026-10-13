@@ -1,5 +1,6 @@
 using System.Globalization;
 using Avalonia;
+using GestorDocente.Application;
 namespace GestorDocente.Desktop;
 internal static class Program
 {
@@ -10,5 +11,10 @@ internal static class Program
         CultureInfo.DefaultThreadCurrentUICulture=CultureInfo.GetCultureInfo("es");
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
-    public static AppBuilder BuildAvaloniaApp()=>AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        var builder=AppBuilder.Configure<App>().UsePlatformDetect();
+        if(OperatingSystem.IsLinux())builder.With(new X11PlatformOptions{WmClass=ProductIdentity.Name});
+        return builder.LogToTrace();
+    }
 }

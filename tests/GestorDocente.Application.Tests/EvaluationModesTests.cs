@@ -6,13 +6,33 @@ namespace GestorDocente.Application.Tests;
 public class EvaluationModesTests
 {
     [Fact]
+    public void Removing_subactivity_or_main_activity_updates_cut_and_keeps_retired_grades_recoverable()
+    {
+        var service=Service();var student="s1";
+        service.ConfigureGroups(1,[new(){Id="g",Name="Trabajos",Weight=40,Mode=EvaluationMode.SubActivities,
+            Activities=[new(){Id="a",Name="Trabajo 1"},new(){Id="b",Name="Trabajo 2"}]},
+            new(){Id="p",Name="Parcial",Weight=60}]);
+        service.SetGrade(1,student,"a",4m);service.SetGrade(1,student,"b",2m);service.SetGrade(1,student,"p",5m);
+        Assert.Equal(4.2m,GradeCalculator.Cut(service.Cut(1),student));
+        var groups=WorkspaceService.Clone(service.Cut(1).Groups);
+        groups[0].Activities.RemoveAt(1);service.ConfigureGroups(1,groups);
+        Assert.Equal(4.6m,GradeCalculator.Cut(service.Cut(1),student));
+        Assert.Contains(service.Cut(1).RemovedActivities,x=>x.Activity.Id=="b");
+        Assert.Contains(service.Cut(1).Grades,x=>x.ActivityId=="b" && x.Value==2m);
+        service.ConfigureGroups(1,[new(){Id="g",Name="Trabajos",Weight=100,Mode=EvaluationMode.SubActivities,
+            Activities=[new(){Id="a",Name="Trabajo 1"}]}]);
+        Assert.Equal(4m,GradeCalculator.Cut(service.Cut(1),student));
+        Assert.Contains(service.Cut(1).RemovedGroups,x=>x.Id=="p");
+        Assert.Contains(service.Cut(1).Grades,x=>x.ActivityId=="p" && x.Value==5m);
+    }
+    [Fact]
     public void Direct_to_subactivities_preserves_grade_in_first_new_subactivity()
     {
         var service=Service();service.ConfigureGroups(1,[new(){Id="g",Name="Parcial",Weight=100}]);
         service.SetGrade(1,"s1","g",4.5m);
         service.ConfigureGroups(1,[new(){Id="g",Name="Parcial",Weight=100,Mode=EvaluationMode.SubActivities,Activities=[new(){Id="a",Name="Parte 1"},new(){Id="b",Name="Parte 2"}]}]);
         Assert.Equal(4.5m,service.Cut(1).Grades.Single(g=>g.ActivityId=="a" && g.StudentId=="s1").Value);
-        Assert.Null(GradeCalculator.Cut(service.Cut(1),"s1"));service.SetGrade(1,"s1","b",3.5m);Assert.Equal(4m,GradeCalculator.Cut(service.Cut(1),"s1"));
+        Assert.Equal(2.25m,GradeCalculator.Cut(service.Cut(1),"s1"));service.SetGrade(1,"s1","b",3.5m);Assert.Equal(4m,GradeCalculator.Cut(service.Cut(1),"s1"));
     }
     [Fact]
     public void Subactivities_to_direct_preserves_average_and_removed_records()
@@ -30,7 +50,7 @@ public class EvaluationModesTests
     {
         var service=Service();service.ConfigureGroups(1,[new(){Id="g",Name="Trabajo",Weight=100}]);service.SetGrade(1,"s1","g",5);
         service.ConfigureGroups(1,[new(){Id="g",Name="Trabajo",Weight=100,Mode=EvaluationMode.SubActivities,Activities=[new(){Id="a",Name="A"},new(){Id="b",Name="B"}]}]);
-        service.ConfigureGroups(1,[new(){Id="g",Name="Trabajo",Weight=100}]);Assert.Null(GradeCalculator.Cut(service.Cut(1),"s1"));Assert.Equal(2,service.Cut(1).RemovedActivities.Count);
+        service.ConfigureGroups(1,[new(){Id="g",Name="Trabajo",Weight=100}]);Assert.Equal(0m,GradeCalculator.Cut(service.Cut(1),"s1"));Assert.DoesNotContain(service.Cut(1).Grades,g=>g.StudentId=="s1" && g.ActivityId=="g");Assert.Equal(2,service.Cut(1).RemovedActivities.Count);
     }
     [Fact]
     public void Dense_subactivities_convert_every_complete_student_without_changing_incomplete_ones()
@@ -55,7 +75,7 @@ public class EvaluationModesTests
     public void Legacy_workspace_migrates_numbers_ids_attendance_and_removed_records_atomically()
     {
         var legacy=Legacy();var before=JsonSerializer.Serialize(legacy);var store=new MemoryStore(legacy);var service=new WorkspaceService(store);
-        Assert.Equal(2,service.Current.SchemaVersion);Assert.Equal(EvaluationMode.SubActivities,service.Cut(1).Groups[0].Mode);
+        Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,service.Current.SchemaVersion);Assert.Equal(EvaluationMode.SubActivities,service.Cut(1).Groups[0].Mode);
         Assert.Equal(4.2m,service.Cut(1).Grades.Single(g=>g.ActivityId=="a").Value);Assert.Single(service.Cut(1).Attendance);
         Assert.Single(service.Cut(1).RemovedGroups);Assert.Equal(1,store.Saves);
         Assert.DoesNotContain("Rubric",JsonSerializer.Serialize(service.Current));Assert.DoesNotContain("Assessment",JsonSerializer.Serialize(service.Current));

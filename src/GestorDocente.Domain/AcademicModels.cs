@@ -2,7 +2,9 @@ namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
 {
-    public int SchemaVersion { get; set; } = 2;
+    public const int CurrentSchemaVersion=5;
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
+    public bool CutWeightsPending { get; set; }
     public bool IsDemo { get; set; } = true;
     public string CourseId { get; set; } = "";
     public string SemesterId { get; set; } = "";
@@ -14,10 +16,11 @@ public sealed class AcademicWorkspace
     public List<Student> Students { get; set; } = [];
     public List<AcademicCut> Cuts { get; set; } = [];
 }
-public sealed record Student(string Id, string Document, string FullName);
+public sealed record Student(string Id, string Document, string FullName,string Email="",string Phone="");
 public sealed class AcademicCut
 {
     public int Number { get; set; }
+    public decimal Weight { get; set; }
     public List<EvaluationGroup> Groups { get; set; } = [];
     public List<GradeEntry> Grades { get; set; } = [];
     public List<AttendanceWeek> Weeks { get; set; } = [];
@@ -44,16 +47,29 @@ public sealed class EvaluationActivity
 public sealed record GradeEntry(string StudentId, string ActivityId, decimal Value);
 public sealed record RemovedActivity(string GroupId, EvaluationActivity Activity);
 public enum WeekKind { Class, Activities }
-public sealed record AttendanceWeek(int Number, WeekKind Kind = WeekKind.Class)
+public sealed record AttendanceWeek(int Number, WeekKind Kind = WeekKind.Class, DateOnly? Date = null)
 {
-    public string Label => $"Semana {Number} · {(Kind == WeekKind.Class ? "Clase" : "Actividades")}";
-    public string ShortLabel => $"Sem {Number}\n{(Kind == WeekKind.Class ? "Clase" : "Actividad")}";
+    public string DateLabel => Date?.ToString("dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture) ?? "";
+    public string Label => $"Semana {Number} · {(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $" · {DateLabel}")}";
+    public string ShortLabel => $"Semana {Number}\n{(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $"\n{DateLabel}")}";
 }
 public enum AttendanceState { Present, Absent, Justified, Late, NoClass }
 public sealed record AttendanceEntry(string StudentId, int WeekNumber, AttendanceState State);
+public enum AttendanceClassification { NoRecords, Low, Regular, Good, Excellent }
 public sealed record AttendanceSummary(int Present, int Absent, int Justified, int Late)
 {
     public int Recorded => Present + Absent + Justified + Late;
+    public int Attended=>Present+Late;
+    public int Evaluable=>Attended+Absent;
+    public decimal? Percentage=>Evaluable==0 ? null : Attended*100m/Evaluable;
+    public AttendanceClassification Classification=>Percentage switch
+    {
+        null=>AttendanceClassification.NoRecords,
+        100m=>AttendanceClassification.Excellent,
+        >=75m=>AttendanceClassification.Good,
+        >=50m=>AttendanceClassification.Regular,
+        _=>AttendanceClassification.Low
+    };
     public static AttendanceSummary From(IEnumerable<AttendanceState?> states)
     {
         var list = states.ToList();
