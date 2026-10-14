@@ -59,7 +59,7 @@ public class ExcelTests
         var data=DemoWorkspaceFactory.Create();data.Cuts[0].Weeks.RemoveAt(0);
         using var input=new MemoryStream(new XlsxReportExporter().Export(data,1,AcademicReportKind.Attendance));
         var texts=new XlsxStudentReader().Read(input).Sheets[0].Rows.SelectMany(r=>r.Cells.Values).Select(c=>c.Text).ToList();
-        Assert.DoesNotContain(texts,t=>t.StartsWith("Semana 1"));Assert.Contains("P",texts);Assert.Contains(texts,t=>t.Contains("pendiente",StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(new[]{"Semana 1 · Clase","Semana 2 · Clase"},texts.Where(t=>t.StartsWith("Semana ")));Assert.Contains("P",texts);Assert.Contains(texts,t=>t.Contains("pendiente",StringComparison.OrdinalIgnoreCase));
     }
     [Fact]
     public void Reader_rejects_corrupt_workbook_without_side_effects()

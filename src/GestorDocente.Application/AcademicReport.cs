@@ -17,7 +17,7 @@ public static class AcademicReportProjection
         }
         else
         {
-            foreach(var week in cut.Weeks)columns.Add(new(week.Label,22));
+            foreach(var week in cut.DisplayWeeks)columns.Add(new(week.Label,22));
             foreach(var title in new[]{"Presentes","Ausentes","Justificadas","Tardanzas","Registrados","Sin diligenciar","% asistencia"})columns.Add(new(title,19));
         }
         var rows=new List<IReadOnlyList<object?>>();int index=0;

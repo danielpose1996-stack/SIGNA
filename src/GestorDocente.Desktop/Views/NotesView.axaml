@@ -4,7 +4,7 @@
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate><DataTemplate>
         <Button Command="{Binding ConfigureCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,8,0" Height="36" Padding="8,3" Background="White" ToolTip.Tip="{Binding TypeLabel}">
-          <Grid ColumnDefinitions="*,Auto,14" ColumnSpacing="8"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" /><TextBlock Grid.Column="1" Text="{Binding WeightLabel}" Foreground="{DynamicResource Primary}" FontSize="12" VerticalAlignment="Center" /><c:VectorIcon Grid.Column="2" Kind="settings" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
+          <Grid ColumnDefinitions="*,Auto,14" ColumnSpacing="8"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" /><TextBlock Grid.Column="1" Text="{Binding WeightLabel}" Foreground="{DynamicResource AccentText}" FontSize="12" VerticalAlignment="Center" /><c:VectorIcon Grid.Column="2" Kind="settings" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
         </Button>
       </DataTemplate></ItemsControl.ItemTemplate>
     </ItemsControl>

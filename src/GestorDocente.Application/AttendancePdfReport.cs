@@ -32,7 +32,7 @@ public static class AttendancePdfProjection
                 throw new AcademicValidationException("Los registros de asistencia del estudiante contienen datos duplicados o inválidos.");
         }
         var states=cut.Weeks.Select(w=>attendance.TryGetValue(w.Number,out var state) ? (AttendanceState?)state : null).ToArray();
-        var lines=cut.Weeks.Select((week,i)=>new AttendancePdfLine(week.Number,
+        var lines=cut.DisplayWeeks.Select((week,i)=>new AttendancePdfLine(week.DisplayNumber,
             week.Kind==WeekKind.Class ? "Clase" : "Actividades",states[i] switch
             {
                 AttendanceState.Present=>"P - Presente",AttendanceState.Absent=>"A - Ausente",

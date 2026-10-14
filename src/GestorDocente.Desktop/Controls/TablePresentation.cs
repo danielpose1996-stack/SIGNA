@@ -23,6 +23,16 @@ public static class TablePresentation
             return text;
         })
     };
+    public static DataGridTemplateColumn Grade(string title,string path,double width,ViewModels.AppearanceViewModel appearance)=>new()
+    {
+        Header=Header(title),Width=new(width),
+        CellTemplate=new FuncDataTemplate<object>((_,_)=>
+        {
+            var result=new ResultGrade();result.Bind(ResultGrade.ValueProperty,new Binding(path));
+            result.Bind(ResultGrade.ColorizeProperty,new Binding(nameof(ViewModels.AppearanceViewModel.CurrentColorGrades)){Source=appearance});
+            return result;
+        })
+    };
     public static double HeaderWidth(string text,double minimum=110,double maximum=220)=>
         Math.Clamp(MeasureWidth(text.Split('\n'),11)+24,minimum,maximum);
     internal static double MeasureWidth(IEnumerable<string> values,double fontSize)

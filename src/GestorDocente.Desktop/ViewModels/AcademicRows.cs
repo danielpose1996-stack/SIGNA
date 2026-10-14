@@ -80,6 +80,7 @@ public sealed class GradeRowViewModel
     public string FullName=>Student.FullName;
     public Dictionary<string,GradeCellViewModel> Cells {get;}
     public string Total {get;}
+    public decimal? TotalValue {get;}
     public string Completion {get;}
     public Dictionary<string,string> GroupTotals {get;}
     public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
@@ -89,6 +90,7 @@ public sealed class GradeRowViewModel
         GroupTotals=data.Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(index.Group(g,student.Id)));
         Cells=data.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id,index));
         var total=index.Cut(student.Id);
+        TotalValue=total;
         Total=AcademicFormatting.Grade(total);Completion=total is null || index.HasPendingGrades(student.Id) ? "Pendiente" : "Completo";
     }
 }
@@ -146,7 +148,7 @@ public sealed class AttendanceRowViewModel
         var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
         Cells=data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state)));
         Summary=AttendanceSummary.From(data.Weeks.Select(w=>index.Attendance(student.Id,w.Number)));
-        WeeklyDetails=new(data.Weeks.Select(w=> {
+        WeeklyDetails=new(data.DisplayWeeks.Select(w=> {
             var state=index.Attendance(student.Id,w.Number);
             var text=state switch {AttendanceState.Present=>"Presente",AttendanceState.Absent=>"Ausente",AttendanceState.Justified=>"Justificada",AttendanceState.Late=>"Tarde",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"};
             var code=state switch {AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",_=>"—"};

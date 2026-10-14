@@ -2,12 +2,12 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24,0,24,24" Spacing="20">
       <Border Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="18">
-        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="{DynamicResource Primary}" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="{DynamicResource Muted}" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" /></StackPanel></Grid>
+        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="{DynamicResource AccentText}" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="{DynamicResource Muted}" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" /></StackPanel></Grid>
       </Border>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
         <Border Classes="card" Padding="24">
           <StackPanel Spacing="17">
-            <c:VectorIcon Kind="backup" Stroke="{DynamicResource Primary}" Width="34" Height="34" HorizontalAlignment="Left" />
+            <c:VectorIcon Kind="backup" Stroke="{DynamicResource AccentText}" Width="34" Height="34" HorizontalAlignment="Left" />
             <TextBlock Text="Respaldo local" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Una copia que tú conservas" Classes="muted" />
             <TextBlock Text="Selecciona dónde guardar un archivo nuevo .aulabk: una carpeta de este equipo o una memoria externa." TextWrapping="Wrap" />
@@ -17,7 +17,7 @@
         </Border>
         <Border Grid.Column="1" Classes="card" Padding="24">
           <StackPanel Spacing="17">
-            <c:VectorIcon Kind="restore" Width="34" Height="34" Stroke="{DynamicResource Primary}" HorizontalAlignment="Left" />
+            <c:VectorIcon Kind="restore" Width="34" Height="34" Stroke="{DynamicResource AccentText}" HorizontalAlignment="Left" />
             <TextBlock Text="Restaurar una copia" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Continúa tu trabajo en este u otro computador" Classes="muted" TextWrapping="Wrap" />
             <TextBlock Text="Selecciona un archivo .aulabk y escribe su contraseña. Se verifica el cifrado, la integridad de SQLite y todas las relaciones antes de recuperar los datos." TextWrapping="Wrap" />

@@ -25,8 +25,8 @@ public partial class ConsolidatedView : UserControl
         ConsolidatedTable.Columns.Add(TablePresentation.Text("Documento","Document",108));
         ConsolidatedTable.Columns.Add(TablePresentation.Text("Nombre del estudiante","FullName",240));
         foreach(var cut in model.Consolidated.Cuts)
-            ConsolidatedTable.Columns.Add(TablePresentation.Text(cut.Header,$"CutGrades[{cut.Number}]",110));
-        ConsolidatedTable.Columns.Add(TablePresentation.Text("Nota final\n100 %","Final",120));
+            ConsolidatedTable.Columns.Add(TablePresentation.Grade(cut.Header,$"CutValues[{cut.Number}]",110,model.Appearance));
+        ConsolidatedTable.Columns.Add(TablePresentation.Grade("Nota final\n100 %","FinalValue",120,model.Appearance));
         ConsolidatedTable.Columns.Add(TablePresentation.Text("Estado","Status",125));
         layout=new(ConsolidatedTable,model.Service.Current.Students);
     }

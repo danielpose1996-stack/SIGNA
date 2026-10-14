@@ -299,6 +299,13 @@ public sealed class WorkspaceService
         var next=cut.Weeks.Concat(cut.RemovedWeeks).Select(w=>w.Number).DefaultIfEmpty(0).Max()+1;cut.Weeks.Add(new(next,kind,date));
         if(markAllPresent)cut.Attendance.AddRange(students.Select(student=>new AttendanceEntry(student.Id,next,AttendanceState.Present)));
     }
+    public Task EditWeekAsync(int number,int week,WeekKind kind,DateOnly? date)=>ChangeAsync(number,cut=>
+    {
+        if(!Enum.IsDefined(kind))throw new AcademicValidationException("Selecciona semana de clase o actividades.");
+        var position=cut.Weeks.FindIndex(w=>w.Number==week);
+        if(position<0)throw new AcademicValidationException("La semana ya no está activa. Actualiza la materia.");
+        cut.Weeks[position]=cut.Weeks[position] with {Kind=kind,Date=date};
+    },new(WorkspaceChangeKind.Structure,number));
     public void RemoveWeek(int number,int week)=>Change(number,cut=>{
         var item=cut.Weeks.SingleOrDefault(w=>w.Number==week) ?? throw new AcademicValidationException("La semana no está activa.");cut.Weeks.Remove(item);cut.RemovedWeeks.Add(item);
     },new(WorkspaceChangeKind.Structure,number));

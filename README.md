@@ -16,11 +16,11 @@ Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielp
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.0.0-windows-x64-setup.exe` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.0.0-linux-x64.deb` o `SIGNA-1.0.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.0.0-linux-x64.rpm` o `SIGNA-1.0.0-linux-arm64.rpm` |
-| macOS 15 o posterior, Intel | `SIGNA-1.0.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.0.0-osx-arm64.dmg` |
+| Windows x64 | `SIGNA-1.1.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.1.0-linux-x64.deb` o `SIGNA-1.1.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.1.0-linux-x64.rpm` o `SIGNA-1.1.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.1.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.1.0-osx-arm64.dmg` |
 
 Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
@@ -37,9 +37,9 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | **Estudiantes dentro de una materia** | Importar el listado desde `.xlsx`, añadir estudiantes manualmente y consultar, editar o eliminar su información. Correo y celular son opcionales; el celular se oculta inicialmente en los detalles. |
 | **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
-| **Asistencias** | Crear semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Generar PDF individual. |
+| **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Numeración visible consecutiva y PDF individual. |
 | **Respaldos** | Guardar y restaurar una copia local cifrada de toda la base SQLite, con contraseña, comprobaciones de integridad y confirmación antes de reemplazar datos. |
-| **Apariencia** | Elegir una paleta de colores y un icono de perfil; conservar la elección para próximos inicios. |
+| **Apariencia** | Elegir una paleta o un color RGB, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 
 No se necesita servidor, cuenta de SIGNA ni inicio de sesión para usar estas funciones. Los respaldos se guardan únicamente de forma local; el usuario elige dónde crear el archivo y desde dónde restaurarlo.
 
@@ -237,7 +237,7 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 | Infrastructure | Persistencia en SQLite temporal, conflictos de revisión, integridad, Excel, PDF y respaldos/restauración. |
 | Acceptance | ViewModels y controles Avalonia con Headless: navegación, formularios, tablas, selección y actualización de métricas. |
 
-La última validación automatizada de esta versión aprobó **220 pruebas**, con compilación Release sin errores ni advertencias. Durante el desarrollo se comprobaron publicaciones para Windows, macOS Apple Silicon y Linux x64/ARM64, además de la integridad de los recursos del icono. Una publicación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real: la validación manual de cada plataforma corresponde a quienes la ejecuten allí. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
+La última validación automatizada del código aprobó **249 pruebas**, con compilación Release sin errores ni advertencias. Durante el desarrollo se comprobaron publicaciones para Windows, macOS Apple Silicon y Linux x64/ARM64, además de la integridad de los recursos del icono. Una publicación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real: la validación manual de cada plataforma corresponde a quienes la ejecuten allí. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
 
 ## Contribuir y gestionar cambios
 

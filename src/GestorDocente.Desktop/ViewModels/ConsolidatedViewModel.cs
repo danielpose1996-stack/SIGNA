@@ -10,6 +10,7 @@ public sealed record CutColumn(int Number,decimal Weight,bool IsSelected=false)
 }
 public sealed record ConsolidatedStudentRow(int Number,Student Student,IReadOnlyDictionary<int,string> CutGrades,decimal? FinalValue,bool Pending)
 {
+    public IReadOnlyDictionary<int,decimal?> CutValues {get;init;}=new Dictionary<int,decimal?>();
     public string Document=>Student.Document;
     public string FullName=>Student.FullName;
     public string Final=>AcademicFormatting.Grade(FinalValue);
@@ -52,15 +53,16 @@ public sealed class ConsolidatedViewModel : ObservableObject
     }
     private ConsolidatedStudentRow Build(Student student,int number)
     {
-        bool pending=false;Dictionary<int,string> values=[];List<(decimal? Grade,decimal Weight)> results=[];
+        bool pending=false;Dictionary<int,string> values=[];Dictionary<int,decimal?> numeric=[];List<(decimal? Grade,decimal Weight)> results=[];
         foreach(var cut in Cuts)
         {
             var index=indexes[cut.Number];var value=index.Cut(student.Id);
             values.Add(cut.Number,AcademicFormatting.Grade(value));
+            numeric.Add(cut.Number,value);
             results.Add((value,cut.Weight));
             pending|=value is null || index.HasPendingGrades(student.Id);
         }
-        return new(number,student,values,GradeCalculator.Final(results,WeightsPending),pending);
+        return new(number,student,values,GradeCalculator.Final(results,WeightsPending),pending){CutValues=numeric};
     }
     private void Filter()
     {

@@ -45,7 +45,7 @@ public partial class NotesView : UserControl
         var averageTitle=$"Promedio {group.Name}\n{group.Weight:0.##} %";
         GradesTable.Columns.Add(Text(averageTitle,$"GroupTotals[{group.Id}]",TablePresentation.HeaderWidth(averageTitle)));
         }
-        GradesTable.Columns.Add(Text("Nota del\ncorte","Total",105));
+        GradesTable.Columns.Add(TablePresentation.Grade("Nota del\ncorte","TotalValue",105,observed.Appearance));
         GradesTable.Columns.Add(Text("Estado","Completion",100));
         columnLayout=new(GradesTable,observed.Service.Current.Students);
     }

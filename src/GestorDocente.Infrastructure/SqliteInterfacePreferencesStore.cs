@@ -17,12 +17,16 @@ public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePrefe
             exists.CommandText="SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='interface_preferences'";
             if(Convert.ToInt32(exists.ExecuteScalar())==0)return new();
         }
-        using var command=db.CreateCommand();command.CommandText="SELECT id,schema_version,palette,avatar FROM interface_preferences";
+        var columns=Columns(db);
+        using var command=db.CreateCommand();
+        command.CommandText=$"SELECT id,schema_version,palette,avatar,{(columns.Contains("teacher_name") ? "teacher_name" : "''")},{(columns.Contains("custom_accent") ? "custom_accent" : "NULL")},{(columns.Contains("color_grades") ? "color_grades" : "1")} FROM interface_preferences";
         using var rows=command.ExecuteReader();if(!rows.Read())return new();
         if(rows.IsDBNull(0) || rows.IsDBNull(1) || rows.IsDBNull(2) || rows.IsDBNull(3) || rows.GetInt32(0)!=1 || rows.GetInt32(1)!=1 ||
             !Enum.TryParse<InterfacePalette>(rows.GetString(2),out var palette) || !Enum.TryParse<ProfileAvatar>(rows.GetString(3),out var avatar))
             throw new AcademicValidationException("Las preferencias de apariencia no son compatibles. Puedes volver a seleccionar la paleta y el icono desde el perfil.");
-        var result=new InterfacePreferences(palette,avatar);result.Validate();
+        if(rows.IsDBNull(4) || rows.IsDBNull(6) || rows.GetInt32(6) is not (0 or 1))
+            throw new AcademicValidationException("El perfil o los colores guardados no son compatibles. Revisa Personalizar apariencia.");
+        var result=new InterfacePreferences(palette,avatar,rows.GetString(4),rows.IsDBNull(5) ? null : rows.GetString(5),rows.GetInt32(6)==1);result.Validate();
         if(rows.Read())throw new AcademicValidationException("Las preferencias de apariencia tienen registros duplicados.");
         return result;
     }
@@ -35,14 +39,29 @@ public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePrefe
             if(Convert.ToInt32(version.ExecuteScalar())!=1)throw new AcademicValidationException("El catálogo no admite esta configuración de apariencia.");
         }
         using var tx=db.BeginTransaction();using var command=db.CreateCommand();command.Transaction=tx;
-        // Extensión opcional del catálogo: no cambia las tablas ni versiones académicas.
+        // Optional additive extension; schema changes and values commit together.
+        command.CommandText="CREATE TABLE IF NOT EXISTS interface_preferences(id INTEGER PRIMARY KEY CHECK(id=1),schema_version INTEGER NOT NULL CHECK(schema_version=1),palette TEXT NOT NULL,avatar TEXT NOT NULL)";
+        command.ExecuteNonQuery();
+        var columns=Columns(db,tx);
+        foreach(var (name,definition) in new[]{("teacher_name","TEXT NOT NULL DEFAULT ''"),("custom_accent","TEXT"),("color_grades","INTEGER NOT NULL DEFAULT 1 CHECK(color_grades IN (0,1))")})
+            if(!columns.Contains(name))
+            {
+                command.CommandText=$"ALTER TABLE interface_preferences ADD COLUMN {name} {definition}";
+                command.ExecuteNonQuery();
+            }
         command.CommandText="""
-            CREATE TABLE IF NOT EXISTS interface_preferences(id INTEGER PRIMARY KEY CHECK(id=1),schema_version INTEGER NOT NULL CHECK(schema_version=1),palette TEXT NOT NULL,avatar TEXT NOT NULL);
-            INSERT INTO interface_preferences(id,schema_version,palette,avatar) VALUES(1,1,$palette,$avatar)
-            ON CONFLICT(id) DO UPDATE SET schema_version=1,palette=excluded.palette,avatar=excluded.avatar;
+            INSERT INTO interface_preferences(id,schema_version,palette,avatar,teacher_name,custom_accent,color_grades) VALUES(1,1,$palette,$avatar,$name,$accent,$grades)
+            ON CONFLICT(id) DO UPDATE SET schema_version=1,palette=excluded.palette,avatar=excluded.avatar,teacher_name=excluded.teacher_name,custom_accent=excluded.custom_accent,color_grades=excluded.color_grades;
             """;
         command.Parameters.AddWithValue("$palette",preferences.Palette.ToString());command.Parameters.AddWithValue("$avatar",preferences.Avatar.ToString());
+        command.Parameters.AddWithValue("$name",preferences.TeacherName);command.Parameters.AddWithValue("$accent",(object?)preferences.CustomAccent ?? DBNull.Value);command.Parameters.AddWithValue("$grades",preferences.ColorGrades ? 1 : 0);
         command.ExecuteNonQuery();tx.Commit();
+    }
+    private static HashSet<string> Columns(SqliteConnection db,SqliteTransaction? transaction=null)
+    {
+        using var command=db.CreateCommand();command.Transaction=transaction;command.CommandText="PRAGMA table_info(interface_preferences)";
+        using var rows=command.ExecuteReader();HashSet<string> columns=new(StringComparer.Ordinal);
+        while(rows.Read())columns.Add(rows.GetString(1));return columns;
     }
     private SqliteConnection Open(SqliteOpenMode mode)
     {

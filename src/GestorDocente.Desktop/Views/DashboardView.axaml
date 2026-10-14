@@ -17,7 +17,7 @@
           <DataTemplate>
             <Border Classes="card" Width="350" Padding="18" Margin="0,0,12,12">
               <StackPanel Spacing="10">
-                <Grid ColumnDefinitions="30,*"><c:VectorIcon Kind="chart" Width="23" Height="23" Stroke="{DynamicResource Primary}" /><TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
+                <Grid ColumnDefinitions="30,*"><c:VectorIcon Kind="chart" Width="23" Height="23" Stroke="{DynamicResource AccentText}" /><TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
                 <TextBlock Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding StudentsLabel}" Classes="muted" FontSize="12" />
                 <ItemsControl ItemsSource="{Binding Cuts}"><ItemsControl.ItemTemplate><DataTemplate>

@@ -50,7 +50,7 @@ public partial class App : Avalonia.Application
         var catalog=new CatalogService(new SqliteCatalogStore(path));
         var backup=new EncryptedLocalBackupService(path);
         var preferences=new InterfacePreferencesService(new SqliteInterfacePreferencesStore(path));
-        if(Current is {} app)ThemePalettes.Apply(app,preferences.Current.Palette);
+        if(Current is {} app)ThemePalettes.Apply(app,preferences.Current);
         return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new XlsxStudentReader(),new XlsxReportExporter(),backup,new AttendancePdfExporter(),preferences);
     }
     internal static string ProductionDatabasePath()

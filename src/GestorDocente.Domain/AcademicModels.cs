@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
@@ -28,6 +30,9 @@ public sealed class AcademicCut
     public List<RemovedActivity> RemovedActivities { get; set; } = [];
     public List<EvaluationGroup> RemovedGroups { get; set; } = [];
     public List<AttendanceWeek> RemovedWeeks { get; set; } = [];
+    // Number is the immutable historical key. Only this projection renumbers labels.
+    [JsonIgnore]
+    public IReadOnlyList<AttendanceWeek> DisplayWeeks => Weeks.Select((week,index)=>week with {DisplayNumber=index+1}).ToArray();
 }
 public enum EvaluationMode { Direct, SubActivities }
 public sealed class EvaluationGroup
@@ -49,9 +54,11 @@ public sealed record RemovedActivity(string GroupId, EvaluationActivity Activity
 public enum WeekKind { Class, Activities }
 public sealed record AttendanceWeek(int Number, WeekKind Kind = WeekKind.Class, DateOnly? Date = null)
 {
+    [JsonIgnore]
+    public int DisplayNumber { get; init; } = Number;
     public string DateLabel => Date?.ToString("dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture) ?? "";
-    public string Label => $"Semana {Number} · {(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $" · {DateLabel}")}";
-    public string ShortLabel => $"Semana {Number}\n{(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $"\n{DateLabel}")}";
+    public string Label => $"Semana {DisplayNumber} · {(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $" · {DateLabel}")}";
+    public string ShortLabel => $"Semana {DisplayNumber}\n{(Kind == WeekKind.Class ? "Clase" : "Actividades")}{(Date is null ? "" : $"\n{DateLabel}")}";
 }
 public enum AttendanceState { Present, Absent, Justified, Late, NoClass }
 public sealed record AttendanceEntry(string StudentId, int WeekNumber, AttendanceState State);

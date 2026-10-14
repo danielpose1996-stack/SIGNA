@@ -487,7 +487,7 @@ public sealed class MainViewModel : ObservableObject
         readIndex=projection.Index;
         Groups.Clear();
         foreach(var group in cut.Groups)Groups.Add(new(group.Name,$"{group.Weight:0.##} %",group.Mode==EvaluationMode.Direct ? "Nota directa" : $"Promedio simple · {group.Activities.Count} subactividades",ConfigureCommand));
-        Weeks.Clear();foreach(var week in cut.Weeks)Weeks.Add(week);
+        Weeks.Clear();foreach(var week in cut.DisplayWeeks)Weeks.Add(week);
         // Remove the old row contexts before rebuilding columns. Publish new rows only
         // after both tables have their matching grade/week schema.
         GradeRows.Clear();AttendanceRows.Clear();
