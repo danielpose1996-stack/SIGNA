@@ -1,2 +1,5 @@
 # Los lanzadores Unix deben conservar LF también al clonar desde Windows.
 *.sh text eol=lf
+
+# Los manuales PDF se versionan como archivos binarios.
+docs/manuales/*.pdf binary

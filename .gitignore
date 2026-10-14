@@ -91,7 +91,10 @@ artifacts/test-results/
 /.agents/
 /.specify/
 /specs/
-/docs/
+/docs/*
+!/docs/manuales/
+/docs/manuales/*
+!/docs/manuales/Manual_de_Usuario_SIGNA.pdf
 /design-references/
 /artifacts/evidencias/
 /LEEME-PRIMERO.md
