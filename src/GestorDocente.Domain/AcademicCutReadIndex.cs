@@ -30,6 +30,8 @@ public sealed class AcademicCutReadIndex
     }
     public AttendanceState? Attendance(string studentId,int week)=>
         attendance.TryGetValue((studentId,week),out var value) ? value : null;
+    public decimal? AttendanceGrade(string studentId)=>
+        cut.AttendanceGrading?.Average(cut.Weeks.Select(w=>Attendance(studentId,w.Number)));
     public void ApplyGrade(string studentId,string activityId,decimal? value)
     {
         if(value is { } grade){AcademicRules.ValidateGrade(grade);grades[(studentId,activityId)]=grade;}

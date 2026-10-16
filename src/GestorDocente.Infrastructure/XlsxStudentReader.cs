@@ -39,7 +39,13 @@ public sealed class XlsxStudentReader : IStudentWorkbookReader
                         var address=(string?)cell.Attribute("r");var column=address is null ? next : Column(address);next=column+1;
                         if(column is <0 or >=256)throw new AcademicValidationException("Solo se admiten las primeras 256 columnas.");
                         var raw=cell.Element(S+"v")?.Value ?? "";var type=(string?)cell.Attribute("t");var value=raw;
-                        if(type=="s"){if(!int.TryParse(raw,out var index) || index<0 || index>=strings.Length)throw new InvalidDataException();value=strings[index];}
+                        if(type=="s")
+                        {
+                            // Una celda puede conservar tipo/estilo de texto sin tener valor.
+                            // Solo un índice no vacío debe resolverse en sharedStrings.
+                            if(string.IsNullOrWhiteSpace(raw))value="";
+                            else{if(!int.TryParse(raw,out var index) || index<0 || index>=strings.Length)throw new InvalidDataException();value=strings[index];}
+                        }
                         else if(type=="inlineStr")value=Text(cell.Element(S+"is") ?? cell);
                         else if(type is null or "n")
                         {
@@ -56,7 +62,7 @@ public sealed class XlsxStudentReader : IStudentWorkbookReader
             return new(sheets);
         }
         catch(Exception ex) when(ex is InvalidDataException or XmlException or ArgumentException or OverflowException or FormatException)
-        {throw new AcademicValidationException("No se pudo leer el Excel. Puede estar dañado, cifrado o tener un formato no compatible. Guarda una copia .xlsx e intenta de nuevo.");}
+        {throw new AcademicValidationException("No se pudo leer el Excel. Puede estar dañado, cifrado o tener un formato no compatible. Guarda una copia .xlsx e intenta de nuevo.",ex);}
     }
     private static XDocument Xml(ZipArchive zip,string path)
     {

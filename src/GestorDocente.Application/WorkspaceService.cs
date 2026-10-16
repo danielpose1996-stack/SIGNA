@@ -3,7 +3,7 @@ using GestorDocente.Domain;
 
 namespace GestorDocente.Application;
 
-public enum WorkspaceChangeKind { Structure, Grade, Attendance, Students }
+public enum WorkspaceChangeKind { Structure, Grade, Attendance, Students, GradesBatch, AttendanceGrading }
 public sealed record WorkspaceChange(WorkspaceChangeKind Kind,int Cut=0,string? StudentId=null,string? ActivityId=null,int? Week=null,decimal? Grade=null,AttendanceState? Attendance=null,int? RemovedCut=null);
 
 public sealed class WorkspaceService
@@ -208,6 +208,23 @@ public sealed class WorkspaceService
         return ChangeAsync(number,cut=>{cut.Grades.RemoveAll(x=>x.StudentId==studentId && x.ActivityId==activityId);if(value is not null)cut.Grades.Add(new(studentId,activityId,value.Value));},
             new(WorkspaceChangeKind.Grade,number,studentId,ActivityId:activityId,Grade:value),
             cut=>cut.Grades.SingleOrDefault(x=>x.StudentId==studentId && x.ActivityId==activityId)?.Value==value);
+    }
+    public Task PasteGradesAsync(GradePastePreview preview,bool confirmed=false)
+    {
+        if(!confirmed)throw new AcademicValidationException("Revisa y confirma la vista previa antes de guardar las notas.");
+        if(!ReferenceEquals(preview.Source,Current))throw new AcademicValidationException("La materia cambió desde la vista previa. Cierra y vuelve a abrir Pegar notas para revisar el orden y las notas actuales.");
+        if(!preview.CanSave)throw new AcademicValidationException(preview.Validation);
+        var rows=preview.Rows.ToArray();var ids=rows.Select(r=>r.StudentId).ToHashSet();
+        return ChangeAsync(preview.Cut,cut=>
+        {
+            cut.Grades.RemoveAll(g=>g.ActivityId==preview.TargetId && ids.Contains(g.StudentId));
+            foreach(var row in rows){AcademicRules.ValidateGrade(row.Grade!.Value);cut.Grades.Add(new(row.StudentId,preview.TargetId,row.Grade.Value));}
+        },new(WorkspaceChangeKind.GradesBatch,preview.Cut,ActivityId:preview.TargetId));
+    }
+    public Task ConfigureAttendanceGradingAsync(int number,AttendanceGradePolicy policy)
+    {
+        policy.Validate();
+        return ChangeAsync(number,cut=>cut.AttendanceGrading=policy,new(WorkspaceChangeKind.AttendanceGrading,number));
     }
     private async Task ChangeAsync(int number,Action<AcademicCut> action,WorkspaceChange change,Func<AcademicCut,bool>? unchanged=null)
     {

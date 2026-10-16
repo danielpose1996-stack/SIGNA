@@ -11,10 +11,12 @@ public partial class MainWindow : Window
     public MainWindow() {InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();}
     private void Attach()
     {
+        if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;}
         observed=DataContext as MainViewModel;
+        if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
         if(observed is not null) {observed.PropertyChanged+=OnModelPropertyChanged;observed.ConfigurationRequested+=OpenConfiguration;observed.CutWeightsRequested+=OpenCutWeights;observed.CutDeletionRequested+=DeleteCut;observed.CatalogEditorRequested+=OpenCatalog;observed.CourseEditionRequested+=EditCourse;observed.CourseDeletionRequested+=DeleteCourse;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.StudentEditorRequested+=AddStudent;observed.StudentDetailsRequested+=ViewStudentDetails;observed.ExportRequested+=ExportReport;observed.AttendancePdfRequested+=ExportAttendancePdf;observed.NotesPdfRequested+=ExportNotesPdf;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;}
@@ -139,6 +141,22 @@ public partial class MainWindow : Window
         try{await ShowAcademicDialog(new WeeksWindow{DataContext=new WeeksViewModel(observed.Service,observed.SelectedCut)});}
         catch(Exception ex){observed.Message=SafeError(ex);}
     }
+    private async void OpenGradePaste(string targetId)
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        model.FileBusy=true;
+        try{await ShowAcademicDialog(new GradePasteWindow{DataContext=new GradePasteViewModel(model,targetId)});}
+        catch(Exception ex){model.Message=SafeError(ex);}
+        finally{model.FileBusy=false;}
+    }
+    private async void OpenAttendanceGrading()
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        model.FileBusy=true;
+        try{await ShowAcademicDialog(new AttendanceGradingWindow{DataContext=new AttendanceGradingViewModel(model.Service,model.SelectedCut)});}
+        catch(Exception ex){model.Message=SafeError(ex);}
+        finally{model.FileBusy=false;}
+    }
     private async void OpenRecovery()
     {
         if(observed is null)return;
@@ -163,6 +181,7 @@ public partial class MainWindow : Window
         try {await dialog.ShowDialog(this);} finally {ModalOverlay.IsVisible=false;}
     }
     private static FilePickerFileType ExcelType=>new("Libro de Excel (.xlsx)"){Patterns=["*.xlsx"],MimeTypes=["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]};
+    private static FilePickerFileType ExcelImportType=>new("Libros de Excel (.xls, .xlsx, .xlsm, .xlsb)"){Patterns=["*.xls","*.xlsx","*.xlsm","*.xlsb"],MimeTypes=["application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel.sheet.macroEnabled.12","application/vnd.ms-excel.sheet.binary.macroEnabled.12"]};
     private static FilePickerFileType PdfType=>new("Documento PDF (.pdf)"){Patterns=["*.pdf"],MimeTypes=["application/pdf"]};
     private static FilePickerFileType BackupType=>new("Respaldo cifrado de SIGNA (.aulabk)"){Patterns=["*.aulabk"]};
     private async Task<string?> RequestBackupPassword(string title,bool confirmation)
@@ -238,10 +257,11 @@ public partial class MainWindow : Window
         model.FileBusy=true;var service=model.Service;
         try
         {
-            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Importar listado de estudiantes",AllowMultiple=false,FileTypeFilter=[ExcelType]});
+            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Importar listado de estudiantes",AllowMultiple=false,FileTypeFilter=[ExcelImportType]});
             if(files.Count==0)return;using var file=files[0];
-            if(!file.Name.EndsWith(".xlsx",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("Selecciona un archivo .xlsx.");
-            model.Message="Leyendo Excel…";await using var input=await file.OpenReadAsync();
+            if(!StudentWorkbookFormats.IsSupportedFileName(file.Name))throw new AcademicValidationException("Selecciona un libro .xls, .xlsx, .xlsm o .xlsb.");
+            model.Message="Leyendo Excel…";
+            await using var input=file.TryGetLocalPath() is {} localPath ? StudentWorkbookFile.OpenRead(localPath) : await file.OpenReadAsync();
             var workbook=await Task.Run(()=>model.WorkbookReader.Read(input));
             var import=new StudentImportViewModel(service,workbook,file.Name);model.Message="";
             await ShowAcademicDialog(new StudentImportWindow{DataContext=import});

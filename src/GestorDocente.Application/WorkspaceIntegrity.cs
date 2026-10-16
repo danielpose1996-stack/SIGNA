@@ -33,6 +33,16 @@ public static class WorkspaceIntegrity
                 foreach(var key in new[]{"Groups","Grades","Weeks","Attendance","RemovedActivities","RemovedGroups","RemovedWeeks"})
                     if(!HasArray(cut,key))Invalid();
                 if(version>=3 && (!cut.TryGetProperty("Weight",out var weight) || !weight.TryGetDecimal(out _)))Invalid();
+                if(version>=6)
+                {
+                    if(!cut.TryGetProperty("AttendanceGrading",out var grading))Invalid();
+                    if(grading.ValueKind!=JsonValueKind.Null)
+                    {
+                        if(grading.ValueKind!=JsonValueKind.Object || !grading.TryGetProperty("Enabled",out var enabled) || enabled.ValueKind is not (JsonValueKind.True or JsonValueKind.False))Invalid();
+                        foreach(var key in new[]{"Present","Absent","Justified","Late"})
+                            if(!grading.TryGetProperty(key,out var grade) || !grade.TryGetDecimal(out _))Invalid();
+                    }
+                }
             }
         return JsonSerializer.Deserialize<AcademicWorkspace>(payload) ?? throw new AcademicValidationException("La materia almacenada está dañada.");
     }
@@ -66,6 +76,7 @@ public static class WorkspaceIntegrity
 
     private static void ValidateCut(AcademicCut cut,HashSet<string> students)
     {
+        cut.AttendanceGrading?.Validate();
         if(cut.Groups is null || cut.RemovedGroups is null || cut.RemovedActivities is null ||
            cut.Grades is null || cut.Weeks is null || cut.RemovedWeeks is null || cut.Attendance is null ||
            cut.Weeks.Count>9)Invalid();

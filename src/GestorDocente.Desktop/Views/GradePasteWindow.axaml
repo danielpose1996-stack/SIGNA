@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.GradePasteWindow" Title="Pegar calificaciones — SIGNA" Width="840" Height="700" MinWidth="560" MinHeight="460" WindowStartupLocation="CenterOwner">
+  <Grid Margin="22" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="10">
+    <StackPanel Spacing="5"><TextBlock Text="Pegar calificaciones" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding Context}" Classes="muted" TextWrapping="Wrap" /><TextBlock Text="{Binding Scope}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+    <TextBox Grid.Row="1" x:Name="GradeListInput" Text="{Binding Input,Mode=TwoWay}" AcceptsReturn="True" TextWrapping="NoWrap" Height="80" Watermark="Una nota por línea. Ejemplo: 4,5 o 4.5. Usa Ctrl+V o ⌘V para pegar." AutomationProperties.Name="Lista de calificaciones, una por estudiante" IsEnabled="{Binding CanEdit}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+    <Button Grid.Row="2" Content="Vista previa" Command="{Binding PreviewCommand}" />
+    <DataGrid Grid.Row="3" x:Name="GradePastePreviewTable" ItemsSource="{Binding Rows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" ColumnHeaderHeight="34" RowHeight="NaN" HorizontalScrollBarVisibility="Auto">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="#" Binding="{Binding Number}" Width="36" />
+        <DataGridTemplateColumn Header="Nombre completo" Width="*" MinWidth="180"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding FullName}" TextWrapping="Wrap" ToolTip.Tip="{Binding FullName}" FontSize="12" Margin="4,3" /></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+        <DataGridTextColumn Binding="{Binding Input}" Width="85"><DataGridTextColumn.Header><TextBlock Text="Nota" FontSize="11" FontWeight="SemiBold" /></DataGridTextColumn.Header></DataGridTextColumn>
+        <DataGridTemplateColumn Header="Validación" Width="180"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Text="{Binding Error}" TextWrapping="Wrap" Classes="error" FontSize="11" Margin="3" /></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+      </DataGrid.Columns>
+    </DataGrid>
+    <StackPanel Grid.Row="4" Spacing="5"><TextBlock Text="{Binding Validation}" FontSize="12" TextWrapping="Wrap" /><CheckBox IsChecked="{Binding ConfirmReplacement,Mode=TwoWay}" IsVisible="{Binding RequiresReplacement}" IsEnabled="{Binding CanEdit}"><TextBlock Text="Confirmo reemplazar las notas existentes de esta columna para los estudiantes de la vista previa." FontSize="12" TextWrapping="Wrap" /></CheckBox><TextBlock Text="{Binding Error}" Classes="error" TextWrapping="Wrap" /></StackPanel>
+    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" IsEnabled="{Binding CanEdit}" /><Button x:Name="SavePastedGrades" Content="Guardar calificaciones" Classes="primary" Click="Save" IsEnabled="{Binding CanSave}" /></StackPanel>
+  </Grid>
+</Window>

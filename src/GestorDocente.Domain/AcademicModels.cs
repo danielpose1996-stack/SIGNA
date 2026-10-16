@@ -4,7 +4,7 @@ namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
 {
-    public const int CurrentSchemaVersion=5;
+    public const int CurrentSchemaVersion=6;
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public bool CutWeightsPending { get; set; }
     public bool IsDemo { get; set; } = true;
@@ -23,6 +23,7 @@ public sealed class AcademicCut
 {
     public int Number { get; set; }
     public decimal Weight { get; set; }
+    public AttendanceGradePolicy? AttendanceGrading { get; set; }
     public List<EvaluationGroup> Groups { get; set; } = [];
     public List<GradeEntry> Grades { get; set; } = [];
     public List<AttendanceWeek> Weeks { get; set; } = [];
@@ -83,4 +84,4 @@ public sealed record AttendanceSummary(int Present, int Absent, int Justified, i
         return new(list.Count(x=>x==AttendanceState.Present), list.Count(x=>x==AttendanceState.Absent), list.Count(x=>x==AttendanceState.Justified), list.Count(x=>x==AttendanceState.Late));
     }
 }
-public sealed class AcademicValidationException(string message) : Exception(message);
+public sealed class AcademicValidationException(string message,Exception? innerException=null) : Exception(message,innerException);

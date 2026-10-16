@@ -12,15 +12,17 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
+**Versión 1.3.0:** importación XLS/XLSX/XLSM/XLSB con correcciones de lectura y archivos abiertos, pegado masivo de calificaciones con vista previa, orden alfabético y nota opcional de asistencia por corte. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.3.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.3.0).
+
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.2.0-windows-x64-setup.exe` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.2.0-linux-x64.deb` o `SIGNA-1.2.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.2.0-linux-x64.rpm` o `SIGNA-1.2.0-linux-arm64.rpm` |
-| macOS 15 o posterior, Intel | `SIGNA-1.2.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.2.0-osx-arm64.dmg` |
+| Windows x64 | `SIGNA-1.3.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.3.0-linux-x64.deb` o `SIGNA-1.3.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.3.0-linux-x64.rpm` o `SIGNA-1.3.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.3.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.3.0-osx-arm64.dmg` |
 
 Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
@@ -34,14 +36,22 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | --- | --- |
 | **Inicio** | Consultar métricas de rendimiento por materia y corte: promedio, mínimo, máximo y registros completos o pendientes. |
 | **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas con sus datos y abrir una materia. Eliminar materias y semestres con confirmación. |
-| **Estudiantes dentro de una materia** | Importar el listado desde `.xlsx`, añadir estudiantes manualmente y consultar, editar o eliminar su información. Correo y celular son opcionales; el celular se oculta inicialmente en los detalles. |
-| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Generar un PDF de toda la lista, identificada solo por nombre. |
+| **Estudiantes dentro de una materia** | Importar el listado desde `.xls`, `.xlsx`, `.xlsm` o `.xlsb`, añadir estudiantes manualmente y consultar, editar o eliminar su información. Correo y celular son opcionales; el celular se oculta inicialmente en los detalles. |
+| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Pegar una columna de notas con vista previa, ordenar nombres A–Z/Z–A y generar un PDF de toda la lista, identificada solo por nombre. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
-| **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Numeración visible consecutiva y PDF individual. |
+| **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Orden visual por nombre, nota opcional de asistencia por corte, numeración visible consecutiva y PDF individual. |
 | **Respaldos** | Guardar y restaurar una copia local cifrada de toda la base SQLite, con contraseña, comprobaciones de integridad y confirmación antes de reemplazar datos. |
 | **Apariencia** | Elegir un color con lienzo HSV y código HEX sincronizados, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 
 No se necesita servidor, cuenta de SIGNA ni inicio de sesión para usar estas funciones. Los respaldos se guardan únicamente de forma local; el usuario elige dónde crear el archivo y desde dónde restaurarlo.
+
+### Importación, pegado de notas y valoración de asistencia
+
+La importación admite libros locales XLS, XLSX, XLSM y XLSB sin Excel instalado. Conserva la vista previa y la corrección de columnas; los libros dañados, cifrados o incompatibles se rechazan con indicaciones para guardar otra copia. No se ejecutan macros, vínculos ni fórmulas. En XLS/XLSB se usan los valores guardados y se advierte de ello antes de importar. ExcelDataReader 3.9.0 (MIT) lee los formatos binarios; el lector SpreadsheetML existente conserva sus controles para XLSX/XLSM. Los límites son 20 MiB por archivo, 80 MiB de ZIP expandido, 10000 filas por hoja, 256 columnas y 250000 celdas por libro.
+
+En Notas, pulsa **Pegar notas** en el encabezado de una actividad directa o subactividad. Pega una sola columna, con una nota por línea y coma o punto decimal. **Vista previa** muestra los nombres en el orden visible al abrir la ventana, incluyendo el filtro de búsqueda. La cantidad debe coincidir exactamente y todas las notas deben estar entre 0 y 5. Confirma el reemplazo si ya existen notas y pulsa **Guardar calificaciones**. El lote se guarda en una sola transacción; cancelar o una validación fallida no cambia datos. Los promedios calculados no admiten pegado. En Notas y Asistencias, el encabezado **Nombre completo** alterna A–Z/Z–A sin cambiar los registros almacenados.
+
+En Asistencias, **Activar nota de asistencia** permite definir los cuatro valores P/A/J/T para el corte seleccionado. La nueva columna muestra su promedio simple entre semanas activas con estado asignado, incluida J; los registros vacíos o sin clase se excluyen. Desactivar oculta la columna y conserva la configuración. Esta nota es informativa: no modifica el porcentaje o clasificación de asistencia ni interviene en las notas académicas o la consolidada. La configuración se conserva en la materia y en sus respaldos locales.
 
 ## Arquitectura
 
@@ -143,7 +153,7 @@ Si existe un SDK portátil en `.tools/dotnet`, el iniciador lo utiliza automáti
 
 ## Uso académico
 
-Primero crea un período académico, por ejemplo `2026-1`, y luego una asignatura con código, nombre y escuela. Importa un `.xlsx`: se guardan documento, nombre y, cuando estén disponibles, correo y celular. La importación detecta las columnas y permite corregirlas para todo el listado; reimportar contactos conserva los nombres, notas y asistencias existentes. En Notas, **Agregar estudiante** requiere únicamente nombre completo y **Ver detalles** muestra sus contactos, con el celular oculto hasta pulsar el ojo. Los documentos no vacíos deben ser únicos dentro de la materia.
+Primero crea un período académico, por ejemplo `2026-1`, y luego una asignatura con código, nombre y escuela. Importa un libro `.xls`, `.xlsx`, `.xlsm` o `.xlsb`: se guardan documento, nombre y, cuando estén disponibles, correo y celular. La importación detecta las columnas y permite corregirlas para todo el listado; reimportar contactos conserva los nombres, notas y asistencias existentes. En Notas, **Agregar estudiante** requiere únicamente nombre completo y **Ver detalles** muestra sus contactos, con el celular oculto hasta pulsar el ojo. Los documentos no vacíos deben ser únicos dentro de la materia.
 
 Desde **Ver detalles → Editar información** puedes cambiar nombre, documento, correo y celular, conservando el identificador, las notas y las asistencias. Solo el nombre es obligatorio; los demás campos pueden vaciarse. **Eliminar estudiante** solicita confirmación y retira únicamente a ese alumno y sus notas/asistencias de todos los cortes de la materia actual. Las otras materias y estudiantes se conservan.
 

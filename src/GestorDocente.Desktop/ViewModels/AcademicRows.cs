@@ -127,6 +127,8 @@ public sealed class AttendanceCellViewModel : ObservableObject
 public sealed record WeeklyDetail(string Title,string Code,string Description);
 public sealed class AttendanceRowViewModel
 {
+    public decimal? AttendanceGradeValue{get;}
+    public string AttendanceGrade=>AcademicFormatting.Grade(AttendanceGradeValue);
     public Student Student {get;}
     public int Number {get;}
     public string Document=>Student.Document;
@@ -147,6 +149,7 @@ public sealed class AttendanceRowViewModel
         Student=student;Number=number;
         var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
         Cells=data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state)));
+        AttendanceGradeValue=index.AttendanceGrade(student.Id);
         Summary=AttendanceSummary.From(data.Weeks.Select(w=>index.Attendance(student.Id,w.Number)));
         WeeklyDetails=new(data.DisplayWeeks.Select(w=> {
             var state=index.Attendance(student.Id,w.Number);

@@ -45,6 +45,7 @@ public sealed class StudentImportViewModel:ObservableObject
     public ObservableRangeCollection<ImportStudentRowViewModel> Rows{get;}=[];
     public bool SettingsExpanded{get=>settingsExpanded;set=>Set(ref settingsExpanded,value);}
     public string SourceName{get;}
+    public string ReadNotice{get;}
     public string Context=>$"{service.Current.CourseName} · {service.Current.Period} · {service.Current.GroupName}";
     public string Error{get=>error;private set=>Set(ref error,value);}
     public string Summary{get=>summary;private set=>Set(ref summary,value);}
@@ -55,7 +56,7 @@ public sealed class StudentImportViewModel:ObservableObject
     public int ImportedCount{get;private set;}
     public StudentImportViewModel(WorkspaceService service,StudentWorkbook workbook,string sourceName)
     {
-        this.service=service;Sheets=workbook.Sheets;SourceName=sourceName;
+        this.service=service;Sheets=workbook.Sheets;SourceName=sourceName;ReadNotice=workbook.ReadNotice;
         ClearEmailCommand=new(_=>EmailColumn=null);ClearPhoneCommand=new(_=>PhoneColumn=null);
         SelectedSheet=Sheets.FirstOrDefault(s=>StudentImportDetector.Detect(s) is not null) ?? Sheets.FirstOrDefault();
     }

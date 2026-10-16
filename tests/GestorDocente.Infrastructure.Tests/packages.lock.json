@@ -135,7 +135,7 @@
       "gestordocente.application": {
         "type": "Project",
         "dependencies": {
-          "GestorDocente.Domain": "[1.0.0, )"
+          "GestorDocente.Domain": "[1.3.0, )"
         }
       },
       "gestordocente.domain": {
@@ -144,11 +144,18 @@
       "gestordocente.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "GestorDocente.Application": "[1.0.0, )",
+          "ExcelDataReader": "[3.9.0, )",
+          "GestorDocente.Application": "[1.3.0, )",
           "Microsoft.Data.Sqlite": "[10.0.12, )",
           "SkiaSharp": "[2.88.9, )",
           "SkiaSharp.NativeAssets.Linux": "[2.88.9, )"
         }
+      },
+      "ExcelDataReader": {
+        "type": "CentralTransitive",
+        "requested": "[3.9.0, )",
+        "resolved": "3.9.0",
+        "contentHash": "3lEkUzG67UWPYj/xlX5Hua3MeQQktnK0B7WGzDjLpdJpBtct7szX0E4WB3Kl6C/8bNnbkyT2eO0FSPV+9CCemw=="
       },
       "Microsoft.Data.Sqlite": {
         "type": "CentralTransitive",

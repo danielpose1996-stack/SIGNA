@@ -54,13 +54,22 @@ public sealed class MainViewModel : ObservableObject
     public event Action? ExportRequested;
     public event Action? AttendancePdfRequested;
     public event Action? NotesPdfRequested;
+    public event Action<string>? GradePasteRequested;
+    public event Action? AttendanceGradingRequested;
+    public RelayCommand PasteGradesCommand{get;}
+    public RelayCommand ConfigureAttendanceGradingCommand{get;}
+    public RelayCommand SortStudentsCommand{get;}
+    private bool? nameDescending;
+    public string NameHeaderLabel=>nameDescending switch{true=>"Nombre completo · Z–A",false=>"Nombre completo · A–Z",_=>"Nombre completo ↕"};
+    public bool AttendanceGradingEnabled=>Service.Cut(SelectedCut).AttendanceGrading?.Enabled==true;
+    public string AttendanceGradingLabel=>AttendanceGradingEnabled ? "Nota de asistencia: activa" : "Activar nota de asistencia";
     public event Action<CourseSummary>? CourseDeletionRequested;
     public event Action<CourseSummary>? CourseEditionRequested;
     public event Action<AcademicSemester>? SemesterDeletionRequested;
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
@@ -174,6 +183,9 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null)
     {
         Service=service;
+        SortStudentsCommand=new(_=>{nameDescending=nameDescending is false;Raise(nameof(NameHeaderLabel));ApplySearchFilter();},_=>!FileBusy);
+        PasteGradesCommand=new(value=>{if(value is string id && GradeRows.Count>0 && !FileBusy && !Service.IsSaving)GradePasteRequested?.Invoke(id);},_=>HasOpenCourse && GradeRows.Count>0 && !FileBusy && !Service.IsSaving);
+        ConfigureAttendanceGradingCommand=new(_=>AttendanceGradingRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
         PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
         Catalog=catalog;
@@ -258,12 +270,27 @@ public sealed class MainViewModel : ObservableObject
     private void OnChanged(WorkspaceChange change)
     {
         SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";
+        if(change.Kind==WorkspaceChangeKind.AttendanceGrading)
+        {
+            if(change.Cut==SelectedCut)
+            {
+                // La política informativa solo reemplaza las filas de asistencia; conserva borradores y columnas de Notas.
+                readIndex=new(Service.Cut(SelectedCut));
+                for(var i=0;i<allAttendanceRows.Count;i++)
+                {
+                    var prior=allAttendanceRows[i];allAttendanceRows[i]=new(Service,SelectedCut,prior.Student,prior.Number,readIndex);
+                }
+                ApplySearchFilter();Raise(nameof(AttendanceGradingEnabled));Raise(nameof(AttendanceGradingLabel));
+            }
+            return;
+        }
         if(change.RemovedCut is {} removed)
         {
             selectedCut=selectedCut>removed ? selectedCut-1 : Math.Min(selectedCut,Service.Current.Cuts.Count);
             Raise(nameof(SelectedCut));Raise(nameof(CutLabel));
         }
         if(change.Kind==WorkspaceChangeKind.Grade)Consolidated.ApplyGrade(change);
+        else if(change.Kind==WorkspaceChangeKind.GradesBatch)Consolidated.Refresh(Service.Current);
         else if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students)
         {
             Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutWeight));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
@@ -495,6 +522,7 @@ public sealed class MainViewModel : ObservableObject
         // Remove the old row contexts before rebuilding columns. Publish new rows only
         // after both tables have their matching grade/week schema.
         GradeRows.Clear();AttendanceRows.Clear();
+        Raise(nameof(AttendanceGradingEnabled));Raise(nameof(AttendanceGradingLabel));
         Raise(nameof(Groups));Raise(nameof(Weeks));
         allGradeRows.Clear();allAttendanceRows.Clear();studentPositions.Clear();
         allGradeRows.AddRange(projection.Grades);allAttendanceRows.AddRange(projection.Attendance);
@@ -519,10 +547,18 @@ public sealed class MainViewModel : ObservableObject
             grades.Add(allGradeRows[i]);
             attendance.Add(allAttendanceRows[i]);
         }
+        if(nameDescending is {} descending)
+        {
+            var comparer=StringComparer.Create(System.Globalization.CultureInfo.GetCultureInfo("es-CO"),true);
+            grades=descending ? grades.OrderByDescending(r=>r.FullName,comparer).ThenBy(r=>r.Number).ToList() : grades.OrderBy(r=>r.FullName,comparer).ThenBy(r=>r.Number).ToList();
+            var attendanceById=attendance.ToDictionary(r=>r.Student.Id);
+            attendance=grades.Select(r=>attendanceById[r.Student.Id]).ToList();
+        }
         if(!GradeRows.SequenceEqual(grades))GradeRows.ReplaceAll(grades);
         if(!AttendanceRows.SequenceEqual(attendance))AttendanceRows.ReplaceAll(attendance);
         SelectedStudent=attendance.FirstOrDefault(x=>x.Student.Id==selectedId) ?? attendance.FirstOrDefault();
         Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(EmptyTableMessage));
+        PasteGradesCommand.Refresh();
     }
     private void UpdateCourseAverage(decimal?[] totals)
     {

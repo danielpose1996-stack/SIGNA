@@ -5,6 +5,7 @@
       <TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" />
       <TextBlock Text="{Binding SourceName}" FontSize="12" />
       <TextBlock Text="Revisa la lista y pulsa Importar todos. Se guardan nombre, documento y contactos disponibles; las notas existentes se conservan." FontSize="13" TextWrapping="Wrap" />
+      <TextBlock Text="{Binding ReadNotice}" Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding ReadNotice,Converter={StaticResource HasText}}" />
     </StackPanel>
     <Border Grid.Row="1" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="6" Padding="12,9">
       <StackPanel Spacing="4"><TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding MappingSummary}" FontSize="12" Classes="muted" TextWrapping="Wrap" /></StackPanel>

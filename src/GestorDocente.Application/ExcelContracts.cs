@@ -4,8 +4,12 @@ namespace GestorDocente.Application;
 public sealed record WorkbookCell(string Text,bool IsFormula=false);
 public sealed record WorkbookRow(int Number,IReadOnlyDictionary<int,WorkbookCell> Cells);
 public sealed record WorkbookSheet(string Name,IReadOnlyList<WorkbookRow> Rows);
-public sealed record StudentWorkbook(IReadOnlyList<WorkbookSheet> Sheets);
+public sealed record StudentWorkbook(IReadOnlyList<WorkbookSheet> Sheets,string ReadNotice="");
 public interface IStudentWorkbookReader {StudentWorkbook Read(Stream input);}
+public static class StudentWorkbookFormats
+{
+    public static bool IsSupportedFileName(string name)=>Path.GetExtension(name).ToLowerInvariant() is ".xls" or ".xlsx" or ".xlsm" or ".xlsb";
+}
 public enum AcademicReportKind {Notes,Attendance}
 public interface IAcademicReportExporter {byte[] Export(AcademicWorkspace workspace,int cut,AcademicReportKind kind);}
 public sealed record StudentImportCandidate(string Document,string Name,string Email="",string Phone="");

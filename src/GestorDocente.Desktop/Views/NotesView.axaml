@@ -17,7 +17,7 @@
           <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante o documento…" AutomationProperties.Name="Filtrar tabla de notas" />
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"><Button Classes="quiet" Content="Agregar estudiante" Command="{Binding AddStudentCommand}" /><Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Actividades y porcentajes" Command="{Binding ConfigureCommand}" /><Button Classes="quiet" Content="Recuperar retirados" Command="{Binding RecoveryCommand}" /></StackPanel>
         </Grid>
-        <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="4" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" />
+        <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" FrozenColumnCount="4" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" />
         <TextBlock Grid.Row="1" Text="{Binding EmptyTableMessage}" Classes="muted" IsVisible="{Binding IsEmpty}" TextWrapping="Wrap" MaxWidth="500" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,4"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Enter: guardar nota · Subactividades: promedio simple · Vacías: 0,0 en el cálculo · Promedio del curso" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="13" /></Grid></Border>
       </Grid>
