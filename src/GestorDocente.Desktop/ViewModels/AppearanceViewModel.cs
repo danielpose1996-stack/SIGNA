@@ -7,16 +7,11 @@ public sealed class AppearanceViewModel:ObservableObject
 {
     private readonly InterfacePreferencesService service;
     private readonly Action<InterfacePreferences> apply;
-    private PaletteOption selectedPalette;
     private AvatarOption selectedAvatar;
-    private bool busy;
-    private string error="";
-    private string teacherName="";
-    private bool useCustomColor,colorGrades;
-    private int red,green,blue;
-    public IReadOnlyList<PaletteOption> Palettes=>ThemePalettes.Options;
-    public IReadOnlyList<AvatarOption> Avatars=>ThemePalettes.Avatars;
-    public PaletteOption SelectedPalette{get=>selectedPalette;set{if(Set(ref selectedPalette,value) && !UseCustomColor)LoadRgb(value.Accent);}}
+    private bool busy,colorGrades,hasPreview;
+    private string error="",teacherName="",hexInput="",hexError="",selectedHex="";
+    private ColorSelection selection;
+    public IReadOnlyList<AvatarOption> Avatars=>InterfaceTheme.Avatars;
     public AvatarOption SelectedAvatar{get=>selectedAvatar;set{if(Set(ref selectedAvatar,value))Raise(nameof(PreviewAvatarKind));}}
     public string PreviewAvatarKind=>SelectedAvatar.Icon;
     public string CurrentAvatarKind=>Avatars.Single(a=>a.Id==service.Current.Avatar).Icon;
@@ -24,35 +19,58 @@ public sealed class AppearanceViewModel:ObservableObject
     public string PreviewTeacherName=>string.IsNullOrWhiteSpace(TeacherName) ? "Docente" : TeacherName.Trim();
     public string CurrentTeacherName=>string.IsNullOrWhiteSpace(service.Current.TeacherName) ? "Docente" : service.Current.TeacherName;
     public bool CurrentColorGrades=>service.Current.ColorGrades;
-    public bool UseCustomColor{get=>useCustomColor;set=>Set(ref useCustomColor,value);}
     public bool ColorGrades{get=>colorGrades;set=>Set(ref colorGrades,value);}
-    public int Red{get=>red;set{if(Set(ref red,Math.Clamp(value,0,255)))Raise(nameof(RgbHex));}}
-    public int Green{get=>green;set{if(Set(ref green,Math.Clamp(value,0,255)))Raise(nameof(RgbHex));}}
-    public int Blue{get=>blue;set{if(Set(ref blue,Math.Clamp(value,0,255)))Raise(nameof(RgbHex));}}
-    public string RgbHex=>$"#{Red:X2}{Green:X2}{Blue:X2}";
+    public string HexInput
+    {
+        get=>hexInput;
+        set
+        {
+            if(!Set(ref hexInput,value ?? ""))return;
+            try{var candidate=hexInput.Trim().ToUpperInvariant();var next=ColorSelection.FromHex(candidate,selection.Hue);UpdateColor(next,candidate);}
+            catch(AcademicValidationException){HexError="Escribe seis dígitos hexadecimales, por ejemplo #2563EB.";}
+        }
+    }
+    public string SelectedHex=>selectedHex;
+    public string HexError{get=>hexError;private set{if(Set(ref hexError,value))Raise(nameof(CanSave));}}
+    public double Hue{get=>selection.Hue;set{if(double.IsFinite(value) && value!=Hue)UpdateColor(selection with{Hue=Math.Clamp(value,0,360)});}}
+    public double Saturation{get=>selection.Saturation;set{if(double.IsFinite(value) && value!=Saturation)UpdateColor(selection with{Saturation=Math.Clamp(value,0,1)});}}
+    public double Brightness{get=>selection.Value;set{if(double.IsFinite(value) && value!=Brightness)UpdateColor(selection with{Value=Math.Clamp(value,0,1)});}}
+    public string HsvLabel=>$"Tono {Hue:0}° · Saturación {Saturation*100:0} % · Brillo {Brightness*100:0} %";
     public string Warning=>service.Warning;
     public string Error{get=>error;private set=>Set(ref error,value);}
-    public bool IsBusy{get=>busy;private set{if(Set(ref busy,value))Raise(nameof(CanEdit));}}
+    public bool IsBusy{get=>busy;private set{if(Set(ref busy,value)){Raise(nameof(CanEdit));Raise(nameof(CanSave));}}}
     public bool CanEdit=>!IsBusy;
-    public RelayCommand DefaultsCommand{get;}
+    public bool CanSave=>CanEdit && HexError.Length==0;
     public AppearanceViewModel(InterfacePreferencesService service,Action<InterfacePreferences>? apply=null)
     {
-        this.service=service;this.apply=apply ?? (preferences=>ThemePalettes.Apply(Avalonia.Application.Current ?? throw new InvalidOperationException("La interfaz no está inicializada."),preferences));
-        selectedPalette=Palettes.Single(p=>p.Id==service.Current.Palette);selectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);
-        ResetDraft();DefaultsCommand=new(_=>{UseCustomColor=false;SelectedPalette=Palettes[0];LoadRgb(Palettes[0].Accent);SelectedAvatar=Avatars[0];ColorGrades=true;},_=>CanEdit);
+        this.service=service;this.apply=apply ?? (preferences=>InterfaceTheme.Apply(Avalonia.Application.Current ?? throw new InvalidOperationException("La interfaz no está inicializada."),preferences));
+        selectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);LoadDraft();
     }
-    private void LoadRgb(string hex){var color=Avalonia.Media.Color.Parse(hex);Red=color.R;Green=color.G;Blue=color.B;}
-    public void ResetDraft(){UseCustomColor=service.Current.CustomAccent is not null;SelectedPalette=Palettes.Single(p=>p.Id==service.Current.Palette);SelectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);TeacherName=service.Current.TeacherName;ColorGrades=service.Current.ColorGrades;LoadRgb(service.Current.CustomAccent ?? SelectedPalette.Accent);Error="";}
+    private void UpdateColor(ColorSelection next,string? exactHex=null)
+    {
+        selection=next;selectedHex=exactHex ?? next.ToHex();hexInput=selectedHex;HexError="";
+        foreach(var name in new[]{nameof(Hue),nameof(Saturation),nameof(Brightness),nameof(HsvLabel),nameof(SelectedHex),nameof(HexInput)})Raise(name);
+        try{apply(service.Current with{Accent=selectedHex});hasPreview=true;Error="";}
+        catch(Exception ex){Error=$"No se pudo aplicar la vista previa ({SafeErrorCode.From(ex)}). Reintenta.";}
+    }
+    private void LoadDraft()
+    {
+        selectedHex=service.Current.Accent;hexInput=selectedHex;selection=ColorSelection.FromHex(selectedHex);HexError="";
+        SelectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);TeacherName=service.Current.TeacherName;ColorGrades=service.Current.ColorGrades;Error="";
+        foreach(var name in new[]{nameof(Hue),nameof(Saturation),nameof(Brightness),nameof(HsvLabel),nameof(SelectedHex),nameof(HexInput)})Raise(name);
+    }
+    public void CancelPreview(){if(!hasPreview)return;apply(service.Current);hasPreview=false;}
+    public void ResetDraft(){CancelPreview();LoadDraft();}
     public async Task<bool> SaveAsync()
     {
-        if(IsBusy)return false;IsBusy=true;DefaultsCommand.Refresh();var before=service.Current;
+        if(!CanSave)return false;IsBusy=true;var before=service.Current;
         try
         {
-            if(SelectedPalette is null || SelectedAvatar is null)throw new AcademicValidationException("Selecciona una paleta y un icono del perfil.");
-            await service.SaveAsync(new(SelectedPalette.Id,SelectedAvatar.Id,TeacherName.Trim(),UseCustomColor ? RgbHex : null,ColorGrades));apply(service.Current);
-            Raise(nameof(CurrentAvatarKind));Raise(nameof(CurrentTeacherName));Raise(nameof(CurrentColorGrades));Raise(nameof(Warning));return true;
+            if(SelectedAvatar is null)throw new AcademicValidationException("Selecciona un icono del perfil.");
+            await service.SaveAsync(new(selectedHex,SelectedAvatar.Id,TeacherName.Trim(),ColorGrades));apply(service.Current);hasPreview=false;
+            Error="";Raise(nameof(CurrentAvatarKind));Raise(nameof(CurrentTeacherName));Raise(nameof(CurrentColorGrades));Raise(nameof(Warning));return true;
         }
         catch(Exception ex){Error=service.Current!=before ? "La apariencia se guardó, pero no pudo aplicarse. Reinicia la aplicación." : ex is AcademicValidationException ? ex.Message : $"No se guardó la apariencia ({SafeErrorCode.From(ex)}). Reintenta.";return false;}
-        finally{IsBusy=false;DefaultsCommand.Refresh();}
+        finally{IsBusy=false;}
     }
 }

@@ -18,7 +18,7 @@ public partial class App : Avalonia.Application
         var iconFile=OperatingSystem.IsWindows() ? "SIGNA_icono_windows.ico" : "SIGNA_icono_512.png";
         using var iconStream=AssetLoader.Open(new Uri($"avares://GestorDocente.Desktop/Assets/Branding/{iconFile}"));
         Resources["SignaWindowIcon"]=new WindowIcon(iconStream);
-        ThemePalettes.Apply(this,Domain.InterfacePalette.Blue);
+        InterfaceTheme.Apply(this,new());
     }
     public override void OnFrameworkInitializationCompleted()
     {
@@ -28,7 +28,7 @@ public partial class App : Avalonia.Application
                 if(Environment.GetEnvironmentVariable("GESTOR_DOCENTE_MODE")=="demo")
                 {
                     var dataDirectory=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_DEMO_DIR") ?? Path.Combine(AppContext.BaseDirectory,".demo-data");
-                    desktop.MainWindow=new MainWindow {DataContext=new MainViewModel(new WorkspaceService(new SqliteWorkspaceStore(Path.Combine(dataDirectory,"gestor-docente-demo.db"))),workbookReader:new XlsxStudentReader(),reportExporter:new XlsxReportExporter(),attendancePdfExporter:new AttendancePdfExporter())};
+                    desktop.MainWindow=new MainWindow {DataContext=new MainViewModel(new WorkspaceService(new SqliteWorkspaceStore(Path.Combine(dataDirectory,"gestor-docente-demo.db"))),workbookReader:new XlsxStudentReader(),reportExporter:new XlsxReportExporter(),attendancePdfExporter:new AttendancePdfExporter(),notesPdfExporter:new NotesPdfExporter())};
                 }
                 else
                 {
@@ -50,8 +50,8 @@ public partial class App : Avalonia.Application
         var catalog=new CatalogService(new SqliteCatalogStore(path));
         var backup=new EncryptedLocalBackupService(path);
         var preferences=new InterfacePreferencesService(new SqliteInterfacePreferencesStore(path));
-        if(Current is {} app)ThemePalettes.Apply(app,preferences.Current);
-        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new XlsxStudentReader(),new XlsxReportExporter(),backup,new AttendancePdfExporter(),preferences);
+        if(Current is {} app)InterfaceTheme.Apply(app,preferences.Current);
+        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new XlsxStudentReader(),new XlsxReportExporter(),backup,new AttendancePdfExporter(),preferences,new NotesPdfExporter());
     }
     internal static string ProductionDatabasePath()
     {

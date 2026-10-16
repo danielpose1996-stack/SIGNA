@@ -52,7 +52,7 @@ public class StudentManagementAndAppearanceTests
         finally{window.Close();}
     }
     [AvaloniaFact]
-    public async Task Palette_and_avatar_apply_to_existing_controls_and_redundant_tabs_are_absent()
+    public async Task Color_and_avatar_apply_to_existing_controls_and_redundant_tabs_are_absent()
     {
         var preferences=new InterfacePreferencesService(new MemoryInterfacePreferencesStore());var vm=new MainViewModel(new WorkspaceService(new Store()),appearance:preferences);
         var window=new MainWindow{DataContext=vm};window.Show();vm.NavigateCommand.Execute("Notas");window.UpdateLayout();
@@ -64,31 +64,32 @@ public class StudentManagementAndAppearanceTests
             Assert.DoesNotContain("Estudiantes",tabs);Assert.DoesNotContain("Configuración de evaluaciones",tabs);
             Assert.NotNull(vm.ConfigureCommand);Assert.NotNull(vm.ImportStudentsCommand);Assert.NotNull(vm.AddStudentCommand);
             var notes=window.GetVisualDescendants().OfType<Button>().Where(b=>ReferenceEquals(b.Command,vm.ConfigureCommand));Assert.NotEmpty(notes);
-            vm.Appearance.SelectedPalette=ThemePalettes.Options.Single(p=>p.Id==InterfacePalette.Violet);
-            vm.Appearance.SelectedAvatar=ThemePalettes.Avatars.Single(a=>a.Id==ProfileAvatar.Book);
+            vm.Appearance.HexInput="#6D4ACB";
+            vm.Appearance.SelectedAvatar=InterfaceTheme.Avatars.Single(a=>a.Id==ProfileAvatar.Book);
             Assert.True(await vm.Appearance.SaveAsync());window.UpdateLayout();
             Assert.Same(retained,window.FindControl<NotesView>("RetainedNotes"));
             Assert.Equal("book",window.FindControl<VectorIcon>("ProfileAvatarIcon")!.Kind);
-            Assert.Equal(Color.Parse("#29214F"),Assert.IsAssignableFrom<ISolidColorBrush>(window.Foreground).Color);
+            Assert.Equal(Color.Parse("#172B45"),Assert.IsAssignableFrom<ISolidColorBrush>(window.Foreground).Color);
             var dialog=new StudentEditorWindow{DataContext=new StudentEditorViewModel(vm.Service)};dialog.Show(window);dialog.UpdateLayout();
-            try{Assert.Equal(Color.Parse("#29214F"),Assert.IsAssignableFrom<ISolidColorBrush>(dialog.Foreground).Color);}finally{dialog.Close();}
-            vm.Appearance.ResetDraft();vm.Appearance.SelectedAvatar=ThemePalettes.Avatars[0];vm.Appearance.ResetDraft();Assert.Equal(ProfileAvatar.Book,vm.Appearance.SelectedAvatar.Id);
+            try{Assert.Equal(Color.Parse("#172B45"),Assert.IsAssignableFrom<ISolidColorBrush>(dialog.Foreground).Color);}finally{dialog.Close();}
+            vm.Appearance.ResetDraft();vm.Appearance.SelectedAvatar=InterfaceTheme.Avatars[0];vm.Appearance.ResetDraft();Assert.Equal(ProfileAvatar.Book,vm.Appearance.SelectedAvatar.Id);
         }
-        finally{window.Close();ThemePalettes.Apply(Avalonia.Application.Current!,InterfacePalette.Blue);}
+        finally{window.Close();InterfaceTheme.Apply(Avalonia.Application.Current!,new());}
     }
     [Fact]
     public async Task Failed_preference_write_does_not_apply_or_change_active_values()
     {
-        var service=new InterfacePreferencesService(new FailingPreferences());var applied=false;var vm=new AppearanceViewModel(service,_=>applied=true);
-        vm.SelectedPalette=ThemePalettes.Options[2];Assert.False(await vm.SaveAsync());Assert.False(applied);Assert.Equal(new InterfacePreferences(),service.Current);Assert.NotEmpty(vm.Error);
+        var service=new InterfacePreferencesService(new FailingPreferences());InterfacePreferences? applied=null;var vm=new AppearanceViewModel(service,p=>applied=p);
+        vm.HexInput="#6D4ACB";Assert.Equal("#6D4ACB",applied!.Accent);Assert.False(await vm.SaveAsync());Assert.Equal(new InterfacePreferences(),service.Current);Assert.NotEmpty(vm.Error);
+        vm.CancelPreview();Assert.Equal(service.Current.Accent,applied!.Accent);
     }
     [Fact]
-    public void Palettes_keep_readable_text_and_primary_button_contrast()
+    public void Accent_colors_keep_readable_text_and_primary_button_contrast()
     {
-        foreach(var option in ThemePalettes.Options)
+        foreach(var accent in new[]{"#0067F5","#007A66","#6D4ACB","#405A70"})
         {
-            var brushes=ThemePalettes.Brushes(option.Id);
-            Assert.True(Contrast(Color.Parse(option.Accent),Colors.White)>=4.5);
+            var brushes=InterfaceTheme.Brushes(new(Accent:accent));
+            Assert.True(Contrast(Color.Parse(accent),Colors.White)>=4.5);
             Assert.True(Contrast(((ISolidColorBrush)brushes["Ink"]).Color,((ISolidColorBrush)brushes["Canvas"]).Color)>=7);
             Assert.True(Contrast(((ISolidColorBrush)brushes["Muted"]).Color,((ISolidColorBrush)brushes["Canvas"]).Color)>=4.5);
         }

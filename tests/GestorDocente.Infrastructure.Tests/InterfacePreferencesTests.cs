@@ -21,7 +21,7 @@ public class InterfacePreferencesTests
             await a.EditStudentAsync(a.Current.Students[0],"Nombre editado","","","3000000000");await a.DeleteStudentAsync(a.PreviewStudentDeletion(a.Current.Students[0].Id),true);
             Assert.Equal(bBefore,System.Text.Json.JsonSerializer.Serialize(catalog.Open(second.Id).Current));Assert.Empty(catalog.Open(first.Id).Current.Students);
             var preferences=new SqliteInterfacePreferencesStore(source);Assert.Equal(new InterfacePreferences(),preferences.Load());
-            var expected=new InterfacePreferences(InterfacePalette.Violet,ProfileAvatar.Book,"Docente ficticio","#F1C20A",false);preferences.Save(expected);
+            var expected=new InterfacePreferences("#F1C20A",ProfileAvatar.Book,"Docente ficticio",false);preferences.Save(expected);
             Assert.Equal(expected,new SqliteInterfacePreferencesStore(source).Load());
             var archive=Path.Combine(directory,"backup.aulabk");var target=Path.Combine(directory,"target.db");var password="Contraseña ficticia de pruebas";
             new EncryptedLocalBackupService(source).Create(archive,password);new EncryptedLocalBackupService(target).Restore(archive,password);
@@ -36,9 +36,9 @@ public class InterfacePreferencesTests
         try
         {
             var path=Path.Combine(directory,"data.db");_=new SqliteCatalogStore(path);var store=new SqliteInterfacePreferencesStore(path);
-            store.Save(new());Assert.Throws<AcademicValidationException>(()=>store.Save(new((InterfacePalette)99)));
+            store.Save(new());Assert.Throws<AcademicValidationException>(()=>store.Save(new(Accent:"#INVALID")));
             using(var db=new SqliteConnection($"Data Source={path};Pooling=false"))
-            {db.Open();using var command=db.CreateCommand();command.CommandText="PRAGMA ignore_check_constraints=ON; UPDATE interface_preferences SET palette='NoExiste'";command.ExecuteNonQuery();}
+            {db.Open();using var command=db.CreateCommand();command.CommandText="PRAGMA ignore_check_constraints=ON; UPDATE interface_preferences SET custom_accent='NoExiste'";command.ExecuteNonQuery();}
             var before=File.ReadAllBytes(path);var service=new InterfacePreferencesService(store);
             Assert.Equal(new InterfacePreferences(),service.Current);Assert.NotEmpty(service.Warning);Assert.Equal(before,File.ReadAllBytes(path));
             Assert.Throws<AcademicValidationException>(()=>new EncryptedLocalBackupService(path).Create(Path.Combine(directory,"invalid.aulabk"),"Contraseña ficticia larga"));
@@ -59,12 +59,12 @@ public class InterfacePreferencesTests
                 CREATE TRIGGER reject_preference_update BEFORE UPDATE ON interface_preferences BEGIN SELECT RAISE(ABORT,'Fallo ficticio'); END;
                 """;command.ExecuteNonQuery();
             db.Close();var store=new SqliteInterfacePreferencesStore(path);var bytes=File.ReadAllBytes(path);
-            Assert.Equal(new InterfacePreferences(InterfacePalette.Emerald,ProfileAvatar.Person),store.Load());Assert.Equal(bytes,File.ReadAllBytes(path));
+            Assert.Equal(new InterfacePreferences("#007A66",ProfileAvatar.Person),store.Load());Assert.Equal(bytes,File.ReadAllBytes(path));
             db.Open();
-            var expected=new InterfacePreferences(InterfacePalette.Graphite,ProfileAvatar.Graduation,"Docente de prueba","#123456",false);
+            var expected=new InterfacePreferences("#123456",ProfileAvatar.Graduation,"Docente de prueba",false);
             Assert.Throws<SqliteException>(()=>store.Save(expected));
             command.CommandText="SELECT count(*) FROM pragma_table_info('interface_preferences')";Assert.Equal(4L,command.ExecuteScalar());
-            Assert.Equal(new InterfacePreferences(InterfacePalette.Emerald,ProfileAvatar.Person),store.Load());
+            Assert.Equal(new InterfacePreferences("#007A66",ProfileAvatar.Person),store.Load());
             command.CommandText="DROP TRIGGER reject_preference_update";command.ExecuteNonQuery();
             store.Save(expected);Assert.Equal(expected,new SqliteInterfacePreferencesStore(path).Load());
             command.CommandText="PRAGMA user_version";Assert.Equal(1L,command.ExecuteScalar());

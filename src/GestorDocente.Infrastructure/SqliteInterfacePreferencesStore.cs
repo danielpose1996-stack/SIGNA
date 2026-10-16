@@ -22,11 +22,12 @@ public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePrefe
         command.CommandText=$"SELECT id,schema_version,palette,avatar,{(columns.Contains("teacher_name") ? "teacher_name" : "''")},{(columns.Contains("custom_accent") ? "custom_accent" : "NULL")},{(columns.Contains("color_grades") ? "color_grades" : "1")} FROM interface_preferences";
         using var rows=command.ExecuteReader();if(!rows.Read())return new();
         if(rows.IsDBNull(0) || rows.IsDBNull(1) || rows.IsDBNull(2) || rows.IsDBNull(3) || rows.GetInt32(0)!=1 || rows.GetInt32(1)!=1 ||
-            !Enum.TryParse<InterfacePalette>(rows.GetString(2),out var palette) || !Enum.TryParse<ProfileAvatar>(rows.GetString(3),out var avatar))
-            throw new AcademicValidationException("Las preferencias de apariencia no son compatibles. Puedes volver a seleccionar la paleta y el icono desde el perfil.");
+            !Enum.TryParse<ProfileAvatar>(rows.GetString(3),out var avatar))
+            throw new AcademicValidationException("Las preferencias de apariencia no son compatibles. Revisa el color y el icono desde el perfil.");
         if(rows.IsDBNull(4) || rows.IsDBNull(6) || rows.GetInt32(6) is not (0 or 1))
             throw new AcademicValidationException("El perfil o los colores guardados no son compatibles. Revisa Personalizar apariencia.");
-        var result=new InterfacePreferences(palette,avatar,rows.GetString(4),rows.IsDBNull(5) ? null : rows.GetString(5),rows.GetInt32(6)==1);result.Validate();
+        var accent=rows.IsDBNull(5) ? LegacyAccent(rows.GetString(2)) : rows.GetString(5);
+        var result=new InterfacePreferences(accent,avatar,rows.GetString(4),rows.GetInt32(6)==1);result.Validate();
         if(rows.Read())throw new AcademicValidationException("Las preferencias de apariencia tienen registros duplicados.");
         return result;
     }
@@ -50,13 +51,19 @@ public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePrefe
                 command.ExecuteNonQuery();
             }
         command.CommandText="""
-            INSERT INTO interface_preferences(id,schema_version,palette,avatar,teacher_name,custom_accent,color_grades) VALUES(1,1,$palette,$avatar,$name,$accent,$grades)
+            INSERT INTO interface_preferences(id,schema_version,palette,avatar,teacher_name,custom_accent,color_grades) VALUES(1,1,'Blue',$avatar,$name,$accent,$grades)
             ON CONFLICT(id) DO UPDATE SET schema_version=1,palette=excluded.palette,avatar=excluded.avatar,teacher_name=excluded.teacher_name,custom_accent=excluded.custom_accent,color_grades=excluded.color_grades;
             """;
-        command.Parameters.AddWithValue("$palette",preferences.Palette.ToString());command.Parameters.AddWithValue("$avatar",preferences.Avatar.ToString());
-        command.Parameters.AddWithValue("$name",preferences.TeacherName);command.Parameters.AddWithValue("$accent",(object?)preferences.CustomAccent ?? DBNull.Value);command.Parameters.AddWithValue("$grades",preferences.ColorGrades ? 1 : 0);
+        command.Parameters.AddWithValue("$avatar",preferences.Avatar.ToString());
+        command.Parameters.AddWithValue("$name",preferences.TeacherName);command.Parameters.AddWithValue("$accent",preferences.Accent);command.Parameters.AddWithValue("$grades",preferences.ColorGrades ? 1 : 0);
         command.ExecuteNonQuery();tx.Commit();
     }
+    // Storage compatibility only: these historical choices are no longer a UI feature.
+    private static string LegacyAccent(string value)=>value switch
+    {
+        "Blue" or "0"=>"#0067F5","Emerald" or "1"=>"#007A66","Violet" or "2"=>"#6D4ACB","Graphite" or "3"=>"#405A70",
+        _=>throw new AcademicValidationException("El color anterior no es compatible. Selecciona un color desde Personalizar apariencia.")
+    };
     private static HashSet<string> Columns(SqliteConnection db,SqliteTransaction? transaction=null)
     {
         using var command=db.CreateCommand();command.Transaction=transaction;command.CommandText="PRAGMA table_info(interface_preferences)";

@@ -16,11 +16,11 @@ Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielp
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.1.0-windows-x64-setup.exe` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.1.0-linux-x64.deb` o `SIGNA-1.1.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.1.0-linux-x64.rpm` o `SIGNA-1.1.0-linux-arm64.rpm` |
-| macOS 15 o posterior, Intel | `SIGNA-1.1.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.1.0-osx-arm64.dmg` |
+| Windows x64 | `SIGNA-1.2.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.2.0-linux-x64.deb` o `SIGNA-1.2.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.2.0-linux-x64.rpm` o `SIGNA-1.2.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.2.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.2.0-osx-arm64.dmg` |
 
 Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
@@ -35,11 +35,11 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | **Inicio** | Consultar métricas de rendimiento por materia y corte: promedio, mínimo, máximo y registros completos o pendientes. |
 | **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas con sus datos y abrir una materia. Eliminar materias y semestres con confirmación. |
 | **Estudiantes dentro de una materia** | Importar el listado desde `.xlsx`, añadir estudiantes manualmente y consultar, editar o eliminar su información. Correo y celular son opcionales; el celular se oculta inicialmente en los detalles. |
-| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. |
+| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Generar un PDF de toda la lista, identificada solo por nombre. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
 | **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Numeración visible consecutiva y PDF individual. |
 | **Respaldos** | Guardar y restaurar una copia local cifrada de toda la base SQLite, con contraseña, comprobaciones de integridad y confirmación antes de reemplazar datos. |
-| **Apariencia** | Elegir una paleta o un color RGB, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
+| **Apariencia** | Elegir un color con lienzo HSV y código HEX sincronizados, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 
 No se necesita servidor, cuenta de SIGNA ni inicio de sesión para usar estas funciones. Los respaldos se guardan únicamente de forma local; el usuario elige dónde crear el archivo y desde dónde restaurarlo.
 
@@ -151,13 +151,15 @@ Las pestañas académicas son **Notas**, **Asistencias** y **Nota consolidada**.
 
 **Inicio** muestra únicamente las métricas de rendimiento de cada materia y corte: promedio, mínimo, máximo y cantidad de estudiantes completos/pendientes. Puedes seleccionar el período y actualizar los resultados. La consulta individual de calificaciones permanece dentro de la materia, en Notas y Nota consolidada.
 
-Para personalizar el programa, pulsa el perfil **Uso local → Personalizar apariencia**, en la parte inferior del menú lateral. Puedes elegir Azul institucional, Verde, Violeta o Grafito y uno de los iconos de perfil. **Guardar apariencia** aplica la elección a las ventanas abiertas y la conserva en SQLite para próximos inicios; **Cancelar** no la cambia. Los colores académicos de notas, P/A/J/T y alertas mantienen su significado. La paleta y el icono también se incluyen en los respaldos locales.
+Para personalizar el programa, pulsa el perfil inferior → **Personalizar apariencia**. Configura tu nombre y avatar y elige el color en el lienzo de saturación/brillo y el deslizador de tono HSV, o escribe un código **HEX #RRGGBB**. Ambos controles están sincronizados y el color se previsualiza en tiempo real. **Guardar apariencia** lo conserva en SQLite; **Cancelar** o cerrar restaura el color guardado. Las paletas predeterminadas se retiraron; el color de configuraciones anteriores se conserva al leerlas. Nombre, color, avatar y la casilla de rendimiento forman parte de los respaldos locales.
 
 Cada materia inicia con tres cortes y permite **Agregar corte**. En cada corte configura actividades principales cuyos porcentajes suman 100 %. Cada actividad puede usar una nota directa o el promedio simple de subactividades. Las notas válidas son de 0,0 a 5,0; las vacías aportan cero únicamente al cálculo.
 
 En **Nota consolidada** consulta todos los cortes y la nota final acumulada. Los pesos iniciales son 30 %, 30 % y 40 %; los cortes adicionales comienzan con 0 %. **Configurar porcentajes** permite modificarlos, siempre con total de 100 %. Los cálculos no redondean valores intermedios y se muestran con dos decimales.
 
 La papelera junto a cada corte permite **Eliminar corte** con confirmación: elimina permanentemente sus actividades, subactividades, notas y asistencias. Siempre debe quedar al menos un corte. Los restantes se renumeran y conservan sus porcentajes; se abre la revisión de ponderaciones. Si el total no es 100 %, puedes seguir registrando notas y asistencias, pero la nota final queda pendiente hasta ajustar los porcentajes.
+
+En **Notas → Generar reporte PDF** puedes elegir dónde guardar todas las calificaciones del corte seleccionado, incluso si la tabla tiene un filtro. El reporte identifica a cada estudiante únicamente por su nombre: no incluye documentos, correos ni teléfonos. Muestra actividades, subactividades, porcentajes y definitiva; mantiene vacías las celdas pendientes y usa cero solo para calcular. Si hay muchas columnas, las divide en secciones con nombre y definitiva repetidos.
 
 Las asistencias admiten hasta nueve semanas por corte, de clase o actividades, con fecha opcional y estados P/A/J/T. P y T cuentan como asistencia; A como inasistencia; J, sin clase y pendientes se excluyen del denominador. El PDF individual permite elegir dónde guardarlo e incluye las fechas asignadas, registros y resumen del estudiante.
 
@@ -170,7 +172,7 @@ En **Respaldos** puedes crear un archivo local cifrado `.aulabk` y restaurarlo c
 ## Respaldos locales completos
 
 1. Abre **Respaldos → Crear respaldo cifrado**, elige una contraseña de al menos 12 caracteres y selecciona dónde guardar un archivo nuevo `.aulabk`. No se sobrescriben copias existentes.
-2. El archivo contiene toda la base de SIGNA: semestres (también los vacíos), materias, estudiantes con documento/nombre/correo/celular, cortes y ponderaciones, actividades/subactividades, notas y asistencias con sus tipos y fechas. También conserva los registros retirados, los identificadores que mantienen las relaciones y la paleta/icono de perfil configurados.
+2. El archivo contiene toda la base de SIGNA: semestres (también los vacíos), materias, estudiantes con documento/nombre/correo/celular, cortes y ponderaciones, actividades/subactividades, notas y asistencias con sus tipos y fechas. También conserva los registros retirados, los identificadores que mantienen las relaciones y el nombre, color e icono del perfil configurados.
 3. La copia se genera con [BackupDatabase de Microsoft.Data.Sqlite](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/backup), incluyendo los cambios confirmados que estén en WAL. Se comprueban integridad SQLite, claves foráneas y datos académicos, sin modificar los payloads ni sus revisiones. El archivo cifrado también se verifica antes de publicarlo.
 4. Para continuar en otro computador, instala una versión compatible de SIGNA y copia el archivo `.aulabk`. En **Elegir copia y restaurar**, selecciona el archivo, introduce su contraseña y revisa la confirmación. Se recupera el catálogo completo; se reemplazan los datos actuales después de conservar una copia preventiva cifrada en `Recovery`.
 5. Si la contraseña, el archivo, la versión o las relaciones son inválidos, la restauración se rechaza y los datos actuales se conservan. La aplicación no almacena ni recupera contraseñas. Cierra otras instancias antes de restaurar.
@@ -237,7 +239,7 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 | Infrastructure | Persistencia en SQLite temporal, conflictos de revisión, integridad, Excel, PDF y respaldos/restauración. |
 | Acceptance | ViewModels y controles Avalonia con Headless: navegación, formularios, tablas, selección y actualización de métricas. |
 
-La última validación automatizada del código aprobó **249 pruebas**, con compilación Release sin errores ni advertencias. Durante el desarrollo se comprobaron publicaciones para Windows, macOS Apple Silicon y Linux x64/ARM64, además de la integridad de los recursos del icono. Una publicación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real: la validación manual de cada plataforma corresponde a quienes la ejecuten allí. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
+La última validación automatizada del código aprobó **262 pruebas**, con compilación Release sin errores ni advertencias. Durante el desarrollo se comprobaron publicaciones para Windows, macOS Apple Silicon y Linux x64/ARM64, además de la integridad de los recursos del icono. Una publicación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real: la validación manual de cada plataforma corresponde a quienes la ejecuten allí. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
 
 ## Contribuir y gestionar cambios
 

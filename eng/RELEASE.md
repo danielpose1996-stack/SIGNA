@@ -1,16 +1,14 @@
-**SIGNA 1.1.0 — Sistema Integral de Gestión de Notas y Asistencias**.
+**SIGNA 1.2.0 — Sistema Integral de Gestión de Notas y Asistencias**.
 
 ### Novedades
 
-- **Editar semana:** permite cambiar el tipo de semana y agregar, modificar o quitar su fecha opcional, conservando las asistencias.
-- **Numeración consecutiva:** las semanas visibles se reorganizan al retirar o recuperar una semana. Las claves internas permanecen estables para evitar asignaciones incorrectas de registros.
-- **Perfil docente:** nombre personalizado en el menú lateral, con iconos y paletas existentes.
-- **Color RGB:** selector libre de los canales rojo, verde y azul, con vista previa y contraste legible. Las preferencias se conservan al reiniciar y en respaldos locales cifrados.
-- **Colores de rendimiento:** fondos suaves para las definitivas de corte y Nota consolidada; rojo por debajo de 3,0, amarillo por debajo de 4,0, verde por debajo de 4,6 y azul hasta 5,0. Se pueden activar o desactivar desde Personalizar apariencia, sin alterar notas ni cálculos.
+- **PDF de notas por corte:** nuevo botón «Generar reporte PDF» en Notas. Incluye la asignatura, período, grupo, corte y todos los estudiantes, aunque exista una búsqueda activa.
+- **Privacidad al compartir:** la única identificación de estudiantes en el reporte es su nombre completo. No se incluyen documentos de identidad, correos, teléfonos ni identificadores internos.
+- **Tabla académica completa:** actividades, subactividades, porcentajes, promedios y definitiva. Las celdas pendientes siguen vacías y aportan cero únicamente a los cálculos. Tablas extensas divididas en secciones y páginas legibles, con encabezados, nombre y definitiva repetidos.
+- **Selector HSV/HEX:** lienzo de saturación y brillo, deslizador de tono y campo hexadecimal sincronizado. Vista previa en tiempo real, accesible por teclado y adaptable al tamaño de la ventana.
+- **Color único:** se retiran las paletas y el selector RGB anterior. El color ya guardado se conserva; «Guardar apariencia» confirma los cambios y «Cancelar» o cerrar revierte la vista previa. Se mantienen nombre docente, avatar y colores de rendimiento.
 
-La actualización conserva la ubicación de los datos y las preferencias anteriores. Antes de actualizar, crea una copia local cifrada desde Respaldos. Los instaladores no contienen materias ni estudiantes de prueba.
-
-Incluye gestión de semestres/materias/estudiantes, importación Excel, actividades y subactividades, cortes configurables y nota consolidada, asistencias con porcentaje/gráficos/PDF, presencia masiva opcional, respaldos locales cifrados y personalización de apariencia. Funciona sin cuenta ni inicio de sesión.
+Se mantienen los reportes individuales de asistencia, las reglas académicas y los respaldos locales cifrados. La actualización conserva la ubicación de los datos. Antes de actualizar, crea un respaldo. Los instaladores no contienen materias ni estudiantes de prueba.
 
 ### Descarga
 

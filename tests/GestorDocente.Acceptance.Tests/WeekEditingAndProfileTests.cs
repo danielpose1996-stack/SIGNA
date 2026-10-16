@@ -49,20 +49,18 @@ public class WeekEditingAndProfileTests
             {
                 Assert.NotNull(dialog.FindControl<TextBox>("TeacherNameTextBox"));Assert.NotNull(dialog.FindControl<CheckBox>("ColorGradesCheckBox"));
                 dialog.FindControl<TextBox>("TeacherNameTextBox")!.Text="  Docente de prueba  ";
-                dialog.FindControl<CheckBox>("CustomColorCheckBox")!.IsChecked=true;
-                var inputs=dialog.GetVisualDescendants().OfType<NumericUpDown>().ToArray();Assert.Equal(3,inputs.Length);
-                inputs[0].Value=255;inputs[1].Value=240;inputs[2].Value=20;
-                Assert.Equal(255,vm.Red);Assert.Equal(240,vm.Green);Assert.Equal(20,vm.Blue);vm.ColorGrades=false;
+                dialog.FindControl<TextBox>("HexColorInput")!.Text="#FFF014";
+                Assert.Equal("#FFF014",vm.SelectedHex);vm.ColorGrades=false;
                 Assert.NotEqual("Docente de prueba",vm.CurrentTeacherName);
                 Assert.True(await vm.SaveAsync());window.UpdateLayout();
                 Assert.Equal("Docente de prueba",window.FindControl<TextBlock>("TeacherProfileName")!.Text);
-                Assert.Equal("#FFF014",preferences.Current.CustomAccent);Assert.False(vm.CurrentColorGrades);
-                Assert.Equal(Color.Parse("#FFF014"),((ISolidColorBrush)ThemePalettes.Brushes(preferences.Current)["Primary"]).Color);
+                Assert.Equal("#FFF014",preferences.Current.Accent);Assert.False(vm.CurrentColorGrades);
+                Assert.Equal(Color.Parse("#FFF014"),((ISolidColorBrush)InterfaceTheme.Brushes(preferences.Current)["Primary"]).Color);
                 Assert.Same(row,main.GradeRows[0]);Assert.Equal(before,System.Text.Json.JsonSerializer.Serialize(main.Service.Current));
                 var cells=window.GetVisualDescendants().OfType<ResultGrade>().ToArray();Assert.NotEmpty(cells);
                 Assert.All(cells,c=>Assert.False(c.Colorize));
                 vm.ColorGrades=true;Assert.True(await vm.SaveAsync());window.UpdateLayout();Assert.All(cells,c=>Assert.True(c.Colorize));
-                vm.TeacherName="Sin guardar";vm.Red=0;vm.ResetDraft();Assert.Equal("Docente de prueba",vm.TeacherName);Assert.Equal(255,vm.Red);
+                vm.TeacherName="Sin guardar";vm.HexInput="#000000";vm.ResetDraft();Assert.Equal("Docente de prueba",vm.TeacherName);Assert.Equal("#FFF014",vm.SelectedHex);
                 Capture(dialog,"apariencia-rgb.png");
                 dialog.Width=500;dialog.Height=500;dialog.UpdateLayout();Capture(dialog,"apariencia-rgb-pequena.png");
             }
@@ -71,7 +69,7 @@ public class WeekEditingAndProfileTests
             grades.ScrollIntoView(main.GradeRows[0],grades.Columns[^2]);window.UpdateLayout();
             Capture(window,"notas-colores.png");main.Page="Nota consolidada";window.UpdateLayout();Capture(window,"consolidada-colores.png");
         }
-        finally{window.Close();ThemePalettes.Apply(Avalonia.Application.Current!,InterfacePalette.Blue);}
+        finally{window.Close();InterfaceTheme.Apply(Avalonia.Application.Current!,new());}
     }
 
     [AvaloniaFact]
@@ -111,7 +109,7 @@ public class WeekEditingAndProfileTests
     {
         foreach(var accent in new[]{"#FFFFFF","#FFFF00","#000000","#00FF00","#FF0000","#0000FF"})
         {
-            var brushes=ThemePalettes.Brushes(new InterfacePreferences(CustomAccent:accent));
+            var brushes=InterfaceTheme.Brushes(new InterfacePreferences(Accent:accent));
             Assert.True(Contrast(((ISolidColorBrush)brushes["Primary"]).Color,((ISolidColorBrush)brushes["OnPrimary"]).Color)>=4.5);
             Assert.True(Contrast(((ISolidColorBrush)brushes["AccentText"]).Color,Colors.White)>=4.5);
         }

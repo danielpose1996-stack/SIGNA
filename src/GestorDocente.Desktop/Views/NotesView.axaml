@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.NotesView">
   <Grid RowDefinitions="Auto,6,*">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
     <ItemsControl ItemsSource="{Binding Groups}">
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate><DataTemplate>
@@ -8,6 +9,8 @@
         </Button>
       </DataTemplate></ItemsControl.ItemTemplate>
     </ItemsControl>
+    <Button x:Name="NotesPdfButton" Grid.Column="1" Classes="primary" Content="Generar reporte PDF" Command="{Binding ExportNotesPdfCommand}" VerticalAlignment="Center" ToolTip.Tip="Exporta todos los estudiantes del corte seleccionado, identificados únicamente por nombre." />
+    </Grid>
     <Border Grid.Row="2" Classes="card" Padding="0">
       <Grid RowDefinitions="48,*,28">
         <Grid ColumnDefinitions="220,*,Auto" Margin="10,5">
