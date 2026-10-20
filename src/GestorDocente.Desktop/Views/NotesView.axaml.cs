@@ -11,7 +11,21 @@ public partial class NotesView : UserControl
 {
     private MainViewModel? observed;
     private TableColumnLayout? columnLayout;
-    public NotesView() {InitializeComponent();DataContextChanged+=(_,_)=>Attach();GradesTable.SizeChanged+=(_,_)=>columnLayout?.Refresh();}
+    public NotesView()
+    {
+        InitializeComponent();DataContextChanged+=(_,_)=>Attach();GradesTable.SizeChanged+=(_,_)=>columnLayout?.Refresh();
+        StudentActionsBar.SizeChanged+=(_,_)=>ArrangeActions();
+    }
+    private void ArrangeActions()
+    {
+        SetActionClass("compact",StudentActionsBar.Bounds.Width<1040);
+        SetActionClass("tight",StudentActionsBar.Bounds.Width<720);
+    }
+    private void SetActionClass(string name,bool active)
+    {
+        if(active){if(!StudentActionsBar.Classes.Contains(name))StudentActionsBar.Classes.Add(name);}
+        else StudentActionsBar.Classes.Remove(name);
+    }
     private void Attach()
     {
         if(observed is not null)observed.PropertyChanged-=Changed;
@@ -39,10 +53,10 @@ public partial class NotesView : UserControl
         foreach(var activity in group.Activities)
         {
             var id=activity.Id;
-            var title=$"{activity.Name}\n{group.Name}";
+            var title=$"{activity.Name}\n{group.Name}{(group.UseWeightedAverage ? $" · {activity.Weight:0.############################} % interno" : "")}";
             GradesTable.Columns.Add(new DataGridTemplateColumn {Header=TablePresentation.GradeHeader(title,id,observed),Width=new(TablePresentation.HeaderWidth(title)),CellTemplate=new FuncDataTemplate<GradeRowViewModel>((row,_)=>new GradeEditor {DataContext=row!.Cells[id]})});
         }
-        var averageTitle=$"Promedio {group.Name}\n{group.Weight:0.##} %";
+        var averageTitle=$"Promedio{(group.UseWeightedAverage ? " ponderado" : "")} {group.Name}\n{group.Weight:0.##} %";
         GradesTable.Columns.Add(Text(averageTitle,$"GroupTotals[{group.Id}]",TablePresentation.HeaderWidth(averageTitle)));
         }
         GradesTable.Columns.Add(TablePresentation.Grade("Nota del\ncorte","TotalValue",105,observed.Appearance));

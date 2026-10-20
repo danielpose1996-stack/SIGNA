@@ -143,6 +143,24 @@ public sealed class WorkspaceService
         if(document.Trim().Length>0 && Current.Students.Any(s=>string.Equals(s.Document,document.Trim(),StringComparison.OrdinalIgnoreCase)))throw new AcademicValidationException("Este documento ya pertenece a la materia.");
         return ImportStudentsAsync([new(document,name,email,phone)]);
     }
+    public Task AddStudentsAsync(StudentBatchPreview preview,bool confirmed=false)
+    {
+        if(!confirmed)throw new AcademicValidationException("Revisa la lista y confirma el registro de los estudiantes antes de guardar.");
+        if(!ReferenceEquals(preview.Source,Current))throw new AcademicValidationException("La materia cambió desde la vista previa. Pulsa Revisar lista para comprobarla nuevamente.");
+        if(!preview.CanSave)throw new AcademicValidationException(preview.Validation);
+        return ChangeWorkspaceAsync(next=>
+        {
+            var documents=next.Students.Where(s=>s.Document.Length>0).Select(s=>s.Document.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach(var row in preview.Rows)
+            {
+                var student=new Student(Guid.NewGuid().ToString("N"),row.Document,row.FullName,row.Email,row.Phone);
+                StudentRules.Validate(student);
+                if(student.Document.Length>0 && !documents.Add(student.Document))
+                    throw new AcademicValidationException("Hay documentos repetidos o ya registrados. Revisa la lista antes de guardar.");
+                next.Students.Add(student);
+            }
+        },new(WorkspaceChangeKind.Students));
+    }
     public Task EditStudentAsync(Student original,string name,string document="",string email="",string phone="")
     {
         return ChangeWorkspaceAsync(next=>
@@ -344,7 +362,7 @@ public sealed class WorkspaceService
         if(group.Mode==EvaluationMode.Direct)
         {
             var first=new EvaluationActivity{Name=$"{group.Name} 1"};
-            CopyDirectGrades(cut,group.Id,first.Id);group.Activities.Add(first);group.Mode=EvaluationMode.SubActivities;
+            CopyDirectGrades(cut,group.Id,first.Id);group.Activities.Add(first);group.Mode=EvaluationMode.SubActivities;group.UseWeightedAverage=false;
         }
         group.Activities.Add(item.Activity);cut.RemovedActivities.Remove(item);
         AcademicRules.ValidateGroups(cut.Groups,true);
@@ -355,7 +373,7 @@ public sealed class WorkspaceService
         if(group.Mode==EvaluationMode.Direct)
         {
             var first=new EvaluationActivity{Name=$"{group.Name} 1"};
-            CopyDirectGrades(cut,group.Id,first.Id);group.Activities.Add(first);group.Mode=EvaluationMode.SubActivities;
+            CopyDirectGrades(cut,group.Id,first.Id);group.Activities.Add(first);group.Mode=EvaluationMode.SubActivities;group.UseWeightedAverage=false;
         }
         group.Activities.Add(item.Activity);cut.RemovedActivities.Remove(item);
         AcademicRules.ValidateGroups(cut.Groups,true);

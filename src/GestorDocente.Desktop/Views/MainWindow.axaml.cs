@@ -29,7 +29,12 @@ public partial class MainWindow : Window
     private async void OpenConfiguration()
     {
         if(observed is null)return;
-        try{await ShowAcademicDialog(new ConfigurationWindow {DataContext=new ConfigurationViewModel(observed.Service,observed.SelectedCut)});}
+        try
+        {
+            var model=new ConfigurationViewModel(observed.Service,observed.SelectedCut);
+            if(observed.ConfigurationGroupId is {} id && model.Groups.FirstOrDefault(g=>g.Id==id) is {} group)model.SelectedGroup=group;
+            await ShowAcademicDialog(new ConfigurationWindow{DataContext=model});
+        }
         catch(Exception ex){observed.Message=SafeError(ex);}
     }
     private async void OpenAppearance()
@@ -166,6 +171,10 @@ public partial class MainWindow : Window
             var dialog=new RecoveryWindow{DataContext=model};
             model.GroupRequested+=async group=>{
                 try{await new ConfigurationWindow{DataContext=new ConfigurationViewModel(observed.Service,observed.SelectedCut,group)}.ShowDialog(dialog);model.Refresh();}
+                catch(Exception ex){model.ReportError(SafeError(ex));}
+            };
+            model.SubactivityRequested+=async activity=>{
+                try{await new ConfigurationWindow{DataContext=new ConfigurationViewModel(observed.Service,observed.SelectedCut,restoreActivity:activity)}.ShowDialog(dialog);model.Refresh();}
                 catch(Exception ex){model.ReportError(SafeError(ex));}
             };
             await ShowAcademicDialog(dialog);

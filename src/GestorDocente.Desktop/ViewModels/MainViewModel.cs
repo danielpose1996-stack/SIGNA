@@ -4,7 +4,7 @@ using GestorDocente.Domain;
 
 namespace GestorDocente.Desktop.ViewModels;
 
-public sealed record GroupCard(string Name,string WeightLabel,string TypeLabel,RelayCommand ConfigureCommand);
+public sealed record GroupCard(string Name,string WeightLabel,string TypeLabel,RelayCommand ConfigureCommand,string Id="");
 public enum NavigationSection { Home, Courses, Academic, Backups }
 public sealed class MainViewModel : ObservableObject
 {
@@ -179,6 +179,7 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand AddWeekCommand {get;}
     public RelayCommand ManageWeeksCommand {get;}
     public RelayCommand ConfigureCommand {get;}
+    public string? ConfigurationGroupId {get;private set;}
     public RelayCommand DismissMessageCommand {get;}
     public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null)
     {
@@ -227,7 +228,7 @@ public sealed class MainViewModel : ObservableObject
         ConfigureCutWeightsCommand=new(_=>CutWeightsRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         AddWeekCommand=new(_=>WeekEditorRequested?.Invoke(),_=>CanAddWeek);
         ManageWeeksCommand=new(_=>WeekEditorRequested?.Invoke());
-        ConfigureCommand=new(_=>ConfigurationRequested?.Invoke(),_=>!FileBusy);
+        ConfigureCommand=new(group=>{ConfigurationGroupId=group as string;ConfigurationRequested?.Invoke();},_=>!FileBusy);
         DismissMessageCommand=new(_=>Message="");
         Service.ChangedDetailed+=OnChanged;
         Service.RefreshFailed+=OnRefreshFailed;
@@ -517,7 +518,7 @@ public sealed class MainViewModel : ObservableObject
         var cut=Service.Cut(SelectedCut);
         readIndex=projection.Index;
         Groups.Clear();
-        foreach(var group in cut.Groups)Groups.Add(new(group.Name,$"{group.Weight:0.##} %",group.Mode==EvaluationMode.Direct ? "Nota directa" : $"Promedio simple · {group.Activities.Count} subactividades",ConfigureCommand));
+        foreach(var group in cut.Groups)Groups.Add(new(group.Name,$"{group.Weight:0.##} %",group.Mode==EvaluationMode.Direct ? "Nota directa" : $"Promedio {(group.UseWeightedAverage ? "ponderado" : "simple")} · {group.Activities.Count} subactividades",ConfigureCommand,group.Id));
         Weeks.Clear();foreach(var week in cut.DisplayWeeks)Weeks.Add(week);
         // Remove the old row contexts before rebuilding columns. Publish new rows only
         // after both tables have their matching grade/week schema.

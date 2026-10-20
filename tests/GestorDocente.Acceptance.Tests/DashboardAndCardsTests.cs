@@ -167,7 +167,7 @@ public class DashboardAndCardsTests
         Assert.Equal(3,window.FindControl<DataGrid>("GroupsTable")!.Columns.Count);
         model.SelectedGroup=model.Groups.First(g=>g.Mode==EvaluationMode.SubActivities);
         window.UpdateLayout();
-        Assert.Equal(2,window.FindControl<DataGrid>("ActivitiesTable")!.Columns.Count);
+        Assert.Equal(3,window.FindControl<DataGrid>("ActivitiesTable")!.Columns.Count);
         Assert.Contains(window.GetVisualDescendants().OfType<Button>(),b=>AutomationProperties.GetName(b)=="Eliminar actividad principal");
         Assert.Contains(window.GetVisualDescendants().OfType<Button>(),b=>AutomationProperties.GetName(b)=="Eliminar subactividad");
         if(Environment.GetEnvironmentVariable("AULA_CONFIG_PREVIEW") is {Length:>0} path)

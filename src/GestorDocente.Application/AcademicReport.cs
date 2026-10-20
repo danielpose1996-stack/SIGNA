@@ -12,7 +12,7 @@ public static class AcademicReportProjection
         var columns=new List<ReportColumn>{new("#",7),new("Documento",20),new("Nombre del estudiante",38)};
         if(kind==AcademicReportKind.Notes)
         {
-            foreach(var group in cut.Groups){foreach(var activity in group.Activities)columns.Add(new($"{group.Name}\n{activity.Name}",22));columns.Add(new($"{(group.Mode==EvaluationMode.Direct ? "Nota" : "Promedio")} {group.Name}\n{group.Weight:0.##} %",22));}
+            foreach(var group in cut.Groups){foreach(var activity in group.Activities)columns.Add(new($"{group.Name}\n{activity.Name}{(group.UseWeightedAverage ? $" · {activity.Weight:0.############################} % interno" : "")}",22));columns.Add(new($"{(group.Mode==EvaluationMode.Direct ? "Nota" : group.UseWeightedAverage ? "Promedio ponderado" : "Promedio")} {group.Name}\n{group.Weight:0.##} %",22));}
             columns.Add(new("Nota del corte",18));columns.Add(new("Estado",18));
         }
         else

@@ -14,6 +14,17 @@ public static class WorkspaceMigration
         if(source.SchemaVersion==1)WorkspaceIntegrity.ValidateLegacyShape(source);
         else WorkspaceIntegrity.Validate(source);
         var next=WorkspaceService.Clone(source);
+        // Earlier versions always used a simple average. Do not revive legacy rubric weights.
+        foreach(var cut in next.Cuts)
+        {
+            foreach(var group in cut.Groups.Concat(cut.RemovedGroups))
+            {
+                group.UseWeightedAverage=false;
+                foreach(var activity in group.Activities)activity.Weight=null;
+            }
+            foreach(var removed in cut.RemovedActivities)
+                if(removed?.Activity is {} activity)activity.Weight=null;
+        }
         if(next.SchemaVersion==1)
             foreach(var group in next.Cuts.SelectMany(c=>c.Groups.Concat(c.RemovedGroups)))
                 group.Mode=group.Activities.Count>0 ? EvaluationMode.SubActivities : EvaluationMode.Direct;

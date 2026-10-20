@@ -16,6 +16,7 @@ public sealed class WeeksViewModel : ObservableObject
     private WeekKindOption selectedKind;
     public bool MarkAllPresent {get=>markAllPresent;set=>Set(ref markAllPresent,value);}
     public string Error {get=>error;private set=>Set(ref error,value);}
+    public void ReportUiError(Exception ex)=>Error=$"No se pudo completar la acción ({SafeErrorCode.From(ex)}). Reintenta.";
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))NotifyActions();}}
     public bool CanEdit=>!IsSaving;
     public IReadOnlyList<WeekKindOption> Kinds {get;}=[new("Semana de clase",WeekKind.Class),new("Semana de actividades",WeekKind.Activities)];
@@ -32,9 +33,14 @@ public sealed class WeeksViewModel : ObservableObject
     public bool CanSave=>CanEdit && (IsEditing || Weeks.Count<9);
     public bool CanManage=>CanEdit && !IsEditing && SelectedWeek is not null;
     public bool CanSelectWeek=>CanEdit && !IsEditing;
-    public string SaveLabel=>IsEditing ? "Guardar cambios" : "Agregar semana";
+    public string SaveLabel=>IsSaving ? "Guardando…" : IsEditing ? "Guardar cambios" : "Agregar semana";
     public string EditorLabel=>IsEditing ? $"Editar semana {Weeks.FirstOrDefault(w=>w.Number==editingWeek)?.DisplayNumber}" : "Nueva semana";
     public string CountLabel=>$"{Weeks.Count} de 9 semanas · Corte {cut}";
+    public string Context=>$"{service.Current.CourseName} · Corte {cut}";
+    public bool HasWeeks=>Weeks.Count>0;
+    public bool NoWeeks=>!HasWeeks;
+    public bool LimitReached=>Weeks.Count>=9;
+    public bool CanStartNew=>CanAdd && !IsEditing;
     public WeeksViewModel(WorkspaceService service,int cut){this.service=service;this.cut=cut;selectedKind=Kinds[0];ClearDateCommand=new(_=>SelectedDate=null);Refresh();}
     public void BeginEdit()
     {
@@ -67,7 +73,7 @@ public sealed class WeeksViewModel : ObservableObject
     private static string WeekError(Exception ex,bool committed)=>committed || ex is AcademicRefreshException ?
         "El cambio de semana se guardó, pero falló el refresco. Pulsa Actualizar." :
         ex is AcademicValidationException ? ex.Message : $"No se guardó el cambio de semanas ({SafeErrorCode.From(ex)}). Reintenta.";
-    private void NotifyActions(){foreach(var name in new[]{nameof(CanEdit),nameof(CanAdd),nameof(CanSave),nameof(CanManage),nameof(CanSelectWeek),nameof(IsEditing),nameof(IsCreating),nameof(SaveLabel),nameof(EditorLabel)})Raise(name);}
+    private void NotifyActions(){foreach(var name in new[]{nameof(CanEdit),nameof(CanAdd),nameof(CanStartNew),nameof(CanSave),nameof(CanManage),nameof(CanSelectWeek),nameof(IsEditing),nameof(IsCreating),nameof(SaveLabel),nameof(EditorLabel),nameof(HasWeeks),nameof(NoWeeks),nameof(LimitReached)})Raise(name);}
     private void Refresh(){var key=SelectedWeek?.Number;Weeks.Clear();foreach(var week in service.Cut(cut).DisplayWeeks)Weeks.Add(week);SelectedWeek=Weeks.FirstOrDefault(w=>w.Number==key) ?? Weeks.FirstOrDefault();NotifyActions();Raise(nameof(CountLabel));}
 }
 
@@ -86,12 +92,14 @@ public sealed class RecoveryViewModel : ObservableObject
     public RecoveryItem? Selected {get;set;}
     public bool IsEmpty=>Items.Count==0;
     public event Action<EvaluationGroup>? GroupRequested;
+    public event Action<RemovedActivity>? SubactivityRequested;
     public RecoveryViewModel(WorkspaceService service,int cut){this.service=service;this.cut=cut;Refresh();}
     public void Restore()
     {
         if(Selected is not {} item)return;
         try{
             if(item.Kind=="Actividad principal"){GroupRequested?.Invoke(service.Cut(cut).RemovedGroups.Single(g=>g.Id==item.Id));return;}
+            if(RequestWeightedRecovery(item))return;
             if(item.Kind=="Semana")service.RestoreWeek(cut,item.Week);else service.RestoreActivity(cut,item.Id);
             Error="";Refresh();
         }catch(Exception ex){Error=ex is AcademicValidationException or AcademicRefreshException ? ex.Message : $"No se recuperaron los registros ({SafeErrorCode.From(ex)}).";}
@@ -105,6 +113,8 @@ public sealed class RecoveryViewModel : ObservableObject
             catch(Exception ex){Error=ex is AcademicValidationException ? ex.Message : $"No se abrió la configuración ({SafeErrorCode.From(ex)}).";}
             return;
         }
+        try{if(RequestWeightedRecovery(item))return;}
+        catch(Exception ex){Error=ex is AcademicValidationException ? ex.Message : $"No se abrió la configuración ({SafeErrorCode.From(ex)}).";return;}
         IsSaving=true;var before=service.Current;
         try
         {
@@ -120,6 +130,13 @@ public sealed class RecoveryViewModel : ObservableObject
             if(service.Current!=before)Refresh();
         }
         finally{IsSaving=false;}
+    }
+    private bool RequestWeightedRecovery(RecoveryItem item)
+    {
+        if(item.Kind!="Subactividad")return false;
+        var data=service.Cut(cut);var removed=data.RemovedActivities.SingleOrDefault(a=>a.Activity.Id==item.Id);
+        if(removed is null || !data.Groups.Any(g=>g.Id==removed.GroupId && g.Mode==EvaluationMode.SubActivities && g.UseWeightedAverage))return false;
+        SubactivityRequested?.Invoke(removed);return true;
     }
     public void Refresh(){Items.Clear();var data=service.Cut(cut);foreach(var g in data.RemovedGroups)Items.Add(new("Actividad principal",g.Name,g.Id));foreach(var a in data.RemovedActivities)Items.Add(new("Subactividad",a.Activity.Name,a.Activity.Id));foreach(var w in data.RemovedWeeks)Items.Add(new("Semana",w.Label,"",w.Number));Selected=Items.FirstOrDefault();Raise(nameof(Selected));Raise(nameof(IsEmpty));}
 }

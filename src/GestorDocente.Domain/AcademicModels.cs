@@ -4,7 +4,7 @@ namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
 {
-    public const int CurrentSchemaVersion=6;
+    public const int CurrentSchemaVersion=7;
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public bool CutWeightsPending { get; set; }
     public bool IsDemo { get; set; } = true;
@@ -42,6 +42,7 @@ public sealed class EvaluationGroup
     public string Name { get; set; } = "";
     public decimal Weight { get; set; }
     public EvaluationMode Mode { get; set; } = EvaluationMode.Direct;
+    public bool UseWeightedAverage { get; set; }
     public List<EvaluationActivity> Activities { get; set; } = [];
 }
 public sealed class EvaluationActivity
@@ -49,6 +50,7 @@ public sealed class EvaluationActivity
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
+    public decimal? Weight { get; set; }
 }
 public sealed record GradeEntry(string StudentId, string ActivityId, decimal Value);
 public sealed record RemovedActivity(string GroupId, EvaluationActivity Activity);

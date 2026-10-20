@@ -86,7 +86,7 @@
       "gestordocente.application": {
         "type": "Project",
         "dependencies": {
-          "GestorDocente.Domain": "[1.3.0, )"
+          "GestorDocente.Domain": "[1.4.0, )"
         }
       },
       "gestordocente.domain": {

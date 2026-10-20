@@ -1,15 +1,51 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.WeeksWindow" Title="Semanas del corte" Width="660" Height="560" MinWidth="560" MinHeight="450" WindowStartupLocation="CenterOwner">
-  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="22" RowSpacing="12">
-    <StackPanel Spacing="6"><TextBlock Text="Semanas del corte" FontSize="22" FontWeight="SemiBold" /><TextBlock Text="Clase y actividades permiten registrar P, A, J y T. Sin fechas obligatorias." Classes="muted" TextWrapping="Wrap" /><TextBlock Text="{Binding CountLabel}" FontSize="12" /></StackPanel>
-    <StackPanel Grid.Row="1" Spacing="10" IsEnabled="{Binding CanEdit}">
-      <TextBlock Text="{Binding EditorLabel}" FontWeight="SemiBold" />
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10"><ComboBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Tipo de semana" /><Button x:Name="SaveWeekButton" Grid.Column="1" Classes="primary" Content="{Binding SaveLabel}" Click="Save" IsEnabled="{Binding CanSave}" /></Grid>
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10"><CalendarDatePicker SelectedDate="{Binding SelectedDate,Mode=TwoWay}" Watermark="Fecha opcional" SelectedDateFormat="Short" HorizontalAlignment="Stretch" AutomationProperties.Name="Fecha opcional de la semana" /><Button Grid.Column="1" Content="Sin fecha" Command="{Binding ClearDateCommand}" /></Grid>
-      <CheckBox x:Name="MarkAllPresentCheckBox" IsVisible="{Binding IsCreating}" Content="Marcar presente a todos" IsChecked="{Binding MarkAllPresent,Mode=TwoWay}" AutomationProperties.Name="Marcar presente a todos al crear esta semana" ToolTip.Tip="Registra P para todos los estudiantes de la materia. Después puedes cambiar cada asistencia individualmente." />
-      <Button Content="Cancelar edición" IsVisible="{Binding IsEditing}" Click="CancelEdit" HorizontalAlignment="Left" />
-    </StackPanel>
-    <ListBox Grid.Row="2" ItemsSource="{Binding Weeks}" SelectedItem="{Binding SelectedWeek,Mode=TwoWay}" IsEnabled="{Binding CanSelectWeek}"><ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" Margin="6" TextWrapping="Wrap" /></DataTemplate></ListBox.ItemTemplate></ListBox>
-    <TextBlock Grid.Row="3" Text="{Binding Error}" Classes="error" />
-    <Grid Grid.Row="4" ColumnDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="8"><Button x:Name="EditWeekButton" Content="Editar semana" Click="Edit" IsEnabled="{Binding CanManage}" /><Button Content="Retirar semana" Click="Remove" IsEnabled="{Binding CanManage}" /></StackPanel><Button Grid.Column="1" Content="Cerrar" Click="CloseDialog" IsEnabled="{Binding CanEdit}" /></Grid>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.WeeksWindow" Title="Semanas de asistencia" Width="1000" Height="660" MinWidth="780" MinHeight="520" WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="Padding" Value="0" /><Setter Property="Margin" Value="0,0,0,8" /></Style>
+    <Style Selector="ListBoxItem:selected Border.week-card"><Setter Property="Background" Value="{DynamicResource Selected}" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /></Style>
+    <Style Selector="Button.week-edit"><Setter Property="Padding" Value="8,5" /><Setter Property="FontSize" Value="12" /></Style>
+    <Style Selector="Button.week-delete"><Setter Property="Padding" Value="7" /><Setter Property="Width" Value="34" /></Style>
+  </Window.Styles>
+  <Grid RowDefinitions="Auto,*,Auto" Margin="22" RowSpacing="16">
+    <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+      <Border Background="{DynamicResource Soft}" CornerRadius="9" Height="44" VerticalAlignment="Top"><c:VectorIcon Kind="calendar" Width="24" Height="24" Stroke="{DynamicResource AccentText}" /></Border>
+      <StackPanel Grid.Column="1" Spacing="5"><TextBlock Text="Semanas de asistencia" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" TextWrapping="Wrap" /><TextBlock Text="Crea semanas o usa las acciones de cada fila para editar y eliminar." Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+    </Grid>
+    <Grid Grid.Row="1" ColumnDefinitions="1.1*,1*" ColumnSpacing="16">
+      <Border Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+          <StackPanel Spacing="9"><Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><TextBlock Text="Semanas registradas" Classes="section" VerticalAlignment="Center" /><Button x:Name="NewWeekButton" Grid.Column="1" Click="NewWeek" IsEnabled="{Binding CanStartNew}" ToolTip.Tip="Preparar una nueva semana"><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="plus" Width="15" Height="15" /><TextBlock Text="Nueva" FontSize="12" /></StackPanel></Button></Grid><TextBlock Text="{Binding CountLabel}" Classes="muted" FontSize="12" /></StackPanel>
+          <Grid Grid.Row="1">
+            <ListBox x:Name="WeeksList" ItemsSource="{Binding Weeks}" SelectedItem="{Binding SelectedWeek,Mode=TwoWay}" IsEnabled="{Binding CanSelectWeek}" BorderThickness="0" Background="Transparent" Padding="0" IsVisible="{Binding HasWeeks}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+              <ListBox.ItemTemplate><DataTemplate>
+                <Border Classes="week-card" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="7" Background="White" Padding="10">
+                  <Grid ColumnDefinitions="30,*,Auto,Auto" ColumnSpacing="8">
+                    <c:VectorIcon Kind="calendar" Width="24" Height="24" Stroke="{DynamicResource AccentText}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Classes="week-edit" Click="EditAtRow" AutomationProperties.Name="{Binding DisplayNumber,StringFormat='Editar semana {0}'}" ToolTip.Tip="Editar tipo y fecha de esta semana"><StackPanel Orientation="Horizontal" Spacing="5"><c:VectorIcon Kind="edit" Width="14" Height="14" /><TextBlock Text="Editar" FontSize="12" /></StackPanel></Button>
+                    <Button Grid.Column="3" Classes="week-delete" Click="RemoveAtRow" AutomationProperties.Name="{Binding DisplayNumber,StringFormat='Eliminar semana {0}'}" ToolTip.Tip="Eliminar esta semana"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#B53742" /></Button>
+                  </Grid>
+                </Border>
+              </DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel IsVisible="{Binding NoWeeks}" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="260"><c:VectorIcon Kind="calendar" Width="34" Height="34" HorizontalAlignment="Center" /><TextBlock Text="Tu primera semana" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock Text="Elige el tipo de semana en el formulario y pulsa Agregar semana. La fecha es opcional." Classes="muted" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+          </Grid>
+          <TextBlock Grid.Row="2" Text="Guarda o cancela la edición para seleccionar otra semana." IsVisible="{Binding IsEditing}" Classes="muted" FontSize="11" TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+      <Border Grid.Column="1" Classes="card" Padding="16">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+          <StackPanel Spacing="5"><TextBlock Text="{Binding EditorLabel}" FontSize="18" FontWeight="SemiBold" /><TextBlock Text="Clase y actividades admiten los mismos estados P, A, J y T." Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+          <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14" IsEnabled="{Binding CanSave}" Margin="0,0,4,0">
+              <StackPanel Spacing="6"><TextBlock Text="Tipo de semana" FontWeight="SemiBold" FontSize="12" /><ComboBox x:Name="WeekKindInput" ItemsSource="{Binding Kinds}" SelectedItem="{Binding SelectedKind,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Tipo de semana" /></StackPanel>
+              <StackPanel Spacing="6"><TextBlock Text="Fecha (opcional)" FontWeight="SemiBold" FontSize="12" /><CalendarDatePicker SelectedDate="{Binding SelectedDate,Mode=TwoWay}" Watermark="Seleccionar fecha" SelectedDateFormat="Short" HorizontalAlignment="Stretch" AutomationProperties.Name="Fecha opcional de la semana" /><Button Content="Quitar fecha" Classes="quiet" Command="{Binding ClearDateCommand}" HorizontalAlignment="Left" Padding="0,3" MinHeight="26" FontSize="12" /></StackPanel>
+              <Border Background="{DynamicResource Soft}" CornerRadius="6" Padding="10" IsVisible="{Binding IsCreating}"><StackPanel Spacing="6"><CheckBox x:Name="MarkAllPresentCheckBox" Content="Marcar presente a todos" FontSize="13" IsVisible="{Binding IsCreating}" IsChecked="{Binding MarkAllPresent,Mode=TwoWay}" AutomationProperties.Name="Marcar presente a todos al crear esta semana" /><TextBlock Text="Opcional. Después puedes cambiar la asistencia de cada estudiante." Classes="muted" FontSize="11" TextWrapping="Wrap" /></StackPanel></Border>
+            </StackPanel>
+          </ScrollViewer>
+          <StackPanel Grid.Row="2" Spacing="9"><TextBlock Text="Ya tienes nueve semanas. Puedes editar o eliminar una de la lista." IsVisible="{Binding LimitReached}" Classes="muted" FontSize="12" TextWrapping="Wrap" /><Button x:Name="SaveWeekButton" Classes="primary" Content="{Binding SaveLabel}" Click="Save" IsEnabled="{Binding CanSave}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" /><Button Content="Cancelar edición" IsVisible="{Binding IsEditing}" Click="CancelEdit" IsEnabled="{Binding CanEdit}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" /></StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+    <StackPanel Grid.Row="2" Spacing="8"><TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error,Converter={StaticResource HasText}}" /><Grid ColumnDefinitions="*,Auto" ColumnSpacing="16"><TextBlock x:Name="WeekFooterHint" Text="Semanas eliminadas: disponibles en Recuperar retirados." Classes="muted" FontSize="11" TextWrapping="Wrap" HorizontalAlignment="Left" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Cerrar" Click="CloseDialog" IsEnabled="{Binding CanEdit}" /></Grid></StackPanel>
   </Grid>
 </Window>

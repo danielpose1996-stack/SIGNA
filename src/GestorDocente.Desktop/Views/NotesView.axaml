@@ -1,10 +1,25 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.NotesView">
+  <UserControl.Styles>
+    <Style Selector="Button.student-add"><Setter Property="MinHeight" Value="36" /><Setter Property="CornerRadius" Value="6" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Padding" Value="11,6" /></Style>
+    <Style Selector="Button.student-action"><Setter Property="MinHeight" Value="36" /><Setter Property="CornerRadius" Value="6" /><Setter Property="FontSize" Value="12" /><Setter Property="Padding" Value="9,6" /><Setter Property="Background" Value="{DynamicResource Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /></Style>
+    <Style Selector="Button.student-action:pointerover"><Setter Property="Background" Value="{DynamicResource Soft}" /></Style>
+    <Style Selector="Grid.student-search"><Setter Property="Width" Value="230" /></Style>
+    <Style Selector="Border.student-actions.compact Grid.student-search"><Setter Property="Width" Value="190" /></Style>
+    <Style Selector="Border.student-actions.tight Grid.student-search"><Setter Property="Width" Value="140" /></Style>
+    <Style Selector="TextBlock.compact-action-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="TextBlock.import-short-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Border.student-actions.compact TextBlock.secondary-action-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Border.student-actions.compact TextBlock.compact-action-label"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="Border.student-actions.tight TextBlock.compact-action-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Border.student-actions.tight TextBlock.import-action-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Border.student-actions.tight TextBlock.import-short-label"><Setter Property="IsVisible" Value="True" /></Style>
+  </UserControl.Styles>
   <Grid RowDefinitions="Auto,6,*">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
     <ItemsControl ItemsSource="{Binding Groups}">
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate><DataTemplate>
-        <Button Command="{Binding ConfigureCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,8,0" Height="36" Padding="8,3" Background="White" ToolTip.Tip="{Binding TypeLabel}">
+        <Button Command="{Binding ConfigureCommand}" CommandParameter="{Binding Id}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,8,0" Height="36" Padding="8,3" Background="White" ToolTip.Tip="{Binding TypeLabel}">
           <Grid ColumnDefinitions="*,Auto,14" ColumnSpacing="8"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" /><TextBlock Grid.Column="1" Text="{Binding WeightLabel}" Foreground="{DynamicResource AccentText}" FontSize="12" VerticalAlignment="Center" /><c:VectorIcon Grid.Column="2" Kind="settings" Width="13" Height="13" VerticalAlignment="Center" /></Grid>
         </Button>
       </DataTemplate></ItemsControl.ItemTemplate>
@@ -12,14 +27,25 @@
     <Button x:Name="NotesPdfButton" Grid.Column="1" Classes="primary" Content="Generar reporte PDF" Command="{Binding ExportNotesPdfCommand}" VerticalAlignment="Center" ToolTip.Tip="Exporta todos los estudiantes del corte seleccionado, identificados únicamente por nombre." />
     </Grid>
     <Border Grid.Row="2" Classes="card" Padding="0">
-      <Grid RowDefinitions="48,*,28">
-        <Grid ColumnDefinitions="220,*,Auto" Margin="10,5">
-          <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante o documento…" AutomationProperties.Name="Filtrar tabla de notas" />
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"><Button Classes="quiet" Content="Agregar estudiante" Command="{Binding AddStudentCommand}" /><Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Actividades y porcentajes" Command="{Binding ConfigureCommand}" /><Button Classes="quiet" Content="Recuperar retirados" Command="{Binding RecoveryCommand}" /></StackPanel>
-        </Grid>
+      <Grid RowDefinitions="Auto,*,28">
+        <Border x:Name="StudentActionsBar" Classes="student-actions" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,7" CornerRadius="8,8,0,0">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+            <Grid Classes="student-search">
+              <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" Padding="30,6,8,6" MinHeight="36" FontSize="12" CornerRadius="6" AutomationProperties.Name="Filtrar tabla de notas" ToolTip.Tip="Buscar por nombre o documento dentro de esta materia" />
+              <c:VectorIcon Kind="search" Width="15" Height="15" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{DynamicResource Muted}" IsHitTestVisible="False" />
+            </Grid>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+              <Button x:Name="AddStudentButton" Classes="primary student-add" Command="{Binding AddStudentCommand}" AutomationProperties.Name="Agregar estudiante" ToolTip.Tip="Registrar manualmente un estudiante en esta materia"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="plus" Width="16" Height="16" /><TextBlock Text="Agregar estudiante" FontSize="12" /></StackPanel></Button>
+              <Button x:Name="ImportStudentsButton" Classes="student-action" Command="{Binding ImportStudentsCommand}" AutomationProperties.Name="Importar Excel" ToolTip.Tip="Importar el listado de estudiantes desde un archivo Excel"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="document" Width="16" Height="16" Stroke="{DynamicResource AccentText}" /><TextBlock Classes="import-action-label" Text="Importar Excel" FontSize="12" /><TextBlock Classes="import-short-label" Text="Excel" FontSize="12" /></StackPanel></Button>
+              <Border Width="1" Height="24" Margin="2,0" Background="{DynamicResource Line}" VerticalAlignment="Center" />
+              <Button x:Name="ConfigureActivitiesButton" Classes="student-action" Command="{Binding ConfigureCommand}" AutomationProperties.Name="Actividades y porcentajes" ToolTip.Tip="Actividades y porcentajes: organizar las evaluaciones de este corte"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="settings" Width="16" Height="16" Stroke="{DynamicResource AccentText}" /><TextBlock Classes="secondary-action-label" Text="Actividades y porcentajes" FontSize="12" /><TextBlock Classes="compact-action-label" Text="Actividades" FontSize="12" /></StackPanel></Button>
+              <Button x:Name="RecoverRowsButton" Classes="student-action" Command="{Binding RecoveryCommand}" AutomationProperties.Name="Recuperar retirados" ToolTip.Tip="Recuperar retirados: volver a incluir actividades o semanas retiradas"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="restore" Width="16" Height="16" Stroke="{DynamicResource AccentText}" /><TextBlock Classes="secondary-action-label" Text="Recuperar retirados" FontSize="12" /><TextBlock Classes="compact-action-label" Text="Recuperar" FontSize="12" /></StackPanel></Button>
+            </StackPanel>
+          </Grid>
+        </Border>
         <DataGrid Grid.Row="1" x:Name="GradesTable" ItemsSource="{Binding GradeRows}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False" FrozenColumnCount="4" SelectionMode="Single" HorizontalScrollBarVisibility="Auto" />
         <TextBlock Grid.Row="1" Text="{Binding EmptyTableMessage}" Classes="muted" IsVisible="{Binding IsEmpty}" TextWrapping="Wrap" MaxWidth="500" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,4"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Enter: guardar nota · Subactividades: promedio simple · Vacías: 0,0 en el cálculo · Promedio del curso" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="13" /></Grid></Border>
+        <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,4"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="Enter: guardar nota · Subactividades: promedio simple o ponderado · Vacías: 0,0 en el cálculo · Promedio del curso" FontSize="11" /><TextBlock Grid.Column="1" Text="{Binding CourseAverage}" FontWeight="Bold" FontSize="13" /></Grid></Border>
       </Grid>
     </Border>
   </Grid>

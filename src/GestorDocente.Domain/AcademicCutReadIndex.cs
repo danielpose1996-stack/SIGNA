@@ -43,17 +43,7 @@ public sealed class AcademicCutReadIndex
         else attendance.Remove((studentId,week));
     }
     public decimal? Group(EvaluationGroup group,string studentId)
-    {
-        if(group.Mode==EvaluationMode.Direct)return Grade(studentId,group.Id) ?? 0m;
-        if(group.Activities.Count==0)return null;
-        decimal sum=0;
-        foreach(var activity in group.Activities)
-        {
-            var value=Grade(studentId,activity.Id);
-            sum+=value ?? 0m;
-        }
-        return sum/group.Activities.Count;
-    }
+        =>GradeCalculator.CalculateGroup(group,id=>Grade(studentId,id));
     public bool HasPendingGrades(EvaluationGroup group,string studentId)=>group.Mode==EvaluationMode.Direct
         ? Grade(studentId,group.Id) is null
         : group.Activities.Count==0 || group.Activities.Any(activity=>Grade(studentId,activity.Id) is null);

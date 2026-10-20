@@ -15,16 +15,19 @@ public static class GradeCalculator
         return results.Sum(c=>(c.Grade ?? 0m)*c.Weight/100m);
     }
     public static decimal? Group(AcademicCut cut,EvaluationGroup group,string studentId)
+        =>CalculateGroup(group,id=>Value(cut,studentId,id));
+    internal static decimal? CalculateGroup(EvaluationGroup group,Func<string,decimal?> gradeFor)
     {
-        if(group.Mode==EvaluationMode.Direct)return Value(cut,studentId,group.Id) ?? 0m;
+        if(group.Mode==EvaluationMode.Direct)return gradeFor(group.Id) ?? 0m;
         if(group.Activities.Count==0)return null;
+        if(group.UseWeightedAverage)AcademicRules.ValidateSubactivityWeights(group);
         decimal total=0;
         foreach(var activity in group.Activities)
         {
-            var grade=Value(cut,studentId,activity.Id);
-            total+=grade ?? 0m;
+            var grade=gradeFor(activity.Id) ?? 0m;
+            total+=group.UseWeightedAverage ? grade*activity.Weight!.Value/100m : grade;
         }
-        return total/group.Activities.Count;
+        return group.UseWeightedAverage ? total : total/group.Activities.Count;
     }
     private static decimal? Value(AcademicCut cut,string studentId,string id)
     {

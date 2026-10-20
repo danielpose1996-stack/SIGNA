@@ -78,8 +78,8 @@ public sealed class NotesPdfExporter:INotesPdfExporter
             canvas.DrawLine(Left+nameWidth,page.TableTop,Left+nameWidth,y,line);
             for(var c=1;c<=page.ColumnCount;c++)canvas.DrawLine(Left+nameWidth+c*gradeWidth,page.TableTop,Left+nameWidth+c*gradeWidth,y,line);
             canvas.DrawLine(Left,563,Right,563,line);
-            canvas.DrawText("Celdas vacías: pendientes; aportan 0,0 únicamente en los cálculos. Subactividades: promedio simple (1/N del grupo).",Left,577,small);
-            canvas.DrawText("Los porcentajes corresponden al corte. Nombre y definitiva se repiten cuando la tabla ocupa varias secciones.",Left,590,small);
+            canvas.DrawText("Celdas vacías: pendientes; aportan 0,0 solo en los cálculos. Subactividades: promedio simple o ponderado según configuración.",Left,577,small);
+            canvas.DrawText("% del corte: actividad principal. % interno: dentro de la actividad. Nombre y definitiva se repiten por sección.",Left,590,small);
             RightText(canvas,$"{pageIndex+1} / {pages.Count}",Right,603,small);
             document.EndPage();
         }

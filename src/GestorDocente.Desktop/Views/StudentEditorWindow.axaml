@@ -1,8 +1,26 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.StudentEditorWindow" Title="{Binding Title}" Width="490" Height="535" MinWidth="430" MinHeight="490" WindowStartupLocation="CenterOwner">
-  <Grid Margin="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="15">
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:v="using:GestorDocente.Desktop.Views" x:Class="GestorDocente.Desktop.Views.StudentEditorWindow" Title="{Binding Title}" Width="490" Height="600" MinWidth="430" MinHeight="490" WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="Button.registration-mode"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Center" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="CornerRadius" Value="6" /></Style>
+    <Style Selector="Button.registration-mode.selected"><Setter Property="Background" Value="{DynamicResource Surface}" /><Setter Property="Foreground" Value="{DynamicResource AccentText}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  </Window.Styles>
+  <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="14">
     <StackPanel Spacing="6"><TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Explanation}" Classes="muted" TextWrapping="Wrap" /></StackPanel>
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"><StackPanel Spacing="9" IsEnabled="{Binding CanEdit}"><TextBlock Text="Nombre completo *" /><TextBox Text="{Binding FullName,Mode=TwoWay}" MaxLength="240" AutomationProperties.Name="Nombre completo obligatorio" /><TextBlock Text="Documento (opcional)" /><TextBox Text="{Binding Document,Mode=TwoWay}" MaxLength="80" /><TextBlock Text="Correo electrónico (opcional)" /><TextBox Text="{Binding Email,Mode=TwoWay}" MaxLength="254" /><TextBlock Text="Celular (opcional)" /><Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><TextBox Text="{Binding Phone,Mode=TwoWay}" MaxLength="40" PasswordChar="{Binding PhoneMask}" /><Button Grid.Column="1" Command="{Binding TogglePhoneCommand}" ToolTip.Tip="{Binding EyeLabel}" AutomationProperties.Name="{Binding EyeLabel}"><c:VectorIcon Kind="eye" Width="19" Height="19" /></Button></Grid></StackPanel></ScrollViewer>
-    <TextBlock Grid.Row="2" Text="{Binding Error}" Classes="error" TextWrapping="Wrap" />
-    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" IsEnabled="{Binding CanEdit}" /><Button Content="{Binding ActionLabel}" Classes="primary" Click="Save" IsEnabled="{Binding CanEdit}" /></StackPanel>
+    <Border Grid.Row="1" IsVisible="{Binding CanUseBulk}" Background="{DynamicResource Header}" CornerRadius="8" Padding="4">
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+        <Button x:Name="IndividualStudentMode" Classes="registration-mode" Classes.selected="{Binding IsIndividual}" Content="Individual" Command="{Binding ShowIndividualCommand}" />
+        <Button x:Name="BulkStudentMode" Grid.Column="1" Classes="registration-mode" Classes.selected="{Binding IsBulk}" Content="Varios estudiantes" Command="{Binding ShowBulkCommand}" />
+      </Grid>
+    </Border>
+    <ScrollViewer Grid.Row="2" IsVisible="{Binding IsIndividual}" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="9" IsEnabled="{Binding CanEdit}">
+        <TextBlock Text="Nombre completo *" /><TextBox Text="{Binding FullName,Mode=TwoWay}" MaxLength="240" AutomationProperties.Name="Nombre completo obligatorio" />
+        <TextBlock Text="Documento (opcional)" /><TextBox Text="{Binding Document,Mode=TwoWay}" MaxLength="80" />
+        <TextBlock Text="Correo electrónico (opcional)" /><TextBox Text="{Binding Email,Mode=TwoWay}" MaxLength="254" />
+        <TextBlock Text="Celular (opcional)" /><Grid ColumnDefinitions="*,Auto" ColumnSpacing="8"><TextBox Text="{Binding Phone,Mode=TwoWay}" MaxLength="40" PasswordChar="{Binding PhoneMask}" /><Button Grid.Column="1" Command="{Binding TogglePhoneCommand}" ToolTip.Tip="{Binding EyeLabel}" AutomationProperties.Name="{Binding EyeLabel}"><c:VectorIcon Kind="eye" Width="19" Height="19" /></Button></Grid>
+      </StackPanel>
+    </ScrollViewer>
+    <Grid Grid.Row="2" IsVisible="{Binding IsBulk}"><v:StudentBatchView x:Name="BulkStudentEditor" DataContext="{Binding Bulk}" /></Grid>
+    <TextBlock Grid.Row="3" IsVisible="{Binding IsIndividual}" Text="{Binding Error}" Classes="error" TextWrapping="Wrap" />
+    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" IsEnabled="{Binding CanEdit}" /><Button x:Name="SaveStudentsButton" Content="{Binding ActionLabel}" Classes="primary" Click="Save" IsEnabled="{Binding CanSave}" /></StackPanel>
   </Grid>
 </Window>

@@ -12,9 +12,9 @@ public static class WorkspaceIntegrity
         if(data.SchemaVersion!=1 || data.Students is null || data.Cuts is null || data.Cuts.Count!=3)Invalid();
         foreach(var cut in data.Cuts)
         {
-            if(cut is null || cut.Groups is null || cut.RemovedGroups is null)Invalid();
+            if(cut is null || cut.Groups is null || cut.RemovedGroups is null || cut.RemovedActivities is null)Invalid();
             foreach(var group in cut.Groups.Concat(cut.RemovedGroups))
-                if(group is null || group.Activities is null)Invalid();
+                if(group is null || group.Activities is null || group.Activities.Any(a=>a is null))Invalid();
         }
     }
     public static AcademicWorkspace Deserialize(string payload)
@@ -43,11 +43,31 @@ public static class WorkspaceIntegrity
                             if(!grading.TryGetProperty(key,out var grade) || !grade.TryGetDecimal(out _))Invalid();
                     }
                 }
+                if(version>=7)
+                {
+                    foreach(var group in cut.GetProperty("Groups").EnumerateArray().Concat(cut.GetProperty("RemovedGroups").EnumerateArray()))
+                    {
+                        if(group.ValueKind!=JsonValueKind.Object || !group.TryGetProperty("UseWeightedAverage",out var weighted) ||
+                           weighted.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || !HasArray(group,"Activities"))Invalid();
+                        foreach(var activity in group.GetProperty("Activities").EnumerateArray())ValidateActivityShape(activity);
+                    }
+                    foreach(var removed in cut.GetProperty("RemovedActivities").EnumerateArray())
+                    {
+                        if(removed.ValueKind!=JsonValueKind.Object)Invalid();
+                        if(!removed.TryGetProperty("Activity",out var activity))Invalid();
+                        ValidateActivityShape(activity);
+                    }
+                }
             }
         return JsonSerializer.Deserialize<AcademicWorkspace>(payload) ?? throw new AcademicValidationException("La materia almacenada está dañada.");
     }
     private static bool HasArray(JsonElement value,string key)=>
         value.TryGetProperty(key,out var array) && array.ValueKind==JsonValueKind.Array;
+    private static void ValidateActivityShape(JsonElement activity)
+    {
+        if(activity.ValueKind!=JsonValueKind.Object || !activity.TryGetProperty("Weight",out var weight) ||
+           weight.ValueKind!=JsonValueKind.Null && (weight.ValueKind!=JsonValueKind.Number || !weight.TryGetDecimal(out _)))Invalid();
+    }
     public static void Validate(AcademicWorkspace data)
     {
         if(data.SchemaVersion is <2 or >AcademicWorkspace.CurrentSchemaVersion || data.Students is null || data.Cuts is null ||
@@ -119,7 +139,7 @@ public static class WorkspaceIntegrity
     private static void AddActivity(EvaluationActivity activity,HashSet<string> ids)
     {
         if(activity is null || string.IsNullOrWhiteSpace(activity.Id) ||
-           string.IsNullOrWhiteSpace(activity.Name) || !ids.Add(activity.Id))Invalid();
+           string.IsNullOrWhiteSpace(activity.Name) || activity.Weight is <0 or >100 || !ids.Add(activity.Id))Invalid();
     }
     [DoesNotReturn]
     private static void Invalid()=>throw new AcademicValidationException("La materia contiene datos académicos inconsistentes. El archivo original no se modificó; recupera una copia válida antes de continuar.");

@@ -1,29 +1,71 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.ConfigurationWindow" Title="Actividades y porcentajes" Width="940" Height="660" MinWidth="750" MinHeight="480" WindowStartupLocation="CenterOwner" Background="White">
-  <Grid RowDefinitions="Auto,*,Auto" Margin="22">
-    <StackPanel Spacing="7" Margin="0,0,0,16"><TextBlock Text="Actividades y porcentajes" FontSize="22" FontWeight="SemiBold" /><TextBlock Text="Crea las actividades del corte con el nombre que prefieras. Sus porcentajes deben sumar 100 %." Classes="muted" TextWrapping="Wrap" /></StackPanel>
-    <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="18" IsEnabled="{Binding CanEdit}">
-      <Grid RowDefinitions="Auto,*,Auto">
-        <TextBlock Text="Actividades principales" Classes="section" Margin="0,0,0,10" />
-        <DataGrid Grid.Row="1" x:Name="GroupsTable" ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup,Mode=TwoWay}" AutoGenerateColumns="False">
-          <DataGrid.Columns><DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*" /><DataGridTextColumn Header="Porcentaje %" Binding="{Binding Weight}" Width="110" /><DataGridTemplateColumn Header="" Width="48"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Click="RemoveGroupAtRow" ToolTip.Tip="Eliminar esta actividad" AutomationProperties.Name="Eliminar actividad principal" Padding="6"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#B53742" /></Button></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn></DataGrid.Columns>
-        </DataGrid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0"><Button Content="Agregar actividad" Click="AddGroup" /></StackPanel>
-      </Grid>
-      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto" IsEnabled="{Binding HasSelectedGroup}">
-        <StackPanel Spacing="7" Margin="0,0,0,10"><TextBlock Text="{Binding SelectedGroup.Name}" Classes="section" /><CheckBox x:Name="SubactivitiesToggle" Content="Usar subactividades (opcional)" IsChecked="{Binding UsesSubactivities,Mode=TwoWay}" /><TextBlock Text="{Binding ModeDescription}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
-        <TextBlock Grid.Row="1" Text="Subactividades: cada nota vale lo mismo en el promedio" FontSize="12" Margin="0,0,0,8" IsVisible="{Binding UsesSubactivities}" TextWrapping="Wrap" />
-        <DataGrid Grid.Row="2" x:Name="ActivitiesTable" ItemsSource="{Binding Activities}" AutoGenerateColumns="False" IsVisible="{Binding UsesSubactivities}">
-          <DataGrid.Columns><DataGridTextColumn Header="Nombre de la subactividad" Binding="{Binding Name}" Width="*" /><DataGridTemplateColumn Header="" Width="48"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Click="RemoveActivityAtRow" ToolTip.Tip="Eliminar esta subactividad" AutomationProperties.Name="Eliminar subactividad" Padding="6"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#B53742" /></Button></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn></DataGrid.Columns>
-        </DataGrid>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0" IsVisible="{Binding UsesSubactivities}"><Button Content="Agregar subactividad" Click="AddActivity" /></StackPanel>
-      </Grid>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.ConfigurationWindow" Title="Actividades y porcentajes" Width="1100" Height="740" MinWidth="800" MinHeight="560" WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBox.editor"><Setter Property="MinHeight" Value="32" /><Setter Property="Height" Value="32" /><Setter Property="Padding" Value="7,4" /><Setter Property="FontSize" Value="13" /></Style>
+    <Style Selector="TextBox.invalid"><Setter Property="BorderBrush" Value="#B32135" /></Style>
+    <Style Selector="Button.row-action"><Setter Property="MinHeight" Value="28" /><Setter Property="Padding" Value="5" /></Style>
+    <Style Selector="DataGrid.editors DataGridCell"><Setter Property="Padding" Value="2,1" /></Style>
+    <Style Selector="DataGrid.editors DataGridRow:selected"><Setter Property="Background" Value="{DynamicResource Selected}" /></Style>
+  </Window.Styles>
+  <Grid RowDefinitions="Auto,*,Auto" Margin="22" RowSpacing="16">
+    <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+      <Border Background="{DynamicResource Soft}" CornerRadius="9" Height="44" VerticalAlignment="Top"><c:VectorIcon Kind="grid" Width="24" Height="24" Stroke="{DynamicResource AccentText}" /></Border>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Actividades y porcentajes" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" TextWrapping="Wrap" /><TextBlock Text="Edita los campos directamente. Los cambios se aplican al guardar." Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
     </Grid>
-    <StackPanel Grid.Row="2" Spacing="10" Margin="0,16,0,0">
-      <TextBlock Text="Guardando información en este equipo…" IsVisible="{Binding IsSaving}" />
+    <Grid Grid.Row="1" ColumnDefinitions="0.95*,1.05*" ColumnSpacing="16" IsEnabled="{Binding CanEdit}">
+      <Border Classes="card" Padding="12">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Actividades del corte" Classes="section" />
+            <Button x:Name="AddGroupButton" Click="AddGroup" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" AutomationProperties.Name="Agregar actividad principal"><StackPanel Orientation="Horizontal" Spacing="8"><c:VectorIcon Kind="plus" Width="17" Height="17" /><TextBlock Text="Agregar actividad" /></StackPanel></Button>
+          </StackPanel>
+          <Grid Grid.Row="1">
+            <DataGrid x:Name="GroupsTable" Classes="editors" ItemsSource="{Binding GroupEditors}" SelectedItem="{Binding SelectedGroupEditor,Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True" RowHeight="76" ColumnHeaderHeight="34" SelectionMode="Single" HorizontalScrollBarVisibility="Auto">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Nombre de la actividad" Width="*" MinWidth="140"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                  <StackPanel Spacing="3" Margin="4,4">
+                    <TextBox Name="GroupNameInput" Classes="editor" Text="{Binding Name,Mode=TwoWay}" GotFocus="SelectGroupAtRow" Watermark="Ej. Talleres" AutomationProperties.Name="Nombre de la actividad principal" ToolTip.Tip="{Binding Name}" />
+                    <Button Classes="quiet row-action" Click="SelectGroupDetails" HorizontalAlignment="Left" Padding="2,0" MinHeight="22" ToolTip.Tip="Ver y editar las subactividades de esta actividad"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Text="{Binding DetailLabel}" FontSize="10" MaxWidth="200" TextTrimming="CharacterEllipsis" /><c:VectorIcon Kind="chevron" Width="11" Height="11" /></StackPanel></Button>
+                  </StackPanel>
+                </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="% corte" Width="91"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                  <TextBox Classes="editor" Classes.invalid="{Binding WeightError,Converter={StaticResource HasText}}" Text="{Binding WeightInput,Mode=TwoWay}" GotFocus="SelectGroupAtRow" Margin="3,5" VerticalAlignment="Top" HorizontalContentAlignment="Right" AutomationProperties.Name="Porcentaje de la actividad dentro del corte" ToolTip.Tip="{Binding WeightError}" />
+                </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="" Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Classes="row-action" Click="RemoveGroupAtRow" ToolTip.Tip="Eliminar esta actividad" AutomationProperties.Name="Eliminar actividad principal" Margin="2,5" VerticalAlignment="Top"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#B53742" /></Button></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel IsVisible="{Binding GroupsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" MaxWidth="260"><c:VectorIcon Kind="grid" Width="32" Height="32" HorizontalAlignment="Center" /><TextBlock Text="Aún no hay actividades" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock Text="Pulsa Agregar actividad y escribe su nombre y porcentaje." Classes="muted" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+          </Grid>
+          <Border Grid.Row="2" Background="{DynamicResource Soft}" CornerRadius="6" Padding="10"><StackPanel Spacing="5"><TextBlock Text="{Binding MainWeightSummary}" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" /><TextBlock Text="{Binding MainWeightError}" Classes="error" IsVisible="{Binding MainWeightError,Converter={StaticResource HasText}}" /></StackPanel></Border>
+        </Grid>
+      </Border>
+      <Border Grid.Column="1" Classes="card" Padding="14">
+        <Grid>
+          <StackPanel IsVisible="{Binding GroupsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8" MaxWidth="280"><c:VectorIcon Kind="edit" Width="32" Height="32" HorizontalAlignment="Center" /><TextBlock Text="Todo en un mismo lugar" FontWeight="SemiBold" TextAlignment="Center" /><TextBlock Text="Crea una actividad a la izquierda. Aquí podrás organizar sus subactividades." Classes="muted" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+          <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12" IsVisible="{Binding HasSelectedGroup}">
+            <StackPanel Spacing="5"><TextBlock Text="DETALLE DE LA ACTIVIDAD" Classes="muted" FontSize="10" FontWeight="SemiBold" /><TextBlock Text="{Binding SelectedGroupTitle}" Classes="section" TextWrapping="Wrap" /><TextBlock Text="{Binding ModeDescription}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+            <StackPanel Grid.Row="1" Spacing="6">
+              <CheckBox x:Name="SubactivitiesToggle" IsChecked="{Binding UsesSubactivities,Mode=TwoWay}"><TextBlock Text="Dividir en subactividades" TextWrapping="Wrap" /></CheckBox>
+              <CheckBox x:Name="WeightedAverageToggle" IsVisible="{Binding UsesSubactivities}" IsChecked="{Binding UsesWeightedAverage,Mode=TwoWay}" AutomationProperties.Name="Asignar porcentajes a las subactividades"><TextBlock Text="Asignar porcentajes a las subactividades" TextWrapping="Wrap" /></CheckBox>
+              <TextBlock Text="{Binding InternalWeightSummary}" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding UsesSubactivities}" />
+              <TextBlock Text="{Binding InternalWeightError}" Classes="error" IsVisible="{Binding InternalWeightError,Converter={StaticResource HasText}}" />
+            </StackPanel>
+            <Button Grid.Row="2" x:Name="AddSubactivityButton" Click="AddActivity" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" AutomationProperties.Name="Agregar subactividad"><StackPanel Orientation="Horizontal" Spacing="8"><c:VectorIcon Kind="plus" Width="17" Height="17" /><TextBlock Text="Agregar subactividad" /></StackPanel></Button>
+            <DataGrid Grid.Row="3" x:Name="ActivitiesTable" Classes="editors" ItemsSource="{Binding Activities}" AutoGenerateColumns="False" IsReadOnly="True" IsVisible="{Binding UsesSubactivities}" RowHeight="46" ColumnHeaderHeight="34" HorizontalScrollBarVisibility="Auto">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Nombre de la subactividad" Width="*" MinWidth="145"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Name="SubactivityNameInput" Classes="editor" Text="{Binding Name,Mode=TwoWay}" Watermark="Ej. Taller 1" Margin="4" AutomationProperties.Name="Nombre de la subactividad" ToolTip.Tip="{Binding Name}" /></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="% interno" Width="95"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Classes="editor" Classes.invalid="{Binding WeightError,Converter={StaticResource HasText}}" Text="{Binding WeightInput,Mode=TwoWay}" IsEnabled="{Binding UsesWeights}" Watermark="0–100" Margin="3,4" HorizontalContentAlignment="Right" AutomationProperties.Name="Porcentaje interno de la subactividad" ToolTip.Tip="{Binding WeightError}" /></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="" Width="42"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Classes="row-action" Click="RemoveActivityAtRow" ToolTip.Tip="Eliminar esta subactividad" AutomationProperties.Name="Eliminar subactividad" Margin="2,4"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#B53742" /></Button></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+    <StackPanel Grid.Row="2" Spacing="8">
+      <TextBlock Text="Guardando información en este equipo…" IsVisible="{Binding IsSaving}" FontSize="12" />
       <TextBlock Text="{Binding Error}" Classes="error" IsVisible="{Binding Error,Converter={StaticResource HasText}}" />
-      <Expander Header="Detalles del error" IsVisible="{Binding ErrorDetails,Converter={StaticResource HasText}}" HorizontalAlignment="Stretch"><ScrollViewer MaxHeight="130"><TextBox Text="{Binding ErrorDetails,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" /></ScrollViewer></Expander>
-      <TextBlock Text="Doble clic para editar. La papelera retira una fila del borrador; guarda para actualizar notas y promedios. Ajusta los porcentajes a 100 %. Las notas retiradas quedan recuperables." Classes="muted" FontSize="11" TextWrapping="Wrap" />
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" IsEnabled="{Binding CanEdit}" /><Button x:Name="SaveButton" Classes="primary" Content="{Binding SaveLabel}" Click="Save" IsEnabled="{Binding CanEdit}" /></StackPanel>
+      <Expander Header="Detalles del error" IsVisible="{Binding Error,Converter={StaticResource HasText}}" HorizontalAlignment="Stretch"><ScrollViewer MaxHeight="90"><TextBox Text="{Binding ErrorDetails,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" /></ScrollViewer></Expander>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16"><TextBlock Text="La papelera elimina del borrador. Guardar aplica los cambios; las notas retiradas siguen recuperables." Classes="muted" FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center" /><StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"><Button Content="Cancelar" Click="Cancel" IsEnabled="{Binding CanEdit}" /><Button x:Name="SaveButton" Classes="primary" Content="{Binding SaveLabel}" Click="Save" IsEnabled="{Binding CanEdit}" ToolTip.Tip="Guardar los cambios del corte (Ctrl+S)" /></StackPanel></Grid>
     </StackPanel>
   </Grid>
 </Window>

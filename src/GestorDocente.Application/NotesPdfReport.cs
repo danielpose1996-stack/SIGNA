@@ -8,9 +8,11 @@ public interface INotesPdfExporter
 }
 
 // Deliberate privacy boundary: no Student entity, internal IDs or contact fields.
-public sealed record NotesPdfColumn(string Name,string GroupName,decimal Weight,int ShareCount=0,bool IsAverage=false)
+public sealed record NotesPdfColumn(string Name,string GroupName,decimal Weight,int ShareCount=0,bool IsAverage=false,decimal? InternalWeight=null,bool IsWeighted=false)
 {
-    public string ShareLabel=>ShareCount>0 ? $"1/{ShareCount} del grupo" : IsAverage ? "Promedio simple" : "Nota directa";
+    public string ShareLabel=>IsAverage ? IsWeighted ? "Promedio ponderado" : "Promedio simple"
+        : InternalWeight is {} value ? $"{value.ToString("0.############################",System.Globalization.CultureInfo.GetCultureInfo("es-CO"))} % interno"
+        : ShareCount>0 ? $"1/{ShareCount} del grupo" : "Nota directa";
     public string WeightLabel=>$"{Weight.ToString("0.##",System.Globalization.CultureInfo.GetCultureInfo("es-CO"))} % del corte";
     public string Header=>$"{Name}\n{(Name==GroupName ? "" : GroupName+" · ")}{WeightLabel}\n{ShareLabel}";
 }
@@ -37,10 +39,10 @@ public static class NotesPdfProjection
             {
                 foreach(var activity in group.Activities)
                 {
-                    columns.Add(new(activity.Name,group.Name,group.Weight,group.Activities.Count));
+                    columns.Add(new(activity.Name,group.Name,group.Weight,group.Activities.Count,InternalWeight:group.UseWeightedAverage ? activity.Weight : null));
                     values.Add(student=>index.Grade(student,activity.Id));
                 }
-                columns.Add(new($"Promedio {group.Name}",group.Name,group.Weight,IsAverage:true));
+                columns.Add(new($"Promedio {group.Name}",group.Name,group.Weight,IsAverage:true,IsWeighted:group.UseWeightedAverage));
                 values.Add(student=>index.Group(group,student));
             }
         }

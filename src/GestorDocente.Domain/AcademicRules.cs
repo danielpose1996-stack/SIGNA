@@ -37,12 +37,21 @@ public static class AcademicRules
             if(!Enum.IsDefined(group.Mode))throw new AcademicValidationException("Selecciona nota directa o subactividades.");
             if(group.Mode==EvaluationMode.Direct && group.Activities.Count>0)throw new AcademicValidationException("La nota directa no debe contener subactividades activas.");
             if(group.Mode==EvaluationMode.SubActivities && !allowEmptyActivities && group.Activities.Count==0)throw new AcademicValidationException($"Agrega una subactividad a {group.Name} o utiliza nota directa.");
+            ValidateSubactivityWeights(group);
             foreach(var activity in group.Activities)
             {
                 Name(activity.Name,"subactividad");
                 if(string.IsNullOrWhiteSpace(activity.Id) || !ids.Add(activity.Id))throw new AcademicValidationException("Hay identificadores de actividades o subactividades duplicados.");
             }
         }
+    }
+    public static void ValidateSubactivityWeights(EvaluationGroup group)
+    {
+        if(group.Activities.Any(a=>a.Weight is <0 or >100))
+            throw new AcademicValidationException($"Los porcentajes internos de «{group.Name}» deben estar entre 0 y 100 %.");
+        if(group.Mode!=EvaluationMode.SubActivities || !group.UseWeightedAverage)return;
+        if(group.Activities.Count==0 || group.Activities.Any(a=>a.Weight is null) || group.Activities.Sum(a=>a.Weight ?? 0m)!=100m)
+            throw new AcademicValidationException($"Asigna un porcentaje a cada subactividad de «{group.Name}». Los porcentajes internos deben sumar exactamente 100 %. Ajusta los valores o desactiva la ponderación interna.");
     }
     private static void Name(string value,string field)
     {

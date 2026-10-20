@@ -5,7 +5,7 @@
         <WrapPanel Orientation="Horizontal" Margin="10,4">
           <TextBox Width="240" Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" Margin="0,0,8,4" />
           <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
-            <Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Semanas" Command="{Binding ManageWeeksCommand}" ToolTip.Tip="Agregar o retirar semanas de clase y de actividades" />
+            <Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Semanas" Command="{Binding ManageWeeksCommand}" AutomationProperties.Name="Gestionar semanas de asistencia" ToolTip.Tip="Crear, editar o eliminar semanas de este corte" />
             <Button Classes="quiet" Content="Recuperar" Command="{Binding RecoveryCommand}" />
             <Button Classes="quiet" Content="Detalle" Command="{Binding ToggleDetailCommand}" ToolTip.Tip="Mostrar u ocultar el detalle del estudiante seleccionado" />
             <Button x:Name="AttendanceGradingButton" Classes="quiet" Content="{Binding AttendanceGradingLabel}" Command="{Binding ConfigureAttendanceGradingCommand}" ToolTip.Tip="Configurar una nota informativa por corte, independiente de las calificaciones académicas" />

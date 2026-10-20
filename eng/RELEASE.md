@@ -1,29 +1,31 @@
-**SIGNA 1.3.0 — Sistema Integral de Gestión de Notas y Asistencias**.
+**SIGNA 1.4.0 — Sistema Integral de Gestión de Notas y Asistencias**.
 
 ### Novedades de esta actualización
 
-- **Más formatos de Excel:** importa listados `.xls`, `.xlsx`, `.xlsm` y `.xlsb`. Conserva la detección de columnas, vista previa, revisión de duplicados y contactos opcionales. No requiere Excel instalado ni ejecuta macros o fórmulas; en XLS/XLSB se leen los valores guardados del libro.
-- **Pegar calificaciones de una sola vez:** nuevo botón **Pegar notas** en el encabezado de cada actividad directa o subactividad. Pega una columna con una nota por línea, de 0 a 5, usando coma o punto decimal.
-- **Vista previa para evitar asignaciones incorrectas:** las notas se muestran junto a los nombres, respetando exactamente el orden visible de la tabla y sus filtros. La cantidad debe coincidir; si ya existen notas, debes confirmar el reemplazo. Todo el lote se guarda en una sola operación y los resultados se actualizan automáticamente.
-- **Ordenar por nombre:** pulsa **Nombre completo** para alternar A–Z/Z–A en Notas y Asistencias, sin modificar los datos almacenados ni sus relaciones.
-- **Nota de asistencia opcional:** activa la opción por corte y configura libremente las valoraciones de Presente, Ausente, Justificada y Tarde. Se promedian únicamente las semanas con un estado asignado. Puedes ocultar la columna sin perder los valores configurados. Esta nota es informativa e independiente del porcentaje de asistencia y de las calificaciones académicas.
+- **Agregar varios estudiantes de una sola vez:** abre **Agregar estudiante → Varios estudiantes** y pega un nombre completo por línea desde Word, Bloc de notas u otra fuente. El formulario individual sigue disponible.
+- **Documentos y contactos en lote:** también puedes pegar las listas de documentos, correos y celulares en sus propias columnas, respetando el orden de los nombres. Solo el nombre es obligatorio. Las columnas opcionales utilizadas deben tener la misma cantidad de filas; deja líneas vacías donde falten datos. Los documentos se conservan como texto, incluidos los ceros iniciales.
+- **Vista previa obligatoria:** pulsa **Revisar lista**, verifica los datos y corrige los errores antes de guardar. Se detectan documentos repetidos o ya registrados, nombres faltantes, correos inválidos y cantidades desiguales. Los celulares aparecen ocultos inicialmente en la revisión, con opción de mostrarlos. El lote completo se guarda en una sola operación, sin reemplazar alumnos existentes. Cancelar no guarda y los errores conservan el borrador.
+- **Porcentajes opcionales de subactividades:** cada actividad principal puede mantener el promedio simple o usar porcentajes internos que sumen exactamente 100 %. Por ejemplo, Teoría 40 % y Práctica 60 %, sin alterar el porcentaje del parcial dentro del corte. Se actualizan automáticamente las definitivas, la nota consolidada, las métricas y los reportes PDF. Los vacíos siguen contando como cero únicamente en el cálculo.
+- **Gestión de evaluaciones más sencilla:** campos de edición visibles, foco automático en las nuevas actividades/subactividades, totales y validaciones cercanas. Las tarjetas de Notas abren directamente la actividad seleccionada y las eliminaciones siguen requiriendo confirmación.
+- **Semanas de asistencia más prácticas:** acciones Editar y Eliminar junto a cada semana y formulario separado, conservando fecha opcional y Marcar presente a todos al crear.
+- **Barra de estudiantes renovada:** Agregar estudiante destacado, búsqueda integrada, iconos consistentes y etiquetas adaptables al espacio, conservando el área de las tablas.
 
-### Errores corregidos
+### Integridad de la información
 
-- Lectura de XLSX con celdas de texto vacías: ya no se muestran como archivos dañados.
-- Apertura de archivos que están abiertos en otro programa cuando permiten lectura compartida; avisos claros ante bloqueo exclusivo o falta de permisos.
-- Validación de registros binarios XLSB y archivos truncados, sin reservas de memoria desproporcionadas ni aceptación de libros inválidos como vacíos.
-- Guardado de notas en lote con validación completa, control de concurrencia y conservación del borrador si falla la escritura.
+- Las líneas vacías de los datos opcionales conservan su posición, para evitar asignar un contacto al estudiante equivocado.
+- Una lista modificada debe revisarse otra vez. Si la materia cambia desde la revisión, se rechaza el guardado y se solicita actualizarla.
+- Los conflictos entre instancias y fallos de escritura no dejan registros parciales. El registro masivo usa el almacenamiento transaccional existente y conserva notas, asistencias y otras materias.
+- Las ponderaciones internas se validan al guardar, retirar o recuperar subactividades, sin borrar calificaciones ni redistribuir porcentajes silenciosamente. Se incluyen en los respaldos locales cifrados.
 
 Se conservan los PDF de notas y asistencia, el selector HSV/HEX, la gestión de materias y estudiantes, la nota consolidada y los respaldos locales cifrados. El [historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md) describe las novedades en el repositorio.
 
 ### Actualizar conservando la información
 
-Antes de instalar, crea un respaldo local cifrado y conserva su contraseña. Cierra SIGNA y utiliza el instalador de tu sistema. Se conserva la ubicación de datos y la información existente. La nueva configuración académica se incluye en los respaldos; para volver a una versión anterior, restaura una copia realizada antes de esta actualización. Los instaladores no contienen bases de datos, materias ni estudiantes de prueba.
+Antes de instalar, crea un respaldo local cifrado y conserva su contraseña. Cierra SIGNA y utiliza el instalador de tu sistema. Se conserva la ubicación de datos y la información existente. El formato académico se actualiza para incluir las ponderaciones internas; para volver a una versión anterior, restaura una copia realizada antes de esta actualización. Los instaladores no contienen bases de datos, materias ni estudiantes de prueba.
 
 ### Descarga
 
-- Windows 10/11 x64: `SIGNA-1.3.0-windows-x64-setup.exe`.
+- Windows 10/11 x64: `SIGNA-1.4.0-windows-x64-setup.exe`.
 - Ubuntu/Debian x64 y ARM64: paquetes `.deb`.
 - Fedora y derivados x64 y ARM64: paquetes `.rpm`.
 - macOS 15 o posterior: `.dmg` para Intel (`osx-x64`) y Apple Silicon (`osx-arm64`).

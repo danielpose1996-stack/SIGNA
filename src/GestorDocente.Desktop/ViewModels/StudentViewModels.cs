@@ -45,12 +45,37 @@ public sealed class StudentEditorViewModel:ObservableObject
     private readonly WorkspaceService service;
     private readonly Student? original;
     public string Title=>original is null ? "Agregar estudiante" : "Editar información";
-    public string ActionLabel=>original is null ? "Agregar estudiante" : "Guardar cambios";
+    public string ActionLabel=>IsBulk ? $"Agregar {Bulk!.Count} estudiantes" : original is null ? "Agregar estudiante" : "Guardar cambios";
     public string Explanation=>original is null ? "Solo el nombre completo es obligatorio. Se incorporará a las notas y asistencias de esta materia." : "Solo el nombre es obligatorio. Sus notas y asistencias se conservan al editar la información.";
     public StudentEditorViewModel(WorkspaceService service,Student? original=null)
     {
         this.service=service;this.original=original;
         if(original is not null){FullName=original.FullName;Document=original.Document;Email=original.Email;Phone=original.Phone;}
+        else
+        {
+            Bulk=new(service);
+            Bulk.PropertyChanged+=(_,_)=>RefreshMode();
+        }
+        ShowIndividualCommand=new(_=>SwitchMode(false),_=>CanEdit);
+        ShowBulkCommand=new(_=>SwitchMode(true),_=>CanEdit && CanUseBulk);
+    }
+    public StudentBatchViewModel? Bulk{get;}
+    public bool CanUseBulk=>original is null;
+    private bool bulkMode;
+    public bool IsBulk=>bulkMode;
+    public bool IsIndividual=>!bulkMode;
+    public bool CanSave=>IsBulk ? Bulk!.CanSave : CanEdit;
+    public RelayCommand ShowIndividualCommand{get;}
+    public RelayCommand ShowBulkCommand{get;}
+    private void SwitchMode(bool useBulk)
+    {
+        if(!CanEdit || useBulk && !CanUseBulk)return;
+        bulkMode=useBulk;RefreshMode();
+    }
+    private void RefreshMode()
+    {
+        foreach(var name in new[]{nameof(IsBulk),nameof(IsIndividual),nameof(IsSaving),nameof(CanEdit),nameof(CanSave),nameof(ActionLabel)})Raise(name);
+        ShowIndividualCommand?.Refresh();ShowBulkCommand?.Refresh();
     }
     public string FullName{get;set;}="";
     public string Document{get;set;}="";
@@ -63,10 +88,11 @@ public sealed class StudentEditorViewModel:ObservableObject
     public RelayCommand TogglePhoneCommand=>toggle ??=new(_=>{phoneVisible=!phoneVisible;Raise(nameof(PhoneMask));Raise(nameof(EyeLabel));});
     private string error="";private bool saving;
     public string Error{get=>error;private set=>Set(ref error,value);}
-    public bool IsSaving{get=>saving;private set{if(Set(ref saving,value))Raise(nameof(CanEdit));}}
+    public bool IsSaving{get=>saving || Bulk?.IsSaving==true;private set{if(Set(ref saving,value))RefreshMode();}}
     public bool CanEdit=>!IsSaving;
     public async Task<bool> SaveAsync()
     {
+        if(IsBulk)return await Bulk!.SaveAsync();
         if(IsSaving)return false;IsSaving=true;var before=service.Current;
         try
         {

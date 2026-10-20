@@ -1,5 +1,20 @@
 # Historial de cambios de SIGNA
 
+## 1.4.0 — 20 de octubre de 2026
+
+- **Registro masivo de estudiantes:** en Agregar estudiante, elige Varios estudiantes y pega un nombre completo por línea. También puedes pegar documentos, correos y celulares en sus propias columnas, en el mismo orden. Solo el nombre es obligatorio; conserva la opción individual.
+- **Revisión antes de guardar:** vista previa completa, errores por fila, detección de documentos duplicados y comprobación de cantidades. Los campos opcionales sin dato mantienen su posición. El lote se guarda de manera atómica, sin sobrescribir alumnos existentes; los fallos conservan el borrador. Los celulares se ocultan inicialmente en la revisión.
+
+- Barra de estudiantes renovada en la materia abierta: Agregar estudiante destacado, iconos vectoriales, búsqueda integrada, botones secundarios agrupados y etiquetas adaptables al espacio. Conserva las acciones existentes y el área de la tabla.
+- Edición de actividades y subactividades con campos visibles, creación con foco automático, total del corte y errores cercanos. Las tarjetas de Notas abren la actividad elegida. Las semanas tienen acciones de editar/eliminar en cada fila y un formulario separado con fecha opcional y presencia masiva al crear. Se conservan las reglas y el guardado existentes.
+- Porcentajes opcionales por subactividad, configurables de manera independiente para cada actividad principal. Total interno exacto de 100 %, promedio simple por defecto y conservación del peso principal dentro del corte.
+- Actualización automática de resultados del corte, consolidada, métricas y reportes. Encabezados y PDF distinguen porcentajes internos y principales.
+- Validación antes de guardar, ajuste explícito al retirar o recuperar subactividades y conservación de notas, vacíos y datos anteriores. Configuración incluida en respaldos locales cifrados.
+
+**Actualización:** crea un respaldo local cifrado antes de instalar. Esta versión conserva los datos existentes y actualiza el formato académico para incluir las ponderaciones internas. Para volver a una versión anterior, utiliza un respaldo realizado antes de actualizar. Los instaladores no incluyen bases de datos ni listados de estudiantes.
+
+Descarga los instaladores de Windows, Linux y macOS en [SIGNA 1.4.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.4.0). Las pruebas manuales quedan a cargo del docente.
+
 ## 1.3.0 — 16 de octubre de 2026
 
 ### Nuevas funciones
