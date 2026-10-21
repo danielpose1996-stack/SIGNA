@@ -1,0 +1,7 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.StartupWindow" Title="SIGNA" Width="440" Height="210" CanResize="False" WindowStartupLocation="CenterScreen">
+  <StackPanel Margin="30" Spacing="14">
+    <TextBlock Text="SIGNA" FontSize="27" FontWeight="Bold" />
+    <TextBlock x:Name="StartupStatus" Text="Abriendo tus datos locales…" TextWrapping="Wrap" Classes="muted" />
+    <ProgressBar x:Name="StartupProgress" IsIndeterminate="True" Height="4" />
+  </StackPanel>
+</Window>

@@ -31,7 +31,7 @@
         <Border x:Name="StudentActionsBar" Classes="student-actions" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,7" CornerRadius="8,8,0,0">
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
             <Grid Classes="student-search">
-              <TextBox Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" Padding="30,6,8,6" MinHeight="36" FontSize="12" CornerRadius="6" AutomationProperties.Name="Filtrar tabla de notas" ToolTip.Tip="Buscar por nombre o documento dentro de esta materia" />
+              <TextBox Text="{Binding SearchInput,Mode=TwoWay}" Watermark="Buscar estudiante…" Padding="30,6,8,6" MinHeight="36" FontSize="12" CornerRadius="6" AutomationProperties.Name="Filtrar tabla de notas" ToolTip.Tip="Buscar por nombre o documento dentro de esta materia" />
               <c:VectorIcon Kind="search" Width="15" Height="15" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{DynamicResource Muted}" IsHitTestVisible="False" />
             </Grid>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">

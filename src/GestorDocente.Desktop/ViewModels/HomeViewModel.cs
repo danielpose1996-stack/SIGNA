@@ -36,12 +36,12 @@ public sealed class HomeViewModel : ObservableObject
     public string Error{get=>error;private set{if(Set(ref error,value))Raise(nameof(IsEmpty));}}
     public RelayCommand RefreshCommand{get;}
 
-    public HomeViewModel(WorkspaceService service,CatalogService? catalog=null)
+    public HomeViewModel(WorkspaceService service,CatalogService? catalog=null,bool loadImmediately=true)
     {
         this.service = service;
         this.catalog=catalog;
         RefreshCommand=new(_=>_ = RefreshAsync(),_=>catalog is not null && !IsLoading);
-        if(catalog is null)Refresh();else _ = RefreshAsync();
+        if(catalog is null)Refresh();else if(loadImmediately)_ = RefreshAsync();
         if(catalog is null)service.ChangedDetailed += change=>{if(change.Kind is WorkspaceChangeKind.Students or WorkspaceChangeKind.Structure)Refresh();};
         else catalog.Changed+=()=>_ = RefreshAsync();
     }

@@ -42,7 +42,7 @@ public partial class RecoveryStartupWindow:Window
             Status.Text="Conservando el archivo actual y restaurando…";
             var result=await Task.Run(()=>backup.Restore(path,password));
             replaced=true;
-            var next=App.CreateProductionViewModel();
+            var next=await App.CreateProductionViewModelAsync();
             next.BackupStatus=result.PreviousCopyWasRaw ?
                 $"Restauración completa. El archivo anterior dañado se conservó cifrado en {result.PreviousBackupPath}; puede no ser una base válida." :
                 $"Restauración completa: {result.SemesterCount} semestres, {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior: {result.PreviousBackupPath}.";

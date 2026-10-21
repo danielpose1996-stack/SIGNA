@@ -78,17 +78,19 @@ public sealed class GradeRowViewModel
     public Student Student {get;}
     public string Document=>Student.Document;
     public string FullName=>Student.FullName;
-    public Dictionary<string,GradeCellViewModel> Cells {get;}
+    private readonly Lazy<Dictionary<string,GradeCellViewModel>> cells;
+    public Dictionary<string,GradeCellViewModel> Cells=>cells.Value;
     public string Total {get;}
     public decimal? TotalValue {get;}
     public string Completion {get;}
-    public Dictionary<string,string> GroupTotals {get;}
+    private readonly Lazy<Dictionary<string,string>> groupTotals;
+    public Dictionary<string,string> GroupTotals=>groupTotals.Value;
     public GradeRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
     {
         Student=student;Number=number;
         var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
-        GroupTotals=data.Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(index.Group(g,student.Id)));
-        Cells=data.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id,index));
+        groupTotals=new(()=>data.Groups.ToDictionary(g=>g.Id,g=>AcademicFormatting.Grade(index.Group(g,student.Id))));
+        cells=new(()=>data.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{g.Id} : g.Activities.Select(a=>a.Id)).ToDictionary(id=>id,id=>new GradeCellViewModel(service,cut,student.Id,id,index)));
         var total=index.Cut(student.Id);
         TotalValue=total;
         Total=AcademicFormatting.Grade(total);Completion=total is null || index.HasPendingGrades(student.Id) ? "Pendiente" : "Completo";
@@ -133,7 +135,8 @@ public sealed class AttendanceRowViewModel
     public int Number {get;}
     public string Document=>Student.Document;
     public string FullName=>Student.FullName;
-    public Dictionary<int,AttendanceCellViewModel> Cells {get;}
+    private readonly Lazy<Dictionary<int,AttendanceCellViewModel>> cells;
+    public Dictionary<int,AttendanceCellViewModel> Cells=>cells.Value;
     public AttendanceSummary Summary {get;}
     public string Total=>$"{Summary.Attended} / {Summary.Evaluable}";
     public string Percentage=>AttendanceFormatting.Percentage(Summary.Percentage);
@@ -143,19 +146,20 @@ public sealed class AttendanceRowViewModel
         AttendanceClassification.Excellent=>"#078653",AttendanceClassification.Good=>"#0067D9",
         AttendanceClassification.Regular=>"#966800",AttendanceClassification.Low=>"#B53742",_=>"#60779D"
     };
-    public ObservableCollection<WeeklyDetail> WeeklyDetails {get;}
+    private readonly Lazy<ObservableCollection<WeeklyDetail>> weeklyDetails;
+    public ObservableCollection<WeeklyDetail> WeeklyDetails=>weeklyDetails.Value;
     public AttendanceRowViewModel(WorkspaceService service,int cut,Student student,int number,AcademicCutReadIndex? index=null)
     {
         Student=student;Number=number;
         var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
-        Cells=data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state)));
+        cells=new(()=>data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state))));
         AttendanceGradeValue=index.AttendanceGrade(student.Id);
         Summary=AttendanceSummary.From(data.Weeks.Select(w=>index.Attendance(student.Id,w.Number)));
-        WeeklyDetails=new(data.DisplayWeeks.Select(w=> {
+        weeklyDetails=new(()=>new ObservableCollection<WeeklyDetail>(data.DisplayWeeks.Select(w=> {
             var state=index.Attendance(student.Id,w.Number);
             var text=state switch {AttendanceState.Present=>"Presente",AttendanceState.Absent=>"Ausente",AttendanceState.Justified=>"Justificada",AttendanceState.Late=>"Tarde",AttendanceState.NoClass=>"Sin clase",_=>"Sin diligenciar"};
             var code=state switch {AttendanceState.Present=>"P",AttendanceState.Absent=>"A",AttendanceState.Justified=>"J",AttendanceState.Late=>"T",_=>"—"};
             return new WeeklyDetail(w.Label,code,text);
-        }));
+        })));
     }
 }

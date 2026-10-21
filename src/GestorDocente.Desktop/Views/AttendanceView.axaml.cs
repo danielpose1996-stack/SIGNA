@@ -9,12 +9,16 @@ public partial class AttendanceView : UserControl
 {
     private MainViewModel? observed;
     private TableColumnLayout? columnLayout;
+    private GestorDocente.Domain.AcademicCut? columnSource;
     public AttendanceView(){InitializeComponent();DataContextChanged+=(_,_)=>Attach();AttendanceTable.SizeChanged+=(_,_)=>columnLayout?.Refresh();}
     private void Attach(){if(observed is not null)observed.PropertyChanged-=Changed;observed=DataContext as MainViewModel;if(observed is not null){observed.PropertyChanged+=Changed;BuildColumns();}}
     private void Changed(object? sender,PropertyChangedEventArgs e){if(e.PropertyName is nameof(MainViewModel.Weeks) or nameof(MainViewModel.AttendanceGradingEnabled))BuildColumns();}
     private void BuildColumns()
     {
         if(observed is null)return;
+        var source=observed.Service.Cut(observed.SelectedCut);
+        if(ReferenceEquals(columnSource,source))return;
+        columnSource=source;
         AttendanceTable.Columns.Clear();
         AttendanceTable.Columns.Add(Text("#","Number",38));AttendanceTable.Columns.Add(Text("Documento","Document",108));var name=Text("Nombre completo","FullName",215);name.Header=TablePresentation.NameHeader(observed);AttendanceTable.Columns.Add(name);
         foreach(var week in observed.Weeks)

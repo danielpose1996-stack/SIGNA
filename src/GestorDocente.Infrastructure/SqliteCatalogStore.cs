@@ -42,11 +42,11 @@ public sealed class SqliteCatalogStore : ICatalogStore
     }
     public IReadOnlyList<CourseRecord> Courses(string semesterId)
     {
-        using var db=Open();using var cmd=db.CreateCommand();cmd.CommandText="SELECT c.id,c.semester_id,c.code,c.name,c.school,c.group_name,CASE WHEN json_type(w.payload,'$.Students')='array' THEN json_array_length(w.payload,'$.Students') ELSE NULL END,json_array_length(w.payload,'$.Cuts') FROM courses c JOIN course_workspaces w ON w.course_id=c.id WHERE c.semester_id=$semester ORDER BY c.name,c.group_name";cmd.Parameters.AddWithValue("$semester",semesterId);
+        using var db=Open();using var cmd=db.CreateCommand();cmd.CommandText="SELECT c.id,c.semester_id,c.code,c.name,c.school,c.group_name,CASE WHEN json_type(w.payload,'$.Students')='array' THEN json_array_length(w.payload,'$.Students') ELSE NULL END,json_array_length(w.payload,'$.Cuts'),w.revision FROM courses c JOIN course_workspaces w ON w.course_id=c.id WHERE c.semester_id=$semester ORDER BY c.name,c.group_name";cmd.Parameters.AddWithValue("$semester",semesterId);
         using var reader=cmd.ExecuteReader();var items=new List<CourseRecord>();while(reader.Read())
         {
             if(reader.IsDBNull(6) || reader.IsDBNull(7) || reader.GetInt32(7)<1)throw new AcademicValidationException("Una materia tiene un listado de estudiantes incompleto. No se modificó el archivo local.");
-            items.Add(new(reader.GetString(0),reader.GetString(1),reader.GetString(2),reader.GetString(3),reader.GetString(4),reader.GetString(5),reader.GetInt32(6),reader.GetInt32(7)));
+            items.Add(new(reader.GetString(0),reader.GetString(1),reader.GetString(2),reader.GetString(3),reader.GetString(4),reader.GetString(5),reader.GetInt32(6),reader.GetInt32(7)){Revision=reader.GetInt64(8)});
         }
         return items;
     }

@@ -3,7 +3,7 @@
     <Border Classes="card" Padding="0">
       <Grid RowDefinitions="Auto,*,Auto">
         <WrapPanel Orientation="Horizontal" Margin="10,4">
-          <TextBox Width="240" Text="{Binding Search,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" Margin="0,0,8,4" />
+          <TextBox Width="240" Text="{Binding SearchInput,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" Margin="0,0,8,4" />
           <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
             <Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Semanas" Command="{Binding ManageWeeksCommand}" AutomationProperties.Name="Gestionar semanas de asistencia" ToolTip.Tip="Crear, editar o eliminar semanas de este corte" />
             <Button Classes="quiet" Content="Recuperar" Command="{Binding RecoveryCommand}" />

@@ -8,7 +8,12 @@ namespace GestorDocente.Desktop.Views;
 public partial class MainWindow : Window
 {
     private MainViewModel? observed;
-    public MainWindow() {InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();}
+    public MainWindow()
+    {
+        InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();
+        Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();};
+        Closed+=(_,_)=>observed?.Dashboard.Suspend();
+    }
     private void Attach()
     {
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
@@ -74,7 +79,8 @@ public partial class MainWindow : Window
     private async void OpenCatalog(bool semester)
     {
         if(observed?.Catalog is not {} catalog)return;
-        var vm=new CatalogEditorViewModel(catalog,observed.Home.SelectedSemester,semester);
+        var vm=new CatalogEditorViewModel(catalog,observed.Home.SelectedSemester,semester,
+            availableParameters:observed.CopiedParameters,parametersSource:observed.CopiedParametersSource);
         try
         {
             await ShowAcademicDialog(new CatalogEditorWindow{DataContext=vm});
@@ -241,7 +247,7 @@ public partial class MainWindow : Window
             model.BackupStatus="Guardando copia preventiva y restaurando…";
             var result=await Task.Run(()=>backup.Restore(path,password));
             replaced=true;
-            var next=App.CreateProductionViewModel();
+            var next=await App.CreateProductionViewModelAsync();
             DataContext=next;
             next.NavigateCommand.Execute("Respaldos");
             next.BackupStatus=result.PreviousCopyWasRaw ?

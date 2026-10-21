@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Controls;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
@@ -15,11 +16,13 @@ public static class InterfaceTheme
     public static IReadOnlyList<AvatarOption> Avatars{get;}=[new(ProfileAvatar.Monitor,"Predeterminado","monitor"),new(ProfileAvatar.Person,"Docente","person"),new(ProfileAvatar.Book,"Libro","book"),new(ProfileAvatar.Graduation,"Académico","graduation")];
     public static IReadOnlyDictionary<string,IBrush> Brushes(InterfacePreferences preferences)
     {
-        preferences.Validate();var primary=Color.Parse(preferences.Accent);var hover=Shade(primary,.8);var dark=ReadableAccent(Shade(primary,.6));
+        preferences.Validate();var primary=Color.Parse(preferences.Accent);var hover=Shade(primary,.8);var pressed=Shade(primary,.65);var dark=ReadableAccent(Shade(primary,.6));
         var result=new Dictionary<string,IBrush>
         {
             ["Primary"]=Brush(primary),["PrimaryHover"]=Brush(hover),["PrimaryDark"]=Brush(dark),
             ["OnPrimary"]=Brush(OnColor(primary)),["OnPrimaryHover"]=Brush(OnColor(hover)),["AccentText"]=Brush(ReadableAccent(primary)),
+            ["PrimaryPressed"]=Brush(pressed),["OnPrimaryPressed"]=Brush(OnColor(pressed)),
+            ["PrimaryDisabled"]=Brush("#E6E8EC"),["OnPrimaryDisabled"]=Brush("#4B5563"),
             ["Ink"]=Brush("#172B45"),["Muted"]=Brush("#52657C"),["IconInk"]=Brush(ReadableAccent(primary)),["Surface"]=Brush("#FFFFFF"),
             ["Overlay"]=Brush(Color.FromArgb(51,23,43,69))
         };
@@ -29,9 +32,19 @@ public static class InterfaceTheme
     }
     public static void Apply(Avalonia.Application app,InterfacePreferences preferences)
     {
-        foreach(var (key,brush) in Brushes(preferences))app.Resources[key]=brush;
+        var changed=Brushes(preferences).Where(item=>app.Resources[item.Key] is not ISolidColorBrush old || old.Color!=((ISolidColorBrush)item.Value).Color)
+            .Select(item=>new KeyValuePair<object,object?>(item.Key,item.Value)).ToArray();
+        if(changed.Length>0)
+        {
+            if(app.Resources is ResourceDictionary resources)resources.SetItems(changed);
+            else foreach(var item in changed)app.Resources[item.Key]=item.Value;
+        }
         if(app.Styles.OfType<FluentTheme>().FirstOrDefault() is {} fluent)
-            fluent.Palettes[ThemeVariant.Light]=new ColorPaletteResources{Accent=ReadableAccent(Color.Parse(preferences.Accent))};
+        {
+            if(!fluent.Palettes.TryGetValue(ThemeVariant.Light,out var palette))fluent.Palettes[ThemeVariant.Light]=palette=new();
+            var accent=ReadableAccent(Color.Parse(preferences.Accent));
+            if(palette.Accent!=accent)palette.Accent=accent;
+        }
     }
     private static Color Shade(Color color,double factor)=>Color.FromRgb((byte)Math.Round(color.R*factor),(byte)Math.Round(color.G*factor),(byte)Math.Round(color.B*factor));
     private static double Luminance(Color color)

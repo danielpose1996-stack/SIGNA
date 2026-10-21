@@ -34,15 +34,15 @@ public sealed class CatalogService(ICatalogStore store)
         if(Semesters.Any(s=>s.Year==year && s.Term==term))throw new AcademicValidationException("Este semestre ya existe. Selecciónalo en la lista.");
         var semester=new AcademicSemester(Guid.NewGuid().ToString("N"),year,term);store.AddSemester(semester);return semester;
     }
-    public CourseRecord CreateCourse(string semesterId,string code,string name,string school,string group)
+    public CourseRecord CreateCourse(string semesterId,string code,string name,string school,string group,CourseParameters? parameters=null)
     {
-        var course=CreateCourseCore(semesterId,code,name,school,group);Publish(course);return course;
+        var course=CreateCourseCore(semesterId,code,name,school,group,parameters);Publish(course);return course;
     }
-    public async Task<CourseRecord> CreateCourseAsync(string semesterId,string code,string name,string school,string group)
+    public async Task<CourseRecord> CreateCourseAsync(string semesterId,string code,string name,string school,string group,CourseParameters? parameters=null)
     {
-        var course=await Task.Run(()=>CreateCourseCore(semesterId,code,name,school,group));Publish(course);return course;
+        var course=await Task.Run(()=>CreateCourseCore(semesterId,code,name,school,group,parameters));Publish(course);return course;
     }
-    private CourseRecord CreateCourseCore(string semesterId,string code,string name,string school,string group)
+    private CourseRecord CreateCourseCore(string semesterId,string code,string name,string school,string group,CourseParameters? parameters)
     {
         var semester=Semesters.SingleOrDefault(s=>s.Id==semesterId) ?? throw new AcademicValidationException("Crea o selecciona primero un semestre.");
         foreach(var (value,label) in new[]{(code,"código"),(name,"nombre de asignatura"),(school,"escuela")})
@@ -51,9 +51,19 @@ public sealed class CatalogService(ICatalogStore store)
         if(Courses(semesterId).Any(c=>string.Equals(c.Code,code,StringComparison.OrdinalIgnoreCase) && string.Equals(c.Group,group,StringComparison.OrdinalIgnoreCase)))
             throw new AcademicValidationException("Ya existe este código y grupo en el semestre. Para otra sección, indica un grupo diferente.");
         var course=new CourseRecord(Guid.NewGuid().ToString("N"),semesterId,code,name,school,group);
-        var workspace=new AcademicWorkspace {IsDemo=false,CourseId=course.Id,SemesterId=semesterId,CourseName=name,CourseCode=code,School=school,GroupName=group,Period=semester.Name,Cuts=AcademicRules.DefaultCuts()};
+        var workspace=new AcademicWorkspace {IsDemo=false,CourseId=course.Id,SemesterId=semesterId,CourseName=name,CourseCode=code,School=school,GroupName=group,Period=semester.Name,
+            Cuts=parameters?.CreateCuts() ?? AcademicRules.DefaultCuts(),CutWeightsPending=parameters?.CutWeightsPending ?? false};
+        WorkspaceIntegrity.Validate(workspace);
         store.AddCourse(course,workspace);return course;
     }
+    public Task<CourseParameters> CopyParametersAsync(string courseId)=>Task.Run(()=>
+    {
+        if(string.IsNullOrWhiteSpace(courseId))throw new AcademicValidationException("Selecciona una materia válida para copiar sus parámetros.");
+        var source=store.OpenCourse(courseId).Load() ?? throw new AcademicValidationException("La materia ya no existe. Actualiza la lista.");
+        if(source.CourseId!=courseId || source.IsDemo)throw new AcademicValidationException("No se pudieron identificar los parámetros de esta materia. Actualiza la lista.");
+        // Adaptar solo en memoria. Copiar nunca guarda ni cambia el origen.
+        return CourseParameters.Capture(WorkspaceMigration.Upgrade(source));
+    });
     public CourseRecord UpdateCourse(CourseRecord original,string semesterId,string code,string name,string school,string group)
     {
         var updated=UpdateCourseCore(original,semesterId,code,name,school,group);Publish(updated);return updated;

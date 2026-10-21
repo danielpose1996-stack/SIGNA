@@ -9,10 +9,30 @@
   <Style Selector="Button:pointerover"><Setter Property="Background" Value="{DynamicResource Soft}" /></Style>
   <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource Primary}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimary}" /><Setter Property="BorderBrush" Value="{DynamicResource Primary}" /></Style>
   <Style Selector="Button.primary:pointerover"><Setter Property="Background" Value="{DynamicResource PrimaryHover}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /></Style>
+  <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource Primary}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimary}" /><Setter Property="BorderBrush" Value="{DynamicResource Primary}" /></Style>
   <Style Selector="Button.primary TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimary}" /></Style>
-  <Style Selector="Button.primary:pointerover TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /></Style>
   <Style Selector="Button.primary c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimary}" /></Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryHover}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}" /></Style>
+  <Style Selector="Button.primary:pointerover TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /></Style>
   <Style Selector="Button.primary:pointerover c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryHover}" /></Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryPressed}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryPressed}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryPressed}" /></Style>
+  <Style Selector="Button.primary:pressed TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryPressed}" /></Style>
+  <Style Selector="Button.primary:pressed c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryPressed}" /></Style>
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryDisabled}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryDisabled}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryDisabled}" /></Style>
+  <Style Selector="Button.primary:disabled TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryDisabled}" /></Style>
+  <Style Selector="Button.primary:disabled c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryDisabled}" /></Style>
+  <Style Selector="Button.cut.active /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource Primary}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimary}" /><Setter Property="BorderBrush" Value="{DynamicResource Primary}" /></Style>
+  <Style Selector="Button.cut.active TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimary}" /></Style>
+  <Style Selector="Button.cut.active c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimary}" /></Style>
+  <Style Selector="Button.cut.active:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryHover}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryHover}" /></Style>
+  <Style Selector="Button.cut.active:pointerover TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryHover}" /></Style>
+  <Style Selector="Button.cut.active:pointerover c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryHover}" /></Style>
+  <Style Selector="Button.cut.active:pressed /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryPressed}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryPressed}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryPressed}" /></Style>
+  <Style Selector="Button.cut.active:pressed TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryPressed}" /></Style>
+  <Style Selector="Button.cut.active:pressed c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryPressed}" /></Style>
+  <Style Selector="Button.cut.active:disabled /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource PrimaryDisabled}" /><Setter Property="Foreground" Value="{DynamicResource OnPrimaryDisabled}" /><Setter Property="BorderBrush" Value="{DynamicResource PrimaryDisabled}" /></Style>
+  <Style Selector="Button.cut.active:disabled TextBlock"><Setter Property="Foreground" Value="{DynamicResource OnPrimaryDisabled}" /></Style>
+  <Style Selector="Button.cut.active:disabled c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource OnPrimaryDisabled}" /></Style>
   <Style Selector="Button.quiet"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Style>
   <Style Selector="Button.nav"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Left" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Height" Value="48" /><Setter Property="Margin" Value="0,3" /><Setter Property="Padding" Value="18,8" /></Style>
   <Style Selector="Button.nav.active"><Setter Property="Background" Value="{DynamicResource StrongSelected}" /><Setter Property="Foreground" Value="{DynamicResource AccentText}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>

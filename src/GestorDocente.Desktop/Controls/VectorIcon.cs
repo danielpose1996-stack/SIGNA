@@ -28,6 +28,7 @@ public sealed class VectorIcon : Control
         ["eye"]="M2 12 C7 3 17 3 22 12 C17 21 7 21 2 12 Z M12 8 A4 4 0 1 0 12 16 A4 4 0 1 0 12 8",
         ["trash"]="M4 6 L20 6 M8 6 L8 3 L16 3 L16 6 M6 6 L7 21 L17 21 L18 6 M10 10 L10 17 M14 10 L14 17",
         ["edit"]="M4 17 L17 4 L21 8 L8 21 L3 22 Z M14 7 L18 11",
+        ["copy"]="M8 8 L21 8 L21 21 L8 21 Z M16 8 L16 3 L3 3 L3 16 L8 16",
         ["chevron"]="M8 5 L15 12 L8 19",
         ["info"]="M12 2 A10 10 0 1 0 12 22 A10 10 0 1 0 12 2 M12 10 L12 17 M12 6 L12 7",
         ["backup"]="M3 7 L21 7 L21 21 L3 21 Z M5 7 L5 3 L19 3 L19 7 M9 12 L15 12 M12 12 L12 17 M9 15 L12 18 L15 15",

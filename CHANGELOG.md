@@ -1,5 +1,17 @@
 # Historial de cambios de SIGNA
 
+## 1.5.0 — 21 de octubre de 2026
+
+- Copiar parámetros en las tarjetas de Materias y pegarlos opcionalmente al crear otra asignatura, incluso en otro semestre. Incluye cortes, porcentajes, actividades, subactividades y nota de asistencia habilitada, con resumen previo y configuración independiente. Excluye estudiantes, contactos, calificaciones, semanas y registros de asistencia; guardado atómico y sin modificar el origen.
+- Selector HSV más fluido: cambios de saturación/brillo conjuntos, vista previa agrupada por intervalos, aplicación final al soltar y cancelación de cambios pendientes. Recursos agrupados y paleta Fluent reutilizada; dibujo del selector reutiliza pinceles y degradados.
+- Contraste automático coherente en los fondos reales de botones primarios y cortes seleccionados, incluidos cursor encima, pulsación y deshabilitado. Bindings compilados en Personalización.
+- Inicio con pantalla de carga e inicialización del almacenamiento fuera del hilo visual. Estadísticas progresivas con cancelación de lecturas obsoletas y reutilización por revisión de cada materia.
+- Cambio de corte desde la interfaz asíncrono, búsqueda agrupada sin consultar SQLite por pulsación, modelos de celdas y detalles creados cuando se utilizan y mediciones de columnas compartidas entre tablas. Se conservan datos, cálculos, transacciones y esquema SQLite.
+
+**Correcciones:** evita reaplicar el tema completo por cada evento del selector, corrige texto e iconos sin contraste sobre colores claros y reduce bloqueos del hilo visual al cargar datos. Omite consultas repetidas de estadísticas sin cambios, detiene cargas obsoletas y conserva el filtro y orden correctos al pegar calificaciones. No se alteran notas, reglas académicas, formato SQLite ni ubicación de datos.
+
+**Actualización y descarga:** crea un respaldo local cifrado antes de actualizar. Los instaladores incluyen .NET y el icono oficial, conservan los datos existentes y no contienen bases de datos ni estudiantes de prueba. Descarga los siete instaladores de Windows, Linux y macOS desde [SIGNA 1.5.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.5.0). Se distribuyen sin firma oficial de Windows ni Apple Developer ID/notarización. Las pruebas manuales quedan a cargo del docente.
+
 ## 1.4.0 — 20 de octubre de 2026
 
 - **Registro masivo de estudiantes:** en Agregar estudiante, elige Varios estudiantes y pega un nombre completo por línea. También puedes pegar documentos, correos y celulares en sus propias columnas, en el mismo orden. Solo el nombre es obligatorio; conserva la opción individual.

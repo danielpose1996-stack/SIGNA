@@ -75,7 +75,7 @@ public sealed class WorkspaceService
         Publish(change ?? new(WorkspaceChangeKind.Structure));
     }
     public EvaluationActivity Activity(int number,string id) => Cut(number).Groups.SelectMany(x=>x.Activities).Single(x=>x.Id==id);
-    public static T Clone<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(value))!;
+    public static T Clone<T>(T value) => JsonSerializer.Deserialize<T>(JsonSerializer.SerializeToUtf8Bytes(value))!;
     private void Change(int number,Action<AcademicCut> action,WorkspaceChange change)
     {
         EnsureWritable();

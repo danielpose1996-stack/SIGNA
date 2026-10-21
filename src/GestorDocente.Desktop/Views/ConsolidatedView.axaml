@@ -2,7 +2,7 @@
   <Border Classes="card" Padding="0">
     <Grid RowDefinitions="Auto,*,Auto">
       <WrapPanel Margin="10,6" Orientation="Horizontal">
-        <TextBox Width="260" Watermark="Buscar estudiante o documento…" Text="{Binding Consolidated.Search,Mode=TwoWay}" Margin="0,0,12,4" AutomationProperties.Name="Filtrar nota consolidada" />
+        <TextBox Width="260" Watermark="Buscar estudiante o documento…" Text="{Binding Consolidated.SearchInput,Mode=TwoWay}" Margin="0,0,12,4" AutomationProperties.Name="Filtrar nota consolidada" />
         <Button Content="Configurar porcentajes" Command="{Binding ConfigureCutWeightsCommand}" Margin="0,0,8,4" />
       </WrapPanel>
       <Grid Grid.Row="1">

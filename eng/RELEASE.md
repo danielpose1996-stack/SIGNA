@@ -1,41 +1,45 @@
-**SIGNA 1.4.0 — Sistema Integral de Gestión de Notas y Asistencias**.
+**SIGNA 1.5.0 — Sistema Integral de Gestión de Notas y Asistencias**
 
-### Novedades de esta actualización
+### Novedades
 
-- **Agregar varios estudiantes de una sola vez:** abre **Agregar estudiante → Varios estudiantes** y pega un nombre completo por línea desde Word, Bloc de notas u otra fuente. El formulario individual sigue disponible.
-- **Documentos y contactos en lote:** también puedes pegar las listas de documentos, correos y celulares en sus propias columnas, respetando el orden de los nombres. Solo el nombre es obligatorio. Las columnas opcionales utilizadas deben tener la misma cantidad de filas; deja líneas vacías donde falten datos. Los documentos se conservan como texto, incluidos los ceros iniciales.
-- **Vista previa obligatoria:** pulsa **Revisar lista**, verifica los datos y corrige los errores antes de guardar. Se detectan documentos repetidos o ya registrados, nombres faltantes, correos inválidos y cantidades desiguales. Los celulares aparecen ocultos inicialmente en la revisión, con opción de mostrarlos. El lote completo se guarda en una sola operación, sin reemplazar alumnos existentes. Cancelar no guarda y los errores conservan el borrador.
-- **Porcentajes opcionales de subactividades:** cada actividad principal puede mantener el promedio simple o usar porcentajes internos que sumen exactamente 100 %. Por ejemplo, Teoría 40 % y Práctica 60 %, sin alterar el porcentaje del parcial dentro del corte. Se actualizan automáticamente las definitivas, la nota consolidada, las métricas y los reportes PDF. Los vacíos siguen contando como cero únicamente en el cálculo.
-- **Gestión de evaluaciones más sencilla:** campos de edición visibles, foco automático en las nuevas actividades/subactividades, totales y validaciones cercanas. Las tarjetas de Notas abren directamente la actividad seleccionada y las eliminaciones siguen requiriendo confirmación.
-- **Semanas de asistencia más prácticas:** acciones Editar y Eliminar junto a cada semana y formulario separado, conservando fecha opcional y Marcar presente a todos al crear.
-- **Barra de estudiantes renovada:** Agregar estudiante destacado, búsqueda integrada, iconos consistentes y etiquetas adaptables al espacio, conservando el área de las tablas.
+- **Copiar parámetros entre materias:** cada tarjeta de Mis Materias incorpora **Copiar parámetros**. Puedes elegir una materia de cualquier semestre y, al crear otra, pulsar **Pegar parámetros** y revisar el resumen antes de guardar.
+- Se conservan los cortes y sus porcentajes, las actividades principales, las subactividades, sus ponderaciones y la configuración de nota de asistencia cuando está habilitada. Se mantienen la nota directa y los promedios simple o ponderado.
+- **La materia nueva es independiente:** mantiene su propio nombre, código, escuela, grupo y período. Sus actividades reciben identificadores nuevos y puedes editarlas sin afectar el origen.
+- **Privacidad:** no se copian estudiantes, documentos, contactos, calificaciones, semanas ni registros de asistencia. La copia se conserva temporalmente hasta cerrar SIGNA; copiar otra materia la reemplaza. **Usar configuración inicial** permite quitarla antes de guardar.
 
-### Integridad de la información
+### Errores corregidos y mejoras de rendimiento
 
-- Las líneas vacías de los datos opcionales conservan su posición, para evitar asignar un contacto al estudiante equivocado.
-- Una lista modificada debe revisarse otra vez. Si la materia cambia desde la revisión, se rechaza el guardado y se solicita actualizarla.
-- Los conflictos entre instancias y fallos de escritura no dejan registros parciales. El registro masivo usa el almacenamiento transaccional existente y conserva notas, asistencias y otras materias.
-- Las ponderaciones internas se validan al guardar, retirar o recuperar subactividades, sin borrar calificaciones ni redistribuir porcentajes silenciosamente. Se incluyen en los respaldos locales cifrados.
+- **Selector HSV más fluido:** se agrupan las actualizaciones visuales durante el arrastre, se omiten colores repetidos y se reutilizan recursos de dibujo y del tema. Al soltar o guardar se aplica el último color; cancelar descarta las actualizaciones pendientes. La vista previa no escribe preferencias en SQLite.
+- **Texto legible con colores claros:** se corrigió el contraste de texto e iconos sobre el fondo real de botones primarios y cortes seleccionados, incluidos los estados de cursor encima, pulsado y deshabilitado. Se mantienen el color elegido y los colores académicos.
+- **Arranque con respuesta visual:** pantalla de carga y preparación del almacenamiento fuera del hilo de la interfaz, conservando la recuperación ante errores. Cerrar la pantalla de carga evita que aparezca después una ventana principal inesperada.
+- **Estadísticas sin lecturas repetidas innecesarias:** se reutilizan resultados de materias sin cambios, se actualizan las modificadas y se detienen las cargas obsoletas. Actualizar sigue forzando una lectura nueva.
+- **Búsqueda y cambio de corte:** los buscadores agrupan la escritura rápida sin consultar SQLite por cada tecla. El cambio de corte prepara las tablas fuera del hilo visual; se reutilizan mediciones de columnas y se crean celdas/detalles cuando se necesitan.
+- **Asignación de notas preservada:** ordenar o pegar calificaciones aplica primero el filtro pendiente, respetando la lista visible. Se conservan borradores, asociaciones por estudiante y el control de cambios concurrentes.
 
-Se conservan los PDF de notas y asistencia, el selector HSV/HEX, la gestión de materias y estudiantes, la nota consolidada y los respaldos locales cifrados. El [historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md) describe las novedades en el repositorio.
+### Integridad y actualización
 
-### Actualizar conservando la información
+Copiar o pegar parámetros no modifica la base de datos. La materia completa se guarda mediante la transacción existente; si falla, no queda un registro parcial. Los porcentajes pendientes de ajuste se conservan y se advierten, sin redistribuirlos automáticamente.
 
-Antes de instalar, crea un respaldo local cifrado y conserva su contraseña. Cierra SIGNA y utiliza el instalador de tu sistema. Se conserva la ubicación de datos y la información existente. El formato académico se actualiza para incluir las ponderaciones internas; para volver a una versión anterior, restaura una copia realizada antes de esta actualización. Los instaladores no contienen bases de datos, materias ni estudiantes de prueba.
+Esta actualización no cambia el esquema SQLite, las reglas académicas, la ubicación de datos ni los cálculos existentes. Conserva estudiantes, calificaciones, asistencias y preferencias. Antes de instalar, crea un respaldo local cifrado, conserva su contraseña y cierra SIGNA. Los instaladores no incluyen bases de datos, materias ni estudiantes de prueba.
 
-### Descarga
+### Descargas
 
-- Windows 10/11 x64: `SIGNA-1.4.0-windows-x64-setup.exe`.
-- Ubuntu/Debian x64 y ARM64: paquetes `.deb`.
-- Fedora y derivados x64 y ARM64: paquetes `.rpm`.
-- macOS 15 o posterior: `.dmg` para Intel (`osx-x64`) y Apple Silicon (`osx-arm64`).
+| Sistema | Archivo |
+| --- | --- |
+| Windows 10/11 x64 | `SIGNA-1.5.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 | `SIGNA-1.5.0-linux-x64.deb` |
+| Ubuntu/Debian ARM64 | `SIGNA-1.5.0-linux-arm64.deb` |
+| Fedora y derivados x64 | `SIGNA-1.5.0-linux-x64.rpm` |
+| Fedora y derivados ARM64 | `SIGNA-1.5.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.5.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.5.0-osx-arm64.dmg` |
 
-Todos incluyen .NET y el icono oficial. Lee **INSTALACION.md** y comprueba **SHA256SUMS.txt**. Los paquetes de Linux declaran sus bibliotecas del sistema; se requiere X11 o XWayland. Los datos locales y respaldos no están incluidos en los instaladores y se conservan al desinstalar.
+Incluyen .NET y el icono oficial. Consulta **INSTALACION.md** y comprueba **SHA256SUMS.txt**. Linux requiere las bibliotecas declaradas por el paquete y X11/XWayland. Las actualizaciones y desinstalaciones conservan los datos del usuario.
 
 ### Validación y firma
 
-Compilaciones y pruebas automatizadas en runners nativos de Windows, Linux x64/ARM64 y macOS Intel/Apple Silicon. Se verifican arquitectura, recursos, licencias, instalación/desinstalación aislada de Windows y DEB, contenido RPM e integridad/montaje de DMG. Avalonia se prueba mediante Headless; las pruebas manuales quedan a cargo del docente.
+392 pruebas automatizadas cubren dominio, aplicación, SQLite temporal y presentación Avalonia Headless. El proceso de publicación compila, ejecuta la suite y verifica los paquetes en Windows, Linux x64/ARM64 y macOS Intel/Apple Silicon; solo publica al completar los siete instaladores y comprobar sus hashes. Las pruebas manuales quedan a cargo del docente. Las optimizaciones verifican operaciones y resultados; no prometen un tiempo de arranque fijo para todos los equipos.
 
-**Sin firma oficial de Windows ni Apple Developer ID/notarización.** Windows/macOS pueden mostrar advertencias. La firma ad hoc de macOS valida el código nativo, pero no identifica al desarrollador. No se solicita desactivar globalmente la seguridad del sistema.
+**Sin firma oficial de Windows ni Apple Developer ID/notarización**, según la distribución actual. Windows/macOS pueden mostrar advertencias; la firma ad hoc de macOS comprueba integridad sin acreditar al desarrollador. No es necesario desactivar globalmente las protecciones del sistema.
 
-Licencia MIT. Repositorio: https://github.com/danielpose1996-stack/SIGNA
+Licencia MIT. [Repositorio oficial](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).

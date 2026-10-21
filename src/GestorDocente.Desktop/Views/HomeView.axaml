@@ -33,13 +33,19 @@
                   <TextBlock Text="{Binding StudentsLabel}" Classes="muted" FontSize="12" />
                   <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="8,6" IsVisible="{Binding IsDemo}"><TextBlock Text="Materia de demostración · datos ficticios" Foreground="{DynamicResource Muted}" FontSize="11" TextWrapping="Wrap" /></Border>
                 </StackPanel>
-                <Grid Grid.Row="4" RowDefinitions="Auto,Auto" Margin="0,16,0,0">
+                <Grid Grid.Row="4" RowDefinitions="Auto,Auto,Auto" Margin="0,16,0,0">
                   <Border Background="{DynamicResource Line}" Height="1" />
                   <c:AdaptiveCardActions Grid.Row="1" Margin="0,12,0,0">
                     <Button Classes="primary" Content="Abrir materia" HorizontalAlignment="Left" Command="{Binding DataContext.OpenCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" AutomationProperties.Name="Abrir materia disponible" />
                     <Button Command="{Binding DataContext.EditCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" IsVisible="{Binding CanDelete}" ToolTip.Tip="Editar los datos de esta materia" AutomationProperties.Name="Editar materia"><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="edit" Width="15" Height="15" /><TextBlock Text="Editar" FontSize="12" VerticalAlignment="Center" /></StackPanel></Button>
                     <Button Command="{Binding DataContext.DeleteCourseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" IsVisible="{Binding CanDelete}" ToolTip.Tip="Eliminar esta materia y sus datos locales" AutomationProperties.Name="Eliminar materia"><c:VectorIcon Kind="trash" Width="18" Height="18" Stroke="#B53742" /></Button>
                   </c:AdaptiveCardActions>
+                  <Button Grid.Row="2" Margin="0,10,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                          Command="{Binding DataContext.CopyCourseParametersCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"
+                          IsVisible="{Binding CanDelete}" AutomationProperties.Name="Copiar parámetros de la materia"
+                          ToolTip.Tip="Copiar cortes, actividades, porcentajes y nota de asistencia habilitada para reutilizarlos al crear otra materia">
+                    <StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="copy" Width="16" Height="16" /><TextBlock Text="Copiar parámetros" FontSize="12" /></StackPanel>
+                  </Button>
                 </Grid>
               </Grid>
             </Border>

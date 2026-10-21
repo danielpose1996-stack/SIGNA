@@ -1,10 +1,29 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.CatalogEditorWindow" Title="{Binding Title}" Width="550" Height="570" MinHeight="420" MinWidth="450" WindowStartupLocation="CenterOwner">
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.CatalogEditorWindow" Title="{Binding Title}" Width="{Binding DialogWidth}" Height="{Binding DialogHeight}" MinHeight="420" MinWidth="450" WindowStartupLocation="CenterOwner">
   <Grid RowDefinitions="Auto,*,Auto" Margin="24">
     <TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" Margin="0,0,0,18" />
     <ScrollViewer Grid.Row="1"><StackPanel Spacing="12">
+      <Border IsVisible="{Binding ShowParameters}" Background="{DynamicResource Soft}" CornerRadius="7" Padding="14">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Reutilizar configuración (opcional)" FontWeight="SemiBold" />
+          <TextBlock Text="{Binding ParametersHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <Button Command="{Binding PasteParametersCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Pegar parámetros copiados">
+            <StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="copy" Width="16" Height="16" /><TextBlock Text="Pegar parámetros" /></StackPanel>
+          </Button>
+          <Button IsVisible="{Binding HasPastedParameters}" Content="Usar configuración inicial" Classes="quiet" HorizontalAlignment="Left" Command="{Binding ClearParametersCommand}" ToolTip.Tip="Quitar los parámetros pegados y crear tres cortes vacíos con porcentajes 30, 30 y 40 %" />
+        </StackPanel>
+      </Border>
       <StackPanel IsVisible="{Binding IsSemester}" Spacing="8"><TextBlock Text="Período académico" Classes="section" /><TextBlock Text="Crea un período, por ejemplo 2026-1. Los anteriores se conservarán." Classes="muted" TextWrapping="Wrap" /><TextBlock Text="Año" /><NumericUpDown Value="{Binding Year,Mode=TwoWay}" Minimum="1000" Maximum="9999" FormatString="0" AutomationProperties.Name="Año del semestre" /><TextBlock Text="Semestre" /><ComboBox ItemsSource="{Binding Terms}" SelectedItem="{Binding Term,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Número de semestre" /></StackPanel>
       <StackPanel IsVisible="{Binding IsCourse}" Spacing="7"><TextBlock Text="Semestre" /><ComboBox ItemsSource="{Binding Semesters}" SelectedItem="{Binding SelectedSemester,Mode=TwoWay}" HorizontalAlignment="Stretch" AutomationProperties.Name="Semestre de la asignatura" /><TextBlock Text="Código de asignatura" /><TextBox Text="{Binding Code,Mode=TwoWay}" Watermark="0012, INF-301…" AutomationProperties.Name="Código de asignatura" /><TextBlock Text="Nombre de la asignatura" /><TextBox Text="{Binding Name,Mode=TwoWay}" AutomationProperties.Name="Nombre de asignatura" /><TextBlock Text="Escuela" /><TextBox Text="{Binding School,Mode=TwoWay}" AutomationProperties.Name="Escuela de la asignatura" /><TextBlock Text="Grupo o sección (opcional)" /><TextBox Text="{Binding Group,Mode=TwoWay}" Watermark="Solo si dictas varias secciones del mismo código" AutomationProperties.Name="Grupo opcional" /></StackPanel>
+      <StackPanel IsVisible="{Binding HasPastedParameters}" Spacing="10">
+        <TextBlock Text="Resumen de parámetros" FontWeight="SemiBold" Margin="0,8,0,0" />
+        <TextBlock Text="{Binding ParametersWarning}" Classes="error" TextWrapping="Wrap" IsVisible="{Binding ParametersWarning,Converter={StaticResource HasText}}" />
+        <ItemsControl ItemsSource="{Binding ParameterPreview}"><ItemsControl.ItemTemplate><DataTemplate>
+          <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+            <StackPanel Spacing="7"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding Activities}" TextWrapping="Wrap" FontSize="12" /><TextBlock Text="{Binding AttendanceLabel}" Classes="muted" TextWrapping="Wrap" FontSize="11" /></StackPanel>
+          </Border>
+        </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+      </StackPanel>
     </StackPanel></ScrollViewer>
-    <StackPanel Grid.Row="2" Spacing="10" Margin="0,16,0,0"><TextBlock Text="{Binding Error}" Classes="error" /><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" /><Button Content="Guardar" Classes="primary" Click="Save" IsEnabled="{Binding CanSave}" /></StackPanel></StackPanel>
+    <StackPanel Grid.Row="2" Spacing="10" Margin="0,16,0,0"><TextBlock Text="{Binding Error}" Classes="error" TextWrapping="Wrap" /><StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cancelar" Click="Cancel" /><Button Content="Guardar" Classes="primary" Click="Save" IsEnabled="{Binding CanSave}" /></StackPanel></StackPanel>
   </Grid>
 </Window>

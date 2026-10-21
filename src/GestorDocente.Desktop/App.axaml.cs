@@ -32,7 +32,9 @@ public partial class App : Avalonia.Application
                 }
                 else
                 {
-                    desktop.MainWindow=new MainWindow {DataContext=CreateProductionViewModel()};
+                    var startup=new StartupWindow();desktop.MainWindow=startup;
+                    startup.Opened+=async (_,_)=>await startup.LoadAsync(async ()=>{var model=await CreateProductionViewModelAsync();return new MainWindow{DataContext=model};},
+                        window=>desktop.MainWindow=window,ex=>new RecoveryStartupWindow(ProductionDatabasePath(),StartupError(ex)));
                 }
             } catch(Exception ex)
             {
@@ -44,15 +46,22 @@ public partial class App : Avalonia.Application
         }
         base.OnFrameworkInitializationCompleted();
     }
-    internal static MainViewModel CreateProductionViewModel()
+    internal static async Task<MainViewModel> CreateProductionViewModelAsync()=>CreateProductionViewModel(await Task.Run(LoadProductionServices));
+    private sealed record ProductionServices(CatalogService Catalog,EncryptedLocalBackupService Backup,InterfacePreferencesService Preferences);
+    private static ProductionServices LoadProductionServices()
     {
         var path=ProductionDatabasePath();
         var catalog=new CatalogService(new SqliteCatalogStore(path));
         var backup=new EncryptedLocalBackupService(path);
         var preferences=new InterfacePreferencesService(new SqliteInterfacePreferencesStore(path));
-        if(Current is {} app)InterfaceTheme.Apply(app,preferences.Current);
-        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),catalog,new ExcelStudentReader(),new XlsxReportExporter(),backup,new AttendancePdfExporter(),preferences,new NotesPdfExporter());
+        return new(catalog,backup,preferences);
     }
+    private static MainViewModel CreateProductionViewModel(ProductionServices services)
+    {
+        if(Current is {} app)InterfaceTheme.Apply(app,services.Preferences.Current);
+        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),services.Catalog,new ExcelStudentReader(),new XlsxReportExporter(),services.Backup,new AttendancePdfExporter(),services.Preferences,new NotesPdfExporter());
+    }
+    private static string StartupError(Exception ex)=>ex is Domain.AcademicValidationException ? ex.Message : $"No se pudo abrir el almacenamiento local ({SafeErrorCode.From(ex)}). Revisa permisos y espacio disponible. Los datos no se reemplazaron.";
     internal static string ProductionDatabasePath()
     {
         var dataDirectory=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AulaRegistro");

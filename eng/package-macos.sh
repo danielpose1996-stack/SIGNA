@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.4.0};rid=${2:-osx-arm64}
+version=${1:-1.5.0};rid=${2:-osx-arm64}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
 case "$rid" in osx-x64|osx-arm64) ;; *) exit 1;; esac
 repo=$(cd -- "$(dirname -- "$0")/.." && pwd);cd "$repo"

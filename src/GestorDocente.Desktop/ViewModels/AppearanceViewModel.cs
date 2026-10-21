@@ -7,6 +7,9 @@ public sealed class AppearanceViewModel:ObservableObject
 {
     private readonly InterfacePreferencesService service;
     private readonly Action<InterfacePreferences> apply;
+    private readonly DeferredUiAction previewUpdate;
+    private bool interacting;
+    private string appliedHex="";
     private AvatarOption selectedAvatar;
     private bool busy,colorGrades,hasPreview;
     private string error="",teacherName="",hexInput="",hexError="",selectedHex="";
@@ -26,7 +29,7 @@ public sealed class AppearanceViewModel:ObservableObject
         set
         {
             if(!Set(ref hexInput,value ?? ""))return;
-            try{var candidate=hexInput.Trim().ToUpperInvariant();var next=ColorSelection.FromHex(candidate,selection.Hue);UpdateColor(next,candidate);}
+            try{var candidate=hexInput.Trim().ToUpperInvariant();var next=ColorSelection.FromHex(candidate,selection.Hue);UpdateColor(next,candidate,immediate:true);}
             catch(AcademicValidationException){HexError="Escribe seis dígitos hexadecimales, por ejemplo #2563EB.";}
         }
     }
@@ -44,30 +47,46 @@ public sealed class AppearanceViewModel:ObservableObject
     public AppearanceViewModel(InterfacePreferencesService service,Action<InterfacePreferences>? apply=null)
     {
         this.service=service;this.apply=apply ?? (preferences=>InterfaceTheme.Apply(Avalonia.Application.Current ?? throw new InvalidOperationException("La interfaz no está inicializada."),preferences));
+        previewUpdate=new(TimeSpan.FromMilliseconds(16),ApplyPreview,restart:false);
         selectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);LoadDraft();
     }
-    private void UpdateColor(ColorSelection next,string? exactHex=null)
+    public void BeginColorInteraction()=>interacting=true;
+    public void EndColorInteraction(){if(!interacting)return;interacting=false;previewUpdate.Flush();}
+    public void SetSaturationAndBrightness(double saturation,double brightness)
+    {
+        if(!double.IsFinite(saturation) || !double.IsFinite(brightness))return;
+        var next=selection with{Saturation=Math.Clamp(saturation,0,1),Value=Math.Clamp(brightness,0,1)};
+        if(next!=selection)UpdateColor(next);
+    }
+    private void UpdateColor(ColorSelection next,string? exactHex=null,bool immediate=false)
     {
         selection=next;selectedHex=exactHex ?? next.ToHex();hexInput=selectedHex;HexError="";
         foreach(var name in new[]{nameof(Hue),nameof(Saturation),nameof(Brightness),nameof(HsvLabel),nameof(SelectedHex),nameof(HexInput)})Raise(name);
-        try{apply(service.Current with{Accent=selectedHex});hasPreview=true;Error="";}
+        if(interacting && !immediate)previewUpdate.Schedule();
+        else{previewUpdate.Cancel();ApplyPreview();}
+    }
+    private void ApplyPreview()
+    {
+        if(string.Equals(appliedHex,selectedHex,StringComparison.OrdinalIgnoreCase))return;
+        try{apply(service.Current with{Accent=selectedHex});appliedHex=selectedHex;hasPreview=true;Error="";}
         catch(Exception ex){Error=$"No se pudo aplicar la vista previa ({SafeErrorCode.From(ex)}). Reintenta.";}
     }
     private void LoadDraft()
     {
         selectedHex=service.Current.Accent;hexInput=selectedHex;selection=ColorSelection.FromHex(selectedHex);HexError="";
+        appliedHex=selectedHex;
         SelectedAvatar=Avatars.Single(a=>a.Id==service.Current.Avatar);TeacherName=service.Current.TeacherName;ColorGrades=service.Current.ColorGrades;Error="";
         foreach(var name in new[]{nameof(Hue),nameof(Saturation),nameof(Brightness),nameof(HsvLabel),nameof(SelectedHex),nameof(HexInput)})Raise(name);
     }
-    public void CancelPreview(){if(!hasPreview)return;apply(service.Current);hasPreview=false;}
+    public void CancelPreview(){interacting=false;previewUpdate.Cancel();if(!hasPreview)return;apply(service.Current);appliedHex=service.Current.Accent;hasPreview=false;}
     public void ResetDraft(){CancelPreview();LoadDraft();}
     public async Task<bool> SaveAsync()
     {
-        if(!CanSave)return false;IsBusy=true;var before=service.Current;
+        if(!CanSave)return false;EndColorInteraction();IsBusy=true;var before=service.Current;
         try
         {
             if(SelectedAvatar is null)throw new AcademicValidationException("Selecciona un icono del perfil.");
-            await service.SaveAsync(new(selectedHex,SelectedAvatar.Id,TeacherName.Trim(),ColorGrades));apply(service.Current);hasPreview=false;
+            await service.SaveAsync(new(selectedHex,SelectedAvatar.Id,TeacherName.Trim(),ColorGrades));apply(service.Current);appliedHex=service.Current.Accent;hasPreview=false;
             Error="";Raise(nameof(CurrentAvatarKind));Raise(nameof(CurrentTeacherName));Raise(nameof(CurrentColorGrades));Raise(nameof(Warning));return true;
         }
         catch(Exception ex){Error=service.Current!=before ? "La apariencia se guardó, pero no pudo aplicarse. Reinicia la aplicación." : ex is AcademicValidationException ? ex.Message : $"No se guardó la apariencia ({SafeErrorCode.From(ex)}). Reintenta.";return false;}

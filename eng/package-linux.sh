@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.4.0}
+version=${1:-1.5.0}
 rid=${2:-linux-x64}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Versión inválida' >&2; exit 1; }
 case "$rid" in linux-x64) deb_arch=amd64; rpm_arch=x86_64;; linux-arm64) deb_arch=arm64; rpm_arch=aarch64;; *) exit 1;; esac

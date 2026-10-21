@@ -24,7 +24,11 @@ public sealed class ConsolidatedViewModel : ObservableObject
     private readonly Dictionary<string,int> positions=[];
     private readonly List<ConsolidatedStudentRow> allRows=[];
     private string search="";
-    public string Search{get=>search;set{if(Set(ref search,value ?? ""))Filter();}}
+    private string searchInput="";
+    private readonly DeferredUiAction searchUpdate;
+    public ConsolidatedViewModel()=>searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
+    public string SearchInput{get=>searchInput;set{if(!Set(ref searchInput,value ?? ""))return;if(searchInput.Length==0){searchUpdate.Cancel();Search="";}else searchUpdate.Schedule();}}
+    public string Search{get=>search;set{searchUpdate.Cancel();var next=value ?? "";if(searchInput!=next){searchInput=next;Raise(nameof(SearchInput));}if(Set(ref search,next))Filter();}}
     public IReadOnlyList<CutColumn> Cuts{get;private set;}=[];
     public ObservableRangeCollection<ConsolidatedStudentRow> Rows{get;}=[];
     public bool IsEmpty=>Rows.Count==0;

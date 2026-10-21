@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Concurrent;
 using GestorDocente.Application;
 using GestorDocente.Domain;
 
@@ -34,6 +35,9 @@ public sealed class DashboardViewModel : ObservableObject
     private bool applying;
     private bool isLoading;
     private string error="";
+    private CancellationTokenSource? cancellation;
+    private sealed record CachedCourse(CourseRecord Stamp,PerformanceCourseCard Card);
+    private readonly ConcurrentDictionary<string,CachedCourse> cache=new();
     public ObservableCollection<AcademicSemester> Semesters {get;}=[];
     public ObservableCollection<PerformanceCourseCard> Courses {get;}=[];
     public bool HasCatalog=>catalog is not null;
@@ -46,35 +50,49 @@ public sealed class DashboardViewModel : ObservableObject
         set{if(Set(ref selectedSemester,value) && !applying)_=RefreshAsync();}
     }
     public RelayCommand RefreshCommand{get;}
-    public DashboardViewModel(CatalogService? catalog,Func<AcademicWorkspace> current)
+    public DashboardViewModel(CatalogService? catalog,Func<AcademicWorkspace> current,bool loadImmediately=true)
     {
         this.catalog=catalog;this.current=current;
-        RefreshCommand=new(_=>_ = RefreshAsync(),_=>!IsLoading);
-        _=RefreshAsync();
+        RefreshCommand=new(_=>_ = RefreshAsync(force:true),_=>!IsLoading);
+        if(catalog is not null)catalog.Changed+=Invalidate;
+        if(loadImmediately)_=RefreshAsync();
     }
-    public async Task RefreshAsync()
+    public void Invalidate()=>cache.Clear();
+    public void Suspend()=>cancellation?.Cancel();
+    private PerformanceCourseCard ReadCard(CourseRecord course,CancellationToken token,bool force)
     {
+        token.ThrowIfCancellationRequested();
+        if(!force && course.Revision>=0 && cache.TryGetValue(course.Id,out var entry) && entry.Stamp==course)return entry.Card;
+        var workspace=catalog!.Open(course.Id).Current;token.ThrowIfCancellationRequested();
+        var card=new PerformanceCourseCard(AcademicPerformanceProjection.Build(workspace));token.ThrowIfCancellationRequested();
+        if(course.Revision>=0)cache[course.Id]=new(course,card);
+        return card;
+    }
+    public async Task RefreshAsync(bool force=false)
+    {
+        cancellation?.Cancel();
+        var requestCancellation=new CancellationTokenSource();cancellation=requestCancellation;
+        var token=requestCancellation.Token;
         var request=Interlocked.Increment(ref version);
         var selectedPeriod=SelectedSemester?.Id;
         IsLoading=true;RefreshCommand.Refresh();Error="";
         try
         {
+            if(catalog is null)
+            {
+                var workspace=current();
+                var card=await Task.Run(()=>string.IsNullOrWhiteSpace(workspace.CourseName) ? null : new PerformanceCourseCard(AcademicPerformanceProjection.Build(workspace)),token);
+                token.ThrowIfCancellationRequested();Semesters.Clear();Courses.Clear();if(card is not null)Courses.Add(card);Raise(nameof(IsEmpty));return;
+            }
             var result=await Task.Run(() =>
             {
-                if(catalog is null)
-                {
-                    var workspace=current();
-                    return (Semesters:Array.Empty<AcademicSemester>(),Selected:(AcademicSemester?)null,
-                        Cards:string.IsNullOrWhiteSpace(workspace.CourseName) ? Array.Empty<PerformanceCourseCard>() :
-                            new[]{new PerformanceCourseCard(AcademicPerformanceProjection.Build(workspace))});
-                }
+                token.ThrowIfCancellationRequested();
                 var semesters=catalog.Semesters.ToArray();
                 var selected=semesters.FirstOrDefault(s=>s.Id==selectedPeriod) ?? semesters.FirstOrDefault();
-                var cards=selected is null ? [] : catalog.Courses(selected.Id)
-                    .Select(course=>new PerformanceCourseCard(AcademicPerformanceProjection.Build(catalog.Open(course.Id).Current))).ToArray();
-                return (Semesters:semesters,Selected:selected,Cards:cards);
-            });
-            if(request!=version)return;
+                var courses=selected is null ? [] : catalog.Courses(selected.Id).ToArray();
+                return (Semesters:semesters,Selected:selected,Courses:courses);
+            },token);
+            token.ThrowIfCancellationRequested();
             applying=true;
             try
             {
@@ -82,10 +100,18 @@ public sealed class DashboardViewModel : ObservableObject
                 SelectedSemester=Semesters.FirstOrDefault(s=>s.Id==result.Selected?.Id);
             }
             finally{applying=false;}
-            Courses.Clear();foreach(var card in result.Cards)Courses.Add(card);
+            var ids=result.Courses.Select(c=>c.Id).ToHashSet();
+            foreach(var id in cache.Keys)if(!ids.Contains(id))cache.TryRemove(id,out _);
+            Courses.Clear();
+            foreach(var course in result.Courses)
+            {
+                var card=await Task.Run(()=>ReadCard(course,token,force),token);
+                token.ThrowIfCancellationRequested();Courses.Add(card);
+            }
             Raise(nameof(IsEmpty));
         }
+        catch(OperationCanceledException)when(token.IsCancellationRequested){ /* Una solicitud nueva reemplazó exclusivamente esta lectura. */ }
         catch(Exception ex){if(request==version)Error=ex is AcademicValidationException ? ex.Message : $"No se pudieron calcular las estadísticas ({SafeErrorCode.From(ex)}). Pulsa Actualizar.";}
-        finally{if(request==version){IsLoading=false;RefreshCommand.Refresh();}}
+        finally{if(request==version){IsLoading=false;RefreshCommand.Refresh();cancellation=null;}requestCancellation.Dispose();}
     }
 }

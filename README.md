@@ -12,17 +12,17 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.4.0:** registro masivo de estudiantes con revisión previa y contactos opcionales, porcentajes internos opcionales en subactividades y mejoras de interacción al gestionar evaluaciones y semanas. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.4.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.4.0).
+**Versión 1.5.0:** copia opcional de parámetros entre materias de cualquier semestre, selector de color más fluido, contraste automático corregido y mejoras de respuesta al iniciar, buscar estudiantes, cambiar de corte y consultar estadísticas. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.5.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.5.0).
 
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.4.0-windows-x64-setup.exe` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.4.0-linux-x64.deb` o `SIGNA-1.4.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.4.0-linux-x64.rpm` o `SIGNA-1.4.0-linux-arm64.rpm` |
-| macOS 15 o posterior, Intel | `SIGNA-1.4.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.4.0-osx-arm64.dmg` |
+| Windows x64 | `SIGNA-1.5.0-windows-x64-setup.exe` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.5.0-linux-x64.deb` o `SIGNA-1.5.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.5.0-linux-x64.rpm` o `SIGNA-1.5.0-linux-arm64.rpm` |
+| macOS 15 o posterior, Intel | `SIGNA-1.5.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.5.0-osx-arm64.dmg` |
 
 Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
@@ -35,7 +35,7 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | Módulo | Funciones actuales |
 | --- | --- |
 | **Inicio** | Consultar métricas de rendimiento por materia y corte: promedio, mínimo, máximo y registros completos o pendientes. |
-| **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas con sus datos y abrir una materia. Eliminar materias y semestres con confirmación. |
+| **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas y abrir una materia. Copiar parámetros para reutilizar evaluaciones, porcentajes y nota de asistencia habilitada en una materia nueva de cualquier semestre, sin estudiantes ni registros. Eliminar materias y semestres con confirmación. |
 | **Estudiantes dentro de una materia** | Importar el listado desde `.xls`, `.xlsx`, `.xlsm` o `.xlsb`, añadir estudiantes individualmente o pegar listas completas con revisión previa, y consultar, editar o eliminar su información. En el registro manual solo el nombre es obligatorio; documento y contactos son opcionales. Celular oculto inicialmente en detalles y revisión masiva. |
 | **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple o ponderado opcional, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Pegar una columna de notas con vista previa, ordenar nombres A–Z/Z–A y generar un PDF de toda la lista, identificada solo por nombre. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
@@ -44,6 +44,12 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | **Apariencia** | Elegir un color con lienzo HSV y código HEX sincronizados, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 
 No se necesita servidor, cuenta de SIGNA ni inicio de sesión para usar estas funciones. Los respaldos se guardan únicamente de forma local; el usuario elige dónde crear el archivo y desde dónde restaurarlo.
+
+### Reutilizar la configuración de una materia
+
+En **Mis Materias**, elige el semestre de origen y pulsa **Copiar parámetros** en la tarjeta de la materia. Cambia al semestre de destino, abre **Crear materia**, completa su identidad y pulsa **Pegar parámetros**. Revisa el resumen por corte antes de guardar; **Usar configuración inicial** permite quitar la copia y comenzar con tres cortes vacíos.
+
+Se copian los cortes y sus porcentajes, las actividades y subactividades activas, el promedio simple o ponderado y la configuración de nota de asistencia que esté habilitada. No se copian estudiantes, datos de contacto, calificaciones, semanas ni asistencias. La nueva materia es independiente y sus parámetros se pueden editar sin afectar el origen. La copia temporal permanece disponible hasta cerrar SIGNA; copiar otra materia la reemplaza. Los porcentajes de cortes pendientes de ajuste se conservan y se avisa de ello, sin redistribuirlos automáticamente.
 
 ### Registro masivo de estudiantes
 
