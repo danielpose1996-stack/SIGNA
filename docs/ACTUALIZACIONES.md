@@ -1,6 +1,6 @@
 # Actualizaciones de SIGNA
 
-La versión en preparación **1.6.0** incorpora Velopack 1.2.161. La publicación estable actual, **1.5.0**, todavía no contiene este actualizador. Este documento describe el flujo implementado para los próximos instaladores; no anuncia que 1.6.0 esté publicada.
+La versión **1.6.0**, disponible en [GitHub Releases](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.0), incorpora Velopack 1.2.161. Las ediciones hasta **1.5.0** todavía no contienen este actualizador: necesitan instalar una vez la edición nueva para recibir actualizaciones internas posteriores.
 
 ## Para el docente
 
@@ -15,7 +15,7 @@ Guarda las notas pendientes, termina las operaciones y cierra otras instancias d
 Las versiones hasta 1.5.0 se distribuyeron con otro sistema de empaquetado. Necesitan instalar **una vez** la nueva edición desde Releases. No pueden recibir Velopack mediante un actualizador que todavía no tienen.
 
 1. Crea un respaldo local cifrado en **Respaldos**, fuera de la carpeta del programa, y conserva la contraseña.
-2. Cierra SIGNA. Descarga el instalador de tu sistema y arquitectura desde la página oficial cuando se publique la nueva versión. Comprueba su SHA-256.
+2. Cierra SIGNA. Descarga el instalador de tu sistema y arquitectura desde la página oficial. Comprueba su SHA-256.
 3. En Windows abre el nuevo Setup; instala por usuario sin requerir desinstalar primero la edición anterior. Abre el acceso nuevo. La ruta del programa cambia de la utilizada por Inno Setup; puede quedar un acceso antiguo. Evita abrir simultáneamente ambas ediciones.
 4. En macOS arrastra el nuevo SIGNA.app del DMG a Aplicaciones, confirma reemplazar el programa y expulsa el DMG. Ejecuta SIGNA desde su ubicación definitiva, con permiso para reemplazar el bundle. El sistema puede solicitar autorización al actualizar una aplicación situada en `/Applications`.
 5. En Linux, para usar la actualización integrada, descarga la AppImage de tu arquitectura, guárdala en una carpeta propia estable y escribible, dale permiso de ejecución (`chmod +x SIGNA-1.6.0-linux-x64.AppImage`) y ábrela. Conserva el archivo fuera de carpetas de descargas temporales. Requiere las bibliotecas de .NET/Avalonia y soporte AppImage/FUSE de la distribución. En Wayland necesita XWayland.
@@ -44,6 +44,6 @@ Cada Release debe publicar los instaladores, el paquete completo `.nupkg` y `rel
 
 Para preparar una versión: cambia `Directory.Build.props`, actualiza las notas `eng/RELEASE.md`, compila y prueba, y ejecuta el workflow **Instaladores y Release SIGNA** con la misma versión, únicamente después de autorizar su publicación. El workflow crea primero un borrador, comprueba los hashes descargando los archivos subidos y solo entonces la marca como estable. Las versiones preliminares y los borradores no se ofrecen al docente. Conserva las Releases históricas.
 
-La validación local incluye pruebas de estados, fallos, datos SQLite ficticios, caché corrupta y empaquetado Windows. Las capturas Headless prueban distribución visual; no sustituyen un ciclo real de actualización entre dos Releases instaladas. La instalación/reinicio en Windows, macOS y AppImage y la transición desde 1.5.0 requieren verificación manual en cada plataforma. No se ejecutan sobre el perfil real del docente durante el desarrollo.
+La validación incluye 427 pruebas de la aplicación en cada uno de los cinco sistemas/arquitecturas, seis pruebas de empaquetado, datos SQLite ficticios, caché corrupta y paquetes generados en sistemas nativos. Windows y Arch comprueban instalación/desinstalación en entornos efímeros; macOS comprueba el bundle y el DMG, y Linux la AppImage y sus paquetes. Las capturas Headless prueban distribución visual; no sustituyen un ciclo real de actualización entre dos Releases instaladas. La instalación/reinicio en Windows, macOS y AppImage y la transición desde 1.5.0 requieren verificación manual en cada plataforma. No se ejecutan sobre el perfil real del docente durante el desarrollo.
 
 Referencias: [integración Velopack](https://docs.velopack.io/integrating/overview), [Linux](https://docs.velopack.io/packaging/operating-systems/linux), [macOS](https://docs.velopack.io/packaging/operating-systems/macos), [código fijado a 1.2.161](https://github.com/velopack/velopack/tree/1.2.161).

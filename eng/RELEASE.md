@@ -28,6 +28,8 @@ Incluyen .NET y el icono oficial. Consulta **INSTALACION.md**, **SHA256SUMS.txt*
 
 El workflow compila y prueba en cada sistema nativo, comprueba las distribuciones y exige los cinco feeds completos con canal, versión, identidad y SHA-256 correctos antes de publicar. Las pruebas incluyen estados del actualizador, fallos/cancelación, datos SQLite ficticios y WAL, caché corrupta y presentación Avalonia Headless. Las pruebas manuales, incluida la transición y el ciclo de instalación/reinicio entre versiones instaladas, corresponden al docente.
 
+**Validación de esta publicación:** 427 pruebas aprobadas en cada uno de los cinco sistemas/arquitecturas (Windows x64, Linux x64/ARM64 y macOS Intel/Apple Silicon), seis pruebas de empaquetado y comprobaciones nativas de las distribuciones. Incluye instalación/desinstalación en Windows y Arch con conservación de datos ficticios, verificación de bundles/DMG y AppImage, y descarga de los archivos subidos para comprobar sus SHA-256 antes de marcar la Release como estable.
+
 Continúa **sin firma oficial de Windows ni Apple Developer ID/notarización**, según las distribuciones actuales. La firma ad hoc de macOS verifica integridad, no identidad del desarrollador. Pueden aparecer advertencias del sistema; no desactives globalmente sus protecciones. El paquete Arch también se distribuye sin firma oficial de repositorio.
 
 Licencia MIT. [Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).

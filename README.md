@@ -12,35 +12,36 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.5.0:** copia opcional de parámetros entre materias de cualquier semestre, selector de color más fluido, contraste automático corregido y mejoras de respuesta al iniciar, buscar estudiantes, cambiar de corte y consultar estadísticas. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.5.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.5.0).
+**Versión 1.6.0:** actualizaciones integradas mediante Velopack, búsqueda automática y manual, verificación de paquetes y protección de datos antes del reinicio. Añade AppImage Linux actualizable y conserva los instaladores nativos. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.0).
 
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.5.0-windows-x64-setup.exe` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.5.0-linux-x64.deb` o `SIGNA-1.5.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.5.0-linux-x64.rpm` o `SIGNA-1.5.0-linux-arm64.rpm` |
-| Arch Linux / Omarchy x64 | `SIGNA-1.5.0-archlinux-x64.pkg.tar.zst` |
-| macOS 15 o posterior, Intel | `SIGNA-1.5.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.5.0-osx-arm64.dmg` |
+| Windows x64 | `SIGNA-1.6.0-windows-x64-setup.exe` |
+| Linux x64 o ARM64, actualización integrada | `SIGNA-1.6.0-linux-x64.AppImage` o `SIGNA-1.6.0-linux-arm64.AppImage` |
+| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.6.0-linux-x64.deb` o `SIGNA-1.6.0-linux-arm64.deb` |
+| Fedora y derivados x64 o ARM64 | `SIGNA-1.6.0-linux-x64.rpm` o `SIGNA-1.6.0-linux-arm64.rpm` |
+| Arch Linux / Omarchy x64 | `SIGNA-1.6.0-archlinux-x64.pkg.tar.zst` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.0-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.0-osx-arm64.dmg` |
 
-Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
+Windows instala para tu usuario y crea accesos en Inicio y el escritorio. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Arch Linux / Omarchy (x86_64):** descarga el paquete `.pkg.tar.zst` y ejecuta `sudo pacman -U ./SIGNA-1.5.0-archlinux-x64.pkg.tar.zst`. Incluye .NET y declara sus bibliotecas nativas, incluido XWayland para escritorios Wayland como Hyprland. Puedes abrir SIGNA desde el menú de aplicaciones o ejecutar `signa`. Para desinstalar: `sudo pacman -R signa`. No requiere AUR ni convertir paquetes DEB/RPM. La comprobación automatizada de instalación se realiza en Arch; la revisión visual en Omarchy queda pendiente del docente.
+**Arch Linux / Omarchy (x86_64):** descarga el paquete `.pkg.tar.zst` y ejecuta `sudo pacman -U ./SIGNA-1.6.0-archlinux-x64.pkg.tar.zst`. Incluye .NET y declara sus bibliotecas nativas, incluido XWayland para escritorios Wayland como Hyprland. Puedes abrir SIGNA desde el menú de aplicaciones o ejecutar `signa`. Para desinstalar: `sudo pacman -R signa`. No requiere AUR ni convertir paquetes DEB/RPM. La comprobación automatizada de instalación se realiza en Arch; la revisión visual en Omarchy queda pendiente del docente. También puedes utilizar la AppImage x64 si prefieres la actualización integrada.
 
 Lee [las instrucciones completas](eng/INSTALL.md) y compara los hashes con `SHA256SUMS.txt` de la Release. **Esta distribución no tiene firma oficial de Windows ni certificado Apple Developer ID/notarización:** pueden aparecer advertencias de seguridad. La firma ad hoc de macOS comprueba integridad, sin acreditar al desarrollador. No se necesita desactivar las protecciones globales del equipo.
 
 ## Qué permite hacer
 
-**Actualización 1.6.0 — implementada en el código, pendiente de publicar sus instaladores:**
+**Actualización 1.6.0 — disponible en Releases:**
 
 - Comprobación de versiones estables en segundo plano al iniciar, sin impedir trabajar sin internet, y opción **Buscar actualizaciones** en el menú lateral.
 - Aviso con versión actual y nueva; **Actualizar SIGNA** descarga, verifica, instala y reinicia, con progreso, cancelación antes del reinicio y posibilidad de reintentar si falla.
 - Protección de SQLite, preferencias y respaldos: verifica integridad, rechaza paquetes dañados y bloquea el reinicio ante cambios sin guardar, operaciones activas u otras instancias. No cambia las reglas académicas, el esquema ni la ubicación de los datos.
 - Instaladores preparados con Velopack para Windows y macOS; nueva edición AppImage actualizable para Linux, conservando DEB, RPM y Arch/Omarchy bajo sus gestores de paquetes.
 
-Las instalaciones hasta 1.5.0 requieren instalar una vez la nueva edición para recibir actualizaciones internas posteriores. Los instaladores disponibles en Releases siguen siendo los de 1.5.0 hasta publicar 1.6.0. Consulta [el procedimiento, la arquitectura y la protección de datos](docs/ACTUALIZACIONES.md), el [historial de cambios](CHANGELOG.md) y las [notas preparadas de la actualización](eng/RELEASE.md).
+Las instalaciones hasta 1.5.0 requieren instalar una vez la nueva edición para recibir actualizaciones internas posteriores. Descarga la edición de tu sistema en [SIGNA 1.6.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.0). Consulta [el procedimiento, la arquitectura y la protección de datos](docs/ACTUALIZACIONES.md), el [historial de cambios](CHANGELOG.md) y las [notas de la actualización](eng/RELEASE.md).
 
 Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas utilizar SIGNA.
 
@@ -275,7 +276,7 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 | Infrastructure | Persistencia en SQLite temporal, conflictos de revisión, integridad, Excel, PDF y respaldos/restauración. |
 | Acceptance | ViewModels y controles Avalonia con Headless: navegación, formularios, tablas, selección y actualización de métricas. |
 
-La validación de 1.6.0 aprobó **427 pruebas de la aplicación y 6 pruebas de empaquetado**, con compilación Release sin errores ni advertencias. Incluye fallos de red, cancelación, caché corrupta, datos SQLite ficticios con WAL, conservación de notas y preferencias, y presentación Avalonia Headless. Se generó y verificó localmente el instalador Velopack Windows; la ejecución del empaquetado nativo de macOS/Linux y el ciclo real de instalación/reinicio quedan pendientes de la publicación y las pruebas manuales en cada plataforma. Una compilación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
+La validación de 1.6.0 aprobó **427 pruebas de la aplicación en cada uno de los cinco sistemas/arquitecturas y 6 pruebas de empaquetado**, con compilaciones Release correctas. Incluye fallos de red, cancelación, caché corrupta, datos SQLite ficticios con WAL, conservación de notas y preferencias, y presentación Avalonia Headless. El workflow generó los diez instaladores/distribuciones y los cinco canales de actualización en sistemas nativos, comprobó instalación/desinstalación en Windows y Arch, paquetes Linux, bundles macOS y hashes antes de publicar. El ciclo real de actualización y reinicio entre versiones instaladas y la revisión del escritorio corresponden a las pruebas manuales del docente. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
 
 ## Contribuir y gestionar cambios
 

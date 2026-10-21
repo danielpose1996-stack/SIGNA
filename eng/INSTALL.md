@@ -1,6 +1,6 @@
 # Instalar SIGNA
 
-Instrucciones de la edición **1.6.0 en preparación**. Solo estará disponible después de publicar su Release. Las instalaciones hasta 1.5.0 requieren instalar una vez esta edición para activar Velopack; luego podrán actualizar desde SIGNA. Consulta [el procedimiento completo](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
+Instrucciones de la edición **1.6.0**. Las instalaciones hasta 1.5.0 requieren instalar una vez esta edición para activar Velopack; luego podrán actualizar desde SIGNA. Consulta [el procedimiento completo](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
 
 Descarga el archivo de tu sistema desde https://github.com/danielpose1996-stack/SIGNA/releases. Los paquetes incluyen .NET: no se necesita instalar el SDK. Conserva una copia cifrada de tus datos antes de actualizar.
 
