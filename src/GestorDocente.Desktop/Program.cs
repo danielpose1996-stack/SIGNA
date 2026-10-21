@@ -1,12 +1,14 @@
 using System.Globalization;
 using Avalonia;
 using GestorDocente.Application;
+using Velopack;
 namespace GestorDocente.Desktop;
 internal static class Program
 {
     [STAThread]
     public static void Main(string[] args)
     {
+        VelopackApp.Build().SetAutoApplyOnStartup(false).Run();
         CultureInfo.DefaultThreadCurrentCulture=CultureInfo.GetCultureInfo("es-CO");
         CultureInfo.DefaultThreadCurrentUICulture=CultureInfo.GetCultureInfo("es");
         if(args.Length==1 && args[0]=="--version")

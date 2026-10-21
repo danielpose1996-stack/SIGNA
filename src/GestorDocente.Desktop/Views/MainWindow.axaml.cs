@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using GestorDocente.Application;
 using GestorDocente.Domain;
@@ -11,16 +12,18 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();
-        Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();};
-        Closed+=(_,_)=>observed?.Dashboard.Suspend();
+        Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();if(observed is {} model)_=model.Updates.CheckAsync(automatic:true);};
+        Closed+=(_,_)=>{observed?.Dashboard.Suspend();observed?.Updates.Cancel();};
     }
     private void Attach()
     {
+        if(observed is not null){observed.UpdatesRequested-=OpenUpdates;observed.Updates.RestartRequested-=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;}
         observed=DataContext as MainViewModel;
+        if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
@@ -30,6 +33,22 @@ public partial class MainWindow : Window
     private void OnModelPropertyChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
     {
         if(e.PropertyName==nameof(MainViewModel.Section))MinWidth=observed?.IsCourses==true ? 780 : 1100;
+    }
+    private async void OpenUpdates()
+    {
+        if(observed is not {} model || model.FileBusy)return;
+        try
+        {
+            _=model.Updates.CheckAsync();
+            await ShowAcademicDialog(new UpdatesWindow{DataContext=model.Updates});
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
+    private static void RestartAfterUpdate()
+    {
+        if(Avalonia.Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            throw new AcademicValidationException("No se pudo cerrar SIGNA de forma segura para reiniciar. Intenta de nuevo desde la aplicación instalada.");
+        desktop.Shutdown();
     }
     private async void OpenConfiguration()
     {

@@ -38,6 +38,12 @@
           "SkiaSharp": "2.88.9"
         }
       },
+      "Velopack": {
+        "type": "Direct",
+        "requested": "[1.2.161, )",
+        "resolved": "1.2.161",
+        "contentHash": "OpHNacIumnkhaaX3ZlQ/TCR4YPOJvud2/PAOoWb6o+mIrLwIVA275I5wAgt4q/1O2VrJeDwR1qFQyqzG4lUArg=="
+      },
       "Microsoft.Data.Sqlite.Core": {
         "type": "Transitive",
         "resolved": "10.0.12",
@@ -86,7 +92,7 @@
       "gestordocente.application": {
         "type": "Project",
         "dependencies": {
-          "GestorDocente.Domain": "[1.4.0, )"
+          "GestorDocente.Domain": "[1.6.0, )"
         }
       },
       "gestordocente.domain": {

@@ -33,6 +33,15 @@ Lee [las instrucciones completas](eng/INSTALL.md) y compara los hashes con `SHA2
 
 ## Qué permite hacer
 
+**Actualización 1.6.0 — implementada en el código, pendiente de publicar sus instaladores:**
+
+- Comprobación de versiones estables en segundo plano al iniciar, sin impedir trabajar sin internet, y opción **Buscar actualizaciones** en el menú lateral.
+- Aviso con versión actual y nueva; **Actualizar SIGNA** descarga, verifica, instala y reinicia, con progreso, cancelación antes del reinicio y posibilidad de reintentar si falla.
+- Protección de SQLite, preferencias y respaldos: verifica integridad, rechaza paquetes dañados y bloquea el reinicio ante cambios sin guardar, operaciones activas u otras instancias. No cambia las reglas académicas, el esquema ni la ubicación de los datos.
+- Instaladores preparados con Velopack para Windows y macOS; nueva edición AppImage actualizable para Linux, conservando DEB, RPM y Arch/Omarchy bajo sus gestores de paquetes.
+
+Las instalaciones hasta 1.5.0 requieren instalar una vez la nueva edición para recibir actualizaciones internas posteriores. Los instaladores disponibles en Releases siguen siendo los de 1.5.0 hasta publicar 1.6.0. Consulta [el procedimiento, la arquitectura y la protección de datos](docs/ACTUALIZACIONES.md), el [historial de cambios](CHANGELOG.md) y las [notas preparadas de la actualización](eng/RELEASE.md).
+
 Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas utilizar SIGNA.
 
 | Módulo | Funciones actuales |
@@ -218,6 +227,8 @@ dotnet publish src/GestorDocente.Desktop -c Release -r win-x64 --self-contained 
 
 El ejecutable queda en `src/GestorDocente.Desktop/bin/Release/net10.0/win-x64/publish/GestorDocente.Desktop.exe`. Distribuye toda la carpeta `publish`. Si Windows conserva un icono antiguo, comprueba primero este ejecutable nuevo y vuelve a crear o anclar su acceso directo; no hace falta cambiar datos ni configuración del programa.
 
+Estos comandos `dotnet publish` generan binarios de desarrollo/distribución manual, sin preparar un instalador actualizable. Para la distribución con Velopack usa `eng/package-windows.ps1`, `eng/package-linux.sh` o `eng/package-macos.sh` en su sistema nativo, o el workflow de Release. Los paquetes y sus canales se describen en [Actualizaciones](docs/ACTUALIZACIONES.md).
+
 Publicar para macOS Apple Silicon (usa `osx-x64` para Mac Intel):
 
 ```sh
@@ -264,7 +275,7 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 | Infrastructure | Persistencia en SQLite temporal, conflictos de revisión, integridad, Excel, PDF y respaldos/restauración. |
 | Acceptance | ViewModels y controles Avalonia con Headless: navegación, formularios, tablas, selección y actualización de métricas. |
 
-La última validación automatizada del código aprobó **262 pruebas**, con compilación Release sin errores ni advertencias. Durante el desarrollo se comprobaron publicaciones para Windows, macOS Apple Silicon y Linux x64/ARM64, además de la integridad de los recursos del icono. Una publicación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real: la validación manual de cada plataforma corresponde a quienes la ejecuten allí. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
+La validación de 1.6.0 aprobó **427 pruebas de la aplicación y 6 pruebas de empaquetado**, con compilación Release sin errores ni advertencias. Incluye fallos de red, cancelación, caché corrupta, datos SQLite ficticios con WAL, conservación de notas y preferencias, y presentación Avalonia Headless. Se generó y verificó localmente el instalador Velopack Windows; la ejecución del empaquetado nativo de macOS/Linux y el ciclo real de instalación/reinicio quedan pendientes de la publicación y las pruebas manuales en cada plataforma. Una compilación correcta y las pruebas Headless no sustituyen comprobar la aplicación en un escritorio real. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
 
 ## Contribuir y gestionar cambios
 

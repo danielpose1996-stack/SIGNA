@@ -1,5 +1,14 @@
 # Historial de cambios de SIGNA
 
+## 1.6.0 — En preparación, sin publicar
+
+- Actualizaciones estables mediante Velopack 1.2.161 y GitHub Releases oficiales. Comprobación al abrir sin bloquear el trabajo offline, búsqueda manual, aviso con ambas versiones y descarga por acción del docente con progreso/cancelación, instalación y reinicio controlado.
+- Verificación de tamaño/SHA-256 después de descargar y antes del reinicio, incluida la caché existente. Versiones/canales por sistema y arquitectura, sin versiones preliminares ni downgrade; errores y reintento sin cerrar SIGNA.
+- Guardas ante guardados, notas pendientes, otra instancia, rutas inseguras o SQLite inválido. Conserva ubicación y esquema de SQLite, preferencias y respaldos locales cifrados; no se incluyen datos personales en los paquetes.
+- Windows Setup preparado por Velopack, DMG macOS con helper/manifiesto y AppImage Linux actualizable. Conserva DEB, RPM y el paquete Arch/Omarchy, administrados mediante sus gestores. Feeds/paquetes completos y validación de integridad antes de publicar.
+
+Las versiones hasta 1.5.0 necesitan instalar una vez la edición nueva para recibir actualizaciones internas. En Linux esa función usa AppImage. [Procedimiento, alcance y limitaciones](docs/ACTUALIZACIONES.md). Sin certificados nuevos de firma. La publicación y las comprobaciones manuales del ciclo real siguen pendientes.
+
 ## 1.5.0 — 21 de octubre de 2026
 
 - Nuevo paquete nativo para Arch Linux y Omarchy x86_64, instalable con Pacman, con .NET incluido, icono oficial, acceso del menú y dependencias X11/XWayland. Construcción con makepkg y comprobación de instalación/desinstalación en contenedor oficial Arch, conservando datos de usuario.

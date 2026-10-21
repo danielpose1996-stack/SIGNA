@@ -37,6 +37,8 @@ Thumbs.db
 .demo-data/
 artifacts/logs/
 artifacts/packages/
+/artifacts/velopack-preview-*/
+/.artifacts/
 __pycache__/
 *.pyc
 
@@ -92,6 +94,7 @@ artifacts/test-results/
 /.specify/
 /specs/
 /docs/*
+!/docs/ACTUALIZACIONES.md
 !/docs/manuales/
 /docs/manuales/*
 !/docs/manuales/Manual_de_Usuario_SIGNA.pdf

@@ -47,19 +47,21 @@ public partial class App : Avalonia.Application
         base.OnFrameworkInitializationCompleted();
     }
     internal static async Task<MainViewModel> CreateProductionViewModelAsync()=>CreateProductionViewModel(await Task.Run(LoadProductionServices));
-    private sealed record ProductionServices(CatalogService Catalog,EncryptedLocalBackupService Backup,InterfacePreferencesService Preferences);
+    private sealed record ProductionServices(CatalogService Catalog,EncryptedLocalBackupService Backup,InterfacePreferencesService Preferences,IApplicationUpdater Updater,IUpdateSafetyCheck UpdateSafety);
     private static ProductionServices LoadProductionServices()
     {
         var path=ProductionDatabasePath();
         var catalog=new CatalogService(new SqliteCatalogStore(path));
         var backup=new EncryptedLocalBackupService(path);
         var preferences=new InterfacePreferencesService(new SqliteInterfacePreferencesStore(path));
-        return new(catalog,backup,preferences);
+        var updater=new VelopackApplicationUpdater(typeof(App).Assembly.GetName().Version!.ToString(3));
+        var safety=new SqliteUpdateSafetyCheck(path,()=>Velopack.Locators.VelopackLocator.Current.RootAppDir);
+        return new(catalog,backup,preferences,updater,safety);
     }
     private static MainViewModel CreateProductionViewModel(ProductionServices services)
     {
         if(Current is {} app)InterfaceTheme.Apply(app,services.Preferences.Current);
-        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),services.Catalog,new ExcelStudentReader(),new XlsxReportExporter(),services.Backup,new AttendancePdfExporter(),services.Preferences,new NotesPdfExporter());
+        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),services.Catalog,new ExcelStudentReader(),new XlsxReportExporter(),services.Backup,new AttendancePdfExporter(),services.Preferences,new NotesPdfExporter(),services.Updater,services.UpdateSafety);
     }
     private static string StartupError(Exception ex)=>ex is Domain.AcademicValidationException ? ex.Message : $"No se pudo abrir el almacenamiento local ({SafeErrorCode.From(ex)}). Revisa permisos y espacio disponible. Los datos no se reemplazaron.";
     internal static string ProductionDatabasePath()

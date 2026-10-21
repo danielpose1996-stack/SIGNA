@@ -19,6 +19,9 @@ public sealed class MainViewModel : ObservableObject
     public INotesPdfExporter? NotesPdfExporter {get;}
     public ILocalBackupService? LocalBackup {get;}
     public AppearanceViewModel Appearance{get;}
+    public UpdatesViewModel Updates{get;}
+    public RelayCommand UpdatesCommand{get;}
+    public event Action? UpdatesRequested;
     public RelayCommand PersonalizeCommand{get;}
     public event Action? AppearanceRequested;
     private readonly Dictionary<string,(int Cut,string Page,string Search,string? Student)> courseStates=[];
@@ -72,7 +75,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
@@ -207,7 +210,7 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand ConfigureCommand {get;}
     public string? ConfigurationGroupId {get;private set;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null)
     {
         Service=service;
         searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
@@ -215,6 +218,8 @@ public sealed class MainViewModel : ObservableObject
         PasteGradesCommand=new(value=>{FlushSearch();if(value is string id && GradeRows.Count>0 && !FileBusy && !Service.IsSaving)GradePasteRequested?.Invoke(id);},_=>HasOpenCourse && GradeRows.Count>0 && !FileBusy && !Service.IsSaving);
         ConfigureAttendanceGradingCommand=new(_=>AttendanceGradingRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
+        Updates=new(updater,updateSafety,BeginUpdateMaintenance);
+        UpdatesCommand=new(_=>UpdatesRequested?.Invoke(),_=>!FileBusy);
         PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
         Catalog=catalog;
         WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;AttendancePdfExporter=attendancePdfExporter;NotesPdfExporter=notesPdfExporter;
@@ -377,6 +382,15 @@ public sealed class MainViewModel : ObservableObject
         SaveStatus="Guardado confirmado · actualización de pantalla fallida";
         Message=error.Message;
     }
+    private IDisposable BeginUpdateMaintenance()
+    {
+        if(FileBusy || Service.IsSaving)throw new AcademicValidationException("Espera a que termine la operación o el guardado antes de actualizar SIGNA.");
+        if(allGradeRows.Any(r=>r.HasPendingEdits) || allAttendanceRows.Any(r=>r.HasPendingEdits))
+            throw new AcademicValidationException("Hay notas o asistencias pendientes de guardar. Revísalas y guárdalas antes de actualizar SIGNA.");
+        FileBusy=true;
+        return new UpdateMaintenance(()=>FileBusy=false);
+    }
+    private sealed class UpdateMaintenance(Action release):IDisposable{public void Dispose()=>release();}
     public async Task CopyCourseParametersAsync(CourseSummary course)
     {
         if(Catalog is null || !course.CanDelete || FileBusy || Service.IsSaving)return;
@@ -510,7 +524,7 @@ public sealed class MainViewModel : ObservableObject
         if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
         foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);
         SaveStatus="Materia abierta · datos guardados en este equipo";
-        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();
+        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();
     }
     private async Task ReloadCourseAsync()
     {

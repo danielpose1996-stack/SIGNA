@@ -240,7 +240,7 @@
       "gestordocente.application": {
         "type": "Project",
         "dependencies": {
-          "GestorDocente.Domain": "[1.4.0, )"
+          "GestorDocente.Domain": "[1.6.0, )"
         }
       },
       "gestordocente.desktop": {
@@ -250,8 +250,8 @@
           "Avalonia.Controls.DataGrid": "[11.3.13, )",
           "Avalonia.Desktop": "[11.3.13, )",
           "Avalonia.Themes.Fluent": "[11.3.13, )",
-          "GestorDocente.Application": "[1.4.0, )",
-          "GestorDocente.Infrastructure": "[1.4.0, )",
+          "GestorDocente.Application": "[1.6.0, )",
+          "GestorDocente.Infrastructure": "[1.6.0, )",
           "Tmds.DBus.Protocol": "[0.21.3, )"
         }
       },
@@ -262,10 +262,11 @@
         "type": "Project",
         "dependencies": {
           "ExcelDataReader": "[3.9.0, )",
-          "GestorDocente.Application": "[1.4.0, )",
+          "GestorDocente.Application": "[1.6.0, )",
           "Microsoft.Data.Sqlite": "[10.0.12, )",
           "SkiaSharp": "[2.88.9, )",
-          "SkiaSharp.NativeAssets.Linux": "[2.88.9, )"
+          "SkiaSharp.NativeAssets.Linux": "[2.88.9, )",
+          "Velopack": "[1.2.161, )"
         }
       },
       "Avalonia": {
@@ -351,6 +352,12 @@
         "requested": "[0.21.3, )",
         "resolved": "0.21.3",
         "contentHash": "hDwB8WsQoyALQKqIbwzS68UKdlnafDm4T/DkO/JrA/YIneP/rKv96SxYPVXeh3FP4i/SXfShrYftKLtciJAIlw=="
+      },
+      "Velopack": {
+        "type": "CentralTransitive",
+        "requested": "[1.2.161, )",
+        "resolved": "1.2.161",
+        "contentHash": "OpHNacIumnkhaaX3ZlQ/TCR4YPOJvud2/PAOoWb6o+mIrLwIVA275I5wAgt4q/1O2VrJeDwR1qFQyqzG4lUArg=="
       }
     }
   }

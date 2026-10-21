@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.UpdatesWindow" Title="SIGNA · Actualizaciones" Width="620" Height="500" MinWidth="460" MinHeight="380" WindowStartupLocation="CenterOwner">
+  <Grid Margin="24" RowDefinitions="Auto,*,Auto">
+    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,18"><c:VectorIcon Kind="restore" Width="28" Height="28" /><StackPanel Spacing="4"><TextBlock Text="Actualizaciones de SIGNA" FontSize="21" FontWeight="SemiBold" /><TextBlock Text="Versiones estables del repositorio oficial" Classes="muted" FontSize="12" /></StackPanel></StackPanel>
+    <ScrollViewer Grid.Row="1"><StackPanel Spacing="16">
+      <Border Classes="card" Background="{DynamicResource Soft}"><Grid ColumnDefinitions="*,*">
+        <StackPanel Spacing="5"><TextBlock Text="Versión actual" Classes="muted" FontSize="12" /><TextBlock Text="{Binding CurrentVersion}" FontSize="22" FontWeight="SemiBold" /></StackPanel>
+        <StackPanel Grid.Column="1" Spacing="5"><TextBlock Text="Nueva versión" Classes="muted" FontSize="12" /><TextBlock Text="{Binding AvailableVersion}" FontSize="22" FontWeight="SemiBold" /></StackPanel>
+      </Grid></Border>
+      <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+      <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="100" IsVisible="{Binding IsInstalling}" Height="8" />
+      <TextBlock Text="{Binding CompatibilityMessage}" Classes="muted" TextWrapping="Wrap" FontSize="12" IsVisible="{Binding CompatibilityMessage,Converter={StaticResource HasText}}" />
+      <TextBlock Text="La actualización reemplaza los archivos del programa. Tus materias, estudiantes, notas, asistencias, preferencias y respaldos conservan su ubicación. Guarda tus cambios antes de actualizar." Classes="muted" FontSize="12" TextWrapping="Wrap" />
+      <Button Content="Abrir página oficial de descargas" Classes="quiet" HorizontalAlignment="Left" Click="OpenDownloads" />
+    </StackPanel></ScrollViewer>
+    <WrapPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+      <Button Content="Cancelar operación" Command="{Binding CancelCommand}" IsVisible="{Binding CanCancel}" Margin="0,0,8,6" />
+      <Button Content="Buscar actualizaciones" Command="{Binding CheckCommand}" Margin="0,0,8,6" />
+      <Button Content="Actualizar SIGNA" Classes="primary" Command="{Binding InstallCommand}" Margin="0,0,0,6" />
+    </WrapPanel>
+  </Grid>
+</Window>

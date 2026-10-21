@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.5.0};rid=${2:-osx-arm64}
+version=${1:-1.6.0};rid=${2:-osx-arm64}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
 case "$rid" in osx-x64|osx-arm64) ;; *) exit 1;; esac
 repo=$(cd -- "$(dirname -- "$0")/.." && pwd);cd "$repo"
@@ -27,7 +27,20 @@ codesign --force --sign - --entitlements eng/macos.entitlements "$bundle"
 codesign --verify --deep --strict "$bundle"
 python3 eng/verify-macos.py "$bundle" "$rid" "$version"
 "$bundle/Contents/MacOS/GestorDocente.Desktop" --version | grep -F "SIGNA $version"
-ditto "$bundle" "$stage/SIGNA.app"
+# El DMG debe contener el bundle aumentado por Velopack (helper y manifiesto).
+velopack="$base/velopack"
+dotnet tool restore
+dotnet tool run vpk -- --skip-updates --yes pack --packId SIGNA --packVersion "$version" --packDir "$bundle" --mainExe GestorDocente.Desktop --runtime "$rid" --channel "$rid" --packTitle SIGNA --packAuthors SIGNA --icon src/GestorDocente.Desktop/Assets/Branding/SIGNA_icono_macos.icns --signAppIdentity - --signEntitlements "$repo/eng/macos.entitlements" --noInst --outputDir "$velopack"
+python3 eng/collect-velopack.py "$velopack" "$release" "$rid" "$version"
+shopt -s nullglob
+portable=("$velopack/"*-Portable.zip)
+[[ ${#portable[@]} -eq 1 ]] || { echo 'Se esperaba un único ZIP portable Velopack' >&2; exit 1; }
+ditto -x -k "${portable[0]}" "$stage"
+test -x "$stage/SIGNA.app/Contents/MacOS/UpdateMac"
+test -f "$stage/SIGNA.app/Contents/MacOS/sq.version"
+python3 eng/verify-macos.py "$stage/SIGNA.app" "$rid" "$version"
+codesign --verify --deep --strict "$stage/SIGNA.app"
+"$stage/SIGNA.app/Contents/MacOS/GestorDocente.Desktop" --version | grep -F "SIGNA $version"
 ln -s /Applications "$stage/Applications"
 cp LICENSE "$stage/LICENCIA.txt"
 cp eng/INSTALL-macos.txt "$stage/INSTALAR.txt"

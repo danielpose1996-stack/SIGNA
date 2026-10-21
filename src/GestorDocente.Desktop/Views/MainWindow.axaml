@@ -1,6 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:v="using:GestorDocente.Desktop.Views" xmlns:identity="clr-namespace:GestorDocente.Application;assembly=GestorDocente.Application" x:Class="GestorDocente.Desktop.Views.MainWindow" Title="{x:Static identity:ProductIdentity.WindowTitle}" Width="1580" Height="960" MinWidth="1100" MinHeight="700" WindowStartupLocation="CenterScreen">
-  <Grid>
-    <Grid ColumnDefinitions="236,*">
+  <Grid RowDefinitions="Auto,*">
+    <Border Background="{DynamicResource Soft}" Padding="18,10" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" IsVisible="{Binding Updates.ShowNotification}">
+      <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock Text="{Binding Updates.Notification}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Actualizar SIGNA" Classes="primary" Command="{Binding UpdatesCommand}" Margin="12,0,8,0" /><Button Grid.Column="2" Content="Más tarde" Classes="quiet" Command="{Binding Updates.DismissCommand}" /></Grid>
+    </Border>
+    <Grid Grid.Row="1" ColumnDefinitions="236,*" IsEnabled="{Binding Updates.CanUseApplication}">
       <Border Background="{DynamicResource Sidebar}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,*,Auto" Margin="14,28,14,20">
           <StackPanel Margin="18,0,0,28" Spacing="3">
@@ -14,6 +17,7 @@
             <Button x:Name="BackupsNavigation" Classes="nav" Classes.active="{Binding IsBackups}" Command="{Binding NavigateCommand}" CommandParameter="Respaldos"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="backup" Width="23" Height="23" /><TextBlock Text="Respaldos" VerticalAlignment="Center" /></StackPanel></Button>
           </StackPanel>
           <StackPanel Grid.Row="2" Spacing="8">
+            <Button Content="Buscar actualizaciones" Classes="quiet" Command="{Binding UpdatesCommand}" FontSize="12" HorizontalAlignment="Stretch" AutomationProperties.Name="Buscar actualizaciones de SIGNA" />
             <Button x:Name="ProfileAppearanceButton" Classes="quiet" Command="{Binding PersonalizeCommand}" Padding="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" ToolTip.Tip="Personalizar nombre, colores e icono del perfil" AutomationProperties.Name="Personalizar apariencia"><Grid ColumnDefinitions="44,*"><Border Width="42" Height="42" CornerRadius="21" Background="{DynamicResource PrimaryDark}"><c:VectorIcon x:Name="ProfileAvatarIcon" Kind="{Binding Appearance.CurrentAvatarKind}" Stroke="White" Width="22" Height="22" /></Border><StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock x:Name="TeacherProfileName" Text="{Binding Appearance.CurrentTeacherName}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" /><TextBlock Text="Personalizar apariencia" Classes="muted" FontSize="11" /></StackPanel></Grid></Button>
             <TextBlock Text="Apariencia predeterminada: revisar" Classes="error" FontSize="11" TextWrapping="Wrap" ToolTip.Tip="{Binding Appearance.Warning}" IsVisible="{Binding Appearance.Warning,Converter={StaticResource HasText}}" />
           </StackPanel>
@@ -47,6 +51,6 @@
         <Border Grid.Row="6" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="20,0"><Grid ColumnDefinitions="Auto,*"><TextBlock Text="{Binding StorageLabel}" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AccentText}" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="{Binding SaveStatus}" Classes="muted" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid></Border>
       </Grid>
     </Grid>
-    <Border x:Name="ModalOverlay" Background="{DynamicResource Overlay}" IsVisible="False" />
+    <Border x:Name="ModalOverlay" Grid.RowSpan="2" Background="{DynamicResource Overlay}" IsVisible="False" />
   </Grid>
 </Window>

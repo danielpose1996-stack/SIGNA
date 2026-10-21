@@ -23,6 +23,9 @@ public sealed class GradeCellViewModel : ObservableObject
     public string Error {get=>error;private set=>Set(ref error,value);}
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
     public bool CanEdit=>!IsSaving;
+    public bool HasPendingInput=>Input!=(originalValue?.ToString("0.00",AcademicFormatting.Culture) ?? "") &&
+        (string.IsNullOrWhiteSpace(Input) ? originalValue is not null :
+        !AcademicFormatting.TryDecimal(Input,out var value) || value is <0 or >5 || value!=originalValue);
     public GradeCellViewModel(WorkspaceService service,int cut,string studentId,string targetId,AcademicCutReadIndex? index=null)
     {
         this.service=service;this.cut=cut;this.studentId=studentId;activityId=targetId;
@@ -80,6 +83,7 @@ public sealed class GradeRowViewModel
     public string FullName=>Student.FullName;
     private readonly Lazy<Dictionary<string,GradeCellViewModel>> cells;
     public Dictionary<string,GradeCellViewModel> Cells=>cells.Value;
+    public bool HasPendingEdits=>cells.IsValueCreated && cells.Value.Values.Any(c=>c.IsSaving || c.HasPendingInput);
     public string Total {get;}
     public decimal? TotalValue {get;}
     public string Completion {get;}
@@ -137,6 +141,7 @@ public sealed class AttendanceRowViewModel
     public string FullName=>Student.FullName;
     private readonly Lazy<Dictionary<int,AttendanceCellViewModel>> cells;
     public Dictionary<int,AttendanceCellViewModel> Cells=>cells.Value;
+    public bool HasPendingEdits=>cells.IsValueCreated && cells.Value.Values.Any(c=>c.IsSaving || c.Error.Length>0);
     public AttendanceSummary Summary {get;}
     public string Total=>$"{Summary.Attended} / {Summary.Evaluable}";
     public string Percentage=>AttendanceFormatting.Percentage(Summary.Percentage);

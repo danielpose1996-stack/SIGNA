@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.5.0}
+version=${1:-1.6.0}
 rid=${2:-linux-x64}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Versión inválida' >&2; exit 1; }
 case "$rid" in linux-x64) deb_arch=amd64; rpm_arch=x86_64;; linux-arm64) deb_arch=arm64; rpm_arch=aarch64;; *) exit 1;; esac
@@ -13,6 +13,23 @@ release="$repo/artifacts/packages/release"
 mkdir -p "$release" "$stage/usr/lib/signa" "$stage/usr/bin" "$stage/usr/share/applications" "$stage/usr/share/icons/hicolor/512x512/apps" "$stage/usr/share/pixmaps" "$stage/usr/share/doc/signa"
 dotnet publish src/GestorDocente.Desktop -c Release -r "$rid" --self-contained true -p:UseAppHost=true "-p:Version=$version" -p:NuGetLockFilePath=obj/release.packages.lock.json -o "$publish"
 python3 eng/copy-licenses.py "$publish" "$rid"
+# AppImage actualizable; los paquetes nativos siguientes siguen bajo su gestor.
+velopack="$repo/artifacts/packages/velopack/$rid"
+dotnet tool restore
+dotnet tool run vpk -- --skip-updates --yes pack --packId SIGNA --packVersion "$version" --packDir "$publish" --mainExe GestorDocente.Desktop --runtime "$rid" --channel "$rid" --packTitle SIGNA --packAuthors SIGNA --icon src/GestorDocente.Desktop/Assets/Branding/SIGNA_icono_512.png --categories Education --outputDir "$velopack"
+python3 eng/collect-velopack.py "$velopack" "$release" "$rid" "$version"
+shopt -s nullglob
+images=("$velopack/"*.AppImage)
+[[ ${#images[@]} -eq 1 ]] || { echo 'Se esperaba una única AppImage' >&2; exit 1; }
+cp "${images[0]}" "$release/SIGNA-$version-$rid.AppImage"
+chmod +x "$release/SIGNA-$version-$rid.AppImage"
+# Extraer solo en el runner efímero evita exigir FUSE o un escritorio activo.
+mkdir -p "$velopack/probe"
+(cd "$velopack/probe"; "$release/SIGNA-$version-$rid.AppImage" --appimage-extract >/dev/null)
+appdir="$velopack/probe/squashfs-root"
+test -x "$appdir/usr/bin/UpdateNix"
+test -f "$appdir/usr/bin/sq.version"
+APPIMAGE="$release/SIGNA-$version-$rid.AppImage" "$appdir/AppRun" --version | grep -F "SIGNA $version"
 cp -a "$publish/." "$stage/usr/lib/signa/"
 find "$stage" -type d -exec chmod 755 {} +
 find "$stage" -type f -exec chmod 644 {} +

@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.5.0}
+version=${1:-1.6.0}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
 repo=$(cd -- "$(dirname -- "$0")/.." && pwd)
 stage="$repo/artifacts/packages/staging/linux-x64"
