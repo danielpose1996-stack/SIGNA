@@ -34,7 +34,9 @@ printf 'datos ficticios conservados\n' > "$data/prueba-empaquetado.txt"
 pacman -U --noconfirm "$package"
 pacman -Qk signa
 test -x /usr/bin/signa && test -x /usr/lib/signa/GestorDocente.Desktop
-/usr/bin/signa --version | grep -Fx "SIGNA $version"
+installed_version=$(/usr/bin/signa --version)
+printf 'Versión instalada: %s\n' "$installed_version"
+[[ "$installed_version" == "SIGNA $version.0" ]]
 cmp /payload/usr/share/pixmaps/signa.png /usr/share/pixmaps/signa.png
 test -f /usr/share/licenses/signa/LICENSE
 test -f /usr/share/applications/signa.desktop
