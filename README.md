@@ -21,10 +21,13 @@ Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielp
 | Windows x64 | `SIGNA-1.5.0-windows-x64-setup.exe` |
 | Ubuntu/Debian x64 o ARM64 | `SIGNA-1.5.0-linux-x64.deb` o `SIGNA-1.5.0-linux-arm64.deb` |
 | Fedora y derivados x64 o ARM64 | `SIGNA-1.5.0-linux-x64.rpm` o `SIGNA-1.5.0-linux-arm64.rpm` |
+| Arch Linux / Omarchy x64 | `SIGNA-1.5.0-archlinux-x64.pkg.tar.zst` |
 | macOS 15 o posterior, Intel | `SIGNA-1.5.0-osx-x64.dmg` |
 | macOS 15 o posterior, Apple Silicon | `SIGNA-1.5.0-osx-arm64.dmg` |
 
 Windows instala para tu usuario y ofrece un acceso de escritorio opcional. Linux instala la entrada SIGNA del menú de aplicaciones y sus archivos mediante el gestor de paquetes. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
+
+**Arch Linux / Omarchy (x86_64):** descarga el paquete `.pkg.tar.zst` y ejecuta `sudo pacman -U ./SIGNA-1.5.0-archlinux-x64.pkg.tar.zst`. Incluye .NET y declara sus bibliotecas nativas, incluido XWayland para escritorios Wayland como Hyprland. Puedes abrir SIGNA desde el menú de aplicaciones o ejecutar `signa`. Para desinstalar: `sudo pacman -R signa`. No requiere AUR ni convertir paquetes DEB/RPM. La comprobación automatizada de instalación se realiza en Arch; la revisión visual en Omarchy queda pendiente del docente.
 
 Lee [las instrucciones completas](eng/INSTALL.md) y compara los hashes con `SHA256SUMS.txt` de la Release. **Esta distribución no tiene firma oficial de Windows ni certificado Apple Developer ID/notarización:** pueden aparecer advertencias de seguridad. La firma ad hoc de macOS comprueba integridad, sin acreditar al desarrollador. No se necesita desactivar las protecciones globales del equipo.
 

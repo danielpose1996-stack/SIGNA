@@ -66,6 +66,9 @@ jobs:
       - name: Crear y comprobar paquetes Linux
         if: runner.os == 'Linux'
         run: bash eng/package-linux.sh "$RELEASE_VERSION" "$RELEASE_RID"
+      - name: Crear y comprobar paquete Arch Linux y Omarchy
+        if: matrix.rid == 'linux-x64'
+        run: bash eng/package-arch.sh "$RELEASE_VERSION"
       - name: Crear y comprobar DMG macOS
         if: runner.os == 'macOS'
         run: bash eng/package-macos.sh "$RELEASE_VERSION" "$RELEASE_RID"
@@ -111,11 +114,12 @@ jobs:
             echo "La Release $tag ya existe; no se sobrescribe" >&2
             exit 1
           fi
+          python3 -m unittest discover -s eng/tests -p 'test_*.py'
           python3 eng/release-manifest.py artifacts/packages/release "$RELEASE_VERSION"
           cp eng/INSTALL.md artifacts/packages/release/INSTALACION.md
           gh release create "$tag" --target "$GITHUB_SHA" --title "SIGNA $RELEASE_VERSION" --notes-file eng/RELEASE.md --draft
           gh release upload "$tag" artifacts/packages/release/*
           gh release download "$tag" --dir artifacts/packages/verificar
           (cd artifacts/packages/verificar && sha256sum --check SHA256SUMS.txt)
-          test "$(gh release view "$tag" --json assets --jq '.assets | length')" -eq 9
+          test "$(gh release view "$tag" --json assets --jq '.assets | length')" -eq 10
           gh release edit "$tag" --draft=false --latest

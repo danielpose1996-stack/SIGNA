@@ -8,7 +8,6 @@ using GestorDocente.Application;
 using GestorDocente.Desktop.ViewModels;
 using GestorDocente.Desktop.Views;
 using GestorDocente.Domain;
-using GestorDocente.Infrastructure;
 using Xunit;
 
 namespace GestorDocente.Acceptance.Tests;
@@ -18,7 +17,7 @@ public class CourseParameterUiTests
     [AvaloniaFact]
     public async Task Copy_survives_semester_change_and_paste_is_optional_until_creating_the_new_course()
     {
-        using var fixture=new Fixture();var vm=fixture.Model;var source=fixture.Source;
+        var fixture=new Fixture();var vm=fixture.Model;var source=fixture.Source;
         await vm.CopyCourseParametersAsync(source);
         Assert.NotNull(vm.CopiedParameters);Assert.Contains(source.Name,vm.CopiedParametersSource);Assert.False(vm.FileBusy);
         await vm.Home.RefreshAsync();vm.Home.SelectedSemester=fixture.Destination;
@@ -40,7 +39,7 @@ public class CourseParameterUiTests
     [AvaloniaFact]
     public async Task Paste_can_be_cleared_and_cancelled_and_is_unavailable_during_edit_or_without_copy()
     {
-        using var fixture=new Fixture();await fixture.Model.CopyCourseParametersAsync(fixture.Source);
+        var fixture=new Fixture();await fixture.Model.CopyCourseParametersAsync(fixture.Source);
         var parameters=fixture.Model.CopiedParameters;
         var editor=new CatalogEditorViewModel(fixture.Catalog,fixture.Destination,false,availableParameters:parameters);
         editor.PasteParametersCommand.Execute(null);Assert.True(editor.HasPastedParameters);
@@ -60,7 +59,7 @@ public class CourseParameterUiTests
     [AvaloniaFact]
     public async Task Failed_copy_preserves_previous_snapshot_and_commands_block_simultaneous_operations()
     {
-        using var fixture=new Fixture();var vm=fixture.Model;await vm.CopyCourseParametersAsync(fixture.Source);
+        var fixture=new Fixture();var vm=fixture.Model;await vm.CopyCourseParametersAsync(fixture.Source);
         var parameters=vm.CopiedParameters;var label=vm.CopiedParametersSource;
         vm.FileBusy=true;Assert.False(vm.CopyCourseParametersCommand.CanExecute(fixture.Source));
         await vm.CopyCourseParametersAsync(fixture.Source);Assert.Same(parameters,vm.CopiedParameters);vm.FileBusy=false;
@@ -72,7 +71,7 @@ public class CourseParameterUiTests
     [AvaloniaFact]
     public async Task Copy_card_buttons_and_paste_preview_fit_resized_windows()
     {
-        using var fixture=new Fixture();var vm=fixture.Model;
+        var fixture=new Fixture();var vm=fixture.Model;
         for(var i=0;i<5;i++)fixture.Catalog.CreateCourse(fixture.SourceSemester.Id,$"F-{i}",$"Asignatura ficticia {i}","Escuela A","");
         await vm.Home.RefreshAsync();vm.Home.SelectedSemester=vm.Home.Semesters.Single(s=>s.Id==fixture.SourceSemester.Id);
         await vm.Home.RefreshAsync();
@@ -108,9 +107,8 @@ public class CourseParameterUiTests
         if(Environment.GetEnvironmentVariable("SIGNA_COPY_PREVIEW_DIR") is not {Length:>0} directory)return;
         Directory.CreateDirectory(directory);window.CaptureRenderedFrame()?.Save(Path.Combine(directory,file));
     }
-    private sealed class Fixture:IDisposable
+    private sealed class Fixture
     {
-        private readonly string directory=Path.Combine(Path.GetTempPath(),"signa-copy-ui-"+Guid.NewGuid().ToString("N"));
         public CatalogService Catalog{get;}
         public MainViewModel Model{get;}
         public AcademicSemester SourceSemester{get;}
@@ -118,13 +116,46 @@ public class CourseParameterUiTests
         public CourseSummary Source{get;}
         public Fixture()
         {
-            Directory.CreateDirectory(directory);Catalog=new(new SqliteCatalogStore(Path.Combine(directory,"catalog.db")));
+            Catalog=new(new PresentationCatalogStore());
             SourceSemester=Catalog.CreateSemester(2026,1);Destination=Catalog.CreateSemester(2027,1);
             var course=Catalog.CreateCourse(SourceSemester.Id,"ORI","Álgebra ficticia","Escuela A","A");var workspace=Catalog.Open(course.Id);
             workspace.ConfigureGroups(1,[new(){Name="Talleres",Weight=100}]);workspace.ImportStudents([new("F-1","Estudiante ficticio")]);
             Source=new(course.Name,course.Code,course.Group,SourceSemester.Name,1,false,course.Id,course.School);
             Model=new(workspace,Catalog);
         }
-        public void Dispose()=>Directory.Delete(directory,true);
+    }
+
+    // Presentation tests use detached in-memory snapshots. SQLite transactions and persistence
+    // have separate integration tests; asynchronous catalog notifications must not race a fixture's filesystem cleanup.
+    private sealed class PresentationCatalogStore:ICatalogStore
+    {
+        private readonly object gate=new();
+        private readonly List<AcademicSemester> semesters=[];
+        private readonly Dictionary<string,(CourseRecord Course,AcademicWorkspace Data)> courses=[];
+        public IReadOnlyList<AcademicSemester> Semesters(){lock(gate)return semesters.OrderByDescending(s=>s.Year).ThenByDescending(s=>s.Term).ToArray();}
+        public IReadOnlyList<CourseRecord> Courses(string id)
+        {
+            lock(gate)return courses.Values.Where(v=>v.Course.SemesterId==id)
+                .Select(v=>v.Course with {StudentCount=v.Data.Students.Count,CutCount=v.Data.Cuts.Count}).OrderBy(c=>c.Name).ToArray();
+        }
+        public void AddSemester(AcademicSemester semester){lock(gate)semesters.Add(semester);}
+        public void AddCourse(CourseRecord course,AcademicWorkspace data){lock(gate)courses.Add(course.Id,(course,WorkspaceService.Clone(data)));}
+        public IWorkspaceStore OpenCourse(string id)=>new PresentationWorkspaceStore(this,id);
+        public void UpdateCourse(CourseRecord original,CourseRecord updated)=>throw new NotSupportedException();
+        public void DeleteCourse(string id)=>throw new NotSupportedException();
+        public SemesterDeletionPreview InspectSemesterDeletion(string id)=>throw new NotSupportedException();
+        public void DeleteSemester(SemesterDeletionPreview preview)=>throw new NotSupportedException();
+        private sealed class PresentationWorkspaceStore(PresentationCatalogStore catalog,string id):IWorkspaceStore
+        {
+            public AcademicWorkspace? Load()
+            {
+                lock(catalog.gate)return catalog.courses.TryGetValue(id,out var value) ? WorkspaceService.Clone(value.Data) :
+                    throw new AcademicValidationException("La materia seleccionada no existe.");
+            }
+            public void Save(AcademicWorkspace data)
+            {
+                lock(catalog.gate){var original=catalog.courses[id];catalog.courses[id]=(original.Course,WorkspaceService.Clone(data));}
+            }
+        }
     }
 }

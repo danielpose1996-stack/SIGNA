@@ -9,6 +9,7 @@ Descarga el archivo de tu sistema desde https://github.com/danielpose1996-stack/
 | Ubuntu/Debian ARM64 | `SIGNA-1.5.0-linux-arm64.deb` |
 | Fedora y derivados x64 | `SIGNA-1.5.0-linux-x64.rpm` |
 | Fedora y derivados ARM64 | `SIGNA-1.5.0-linux-arm64.rpm` |
+| Arch Linux / Omarchy x64 | `SIGNA-1.5.0-archlinux-x64.pkg.tar.zst` |
 | Mac Intel | `SIGNA-1.5.0-osx-x64.dmg` |
 | Mac Apple Silicon (M1/M2/M3/etc.) | `SIGNA-1.5.0-osx-arm64.dmg` |
 
@@ -20,10 +21,12 @@ Descarga el archivo de tu sistema desde https://github.com/danielpose1996-stack/
 
 **macOS:** abre el DMG de tu arquitectura y arrastra SIGNA a Applications. Expulsa el DMG y abre la aplicación desde Aplicaciones. Eliminar SIGNA.app conserva la base de datos local.
 
+**Arch Linux / Omarchy (x86_64):** en la carpeta de descarga ejecuta `sudo pacman -U ./SIGNA-1.5.0-archlinux-x64.pkg.tar.zst`. Pacman instala el paquete local y resuelve sus dependencias desde los repositorios configurados. Incluye .NET; declara XWayland para el backend X11 de SIGNA en escritorios Wayland/Hyprland. Abre SIGNA desde el menú o ejecuta `signa`. Para retirarlo: `sudo pacman -R signa`; los datos y respaldos personales se conservan. Es un paquete binario local de esta Release, sin registro automático en AUR; las nuevas versiones se descargan e instalan de la misma manera. La prueba automatizada se realiza en Arch, sin revisar visualmente el escritorio Omarchy.
+
 ## Firma y seguridad
 
 Esta distribución no tiene firma oficial de Windows ni certificado Apple Developer ID/notarización. Windows SmartScreen o macOS Gatekeeper pueden mostrar advertencias. Descarga desde el repositorio oficial y comprueba los hashes. En Mac se incluye firma ad hoc de integridad para el código nativo; no acredita la identidad del desarrollador. Consulta el [procedimiento oficial de Apple](https://support.apple.com/es-es/102445) si necesitas autorizar una app que has verificado. No desactives globalmente las protecciones del equipo.
 
-`SHA256SUMS.txt` contiene los hashes de los siete instaladores. En Windows puedes calcular uno con `Get-FileHash .\archivo.exe -Algorithm SHA256`; en Linux/macOS utiliza `sha256sum` o `shasum -a 256`. Compara el resultado con ese archivo.
+`SHA256SUMS.txt` contiene los hashes de los ocho instaladores. En Windows puedes calcular uno con `Get-FileHash .\archivo.exe -Algorithm SHA256`; en Linux/macOS utiliza `sha256sum` o `shasum -a 256`. Compara el resultado con ese archivo. El paquete Arch también se distribuye sin firma oficial; no desactives globalmente la verificación de firmas de Pacman.
 
 La base SQLite activa no está cifrada. Los respaldos `.aulabk` sí: guarda su contraseña para restaurarlos. Instalar, actualizar o desinstalar el programa no sustituye hacer respaldos.
