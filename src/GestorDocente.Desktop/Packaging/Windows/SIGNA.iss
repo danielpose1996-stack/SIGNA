@@ -51,7 +51,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "{#PayloadPath}"; DestName: "SIGNA-Velopack-Setup.exe"; Flags: dontcopy
 
 [Run]
-Filename: "{app}\GestorDocente.Desktop.exe"; Description: "Abrir SIGNA"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\SIGNA.exe"; Description: "Abrir SIGNA"; Flags: nowait postinstall skipifsilent
 
 [Code]
 const
@@ -124,7 +124,7 @@ begin
           Result := InspectFiles(AddBackslash(Dir) + Name, False, Depth + 1);
           if Result <> '' then Exit;
         end else begin
-          if Root and (CompareText(Name, 'Update.exe') <> 0) and (CompareText(Name, 'GestorDocente.Desktop.exe') <> 0) then begin
+          if Root and (CompareText(Name, 'Update.exe') <> 0) and (CompareText(Name, 'SIGNA.exe') <> 0) then begin
             Result := 'La carpeta contiene archivos ajenos a SIGNA. Selecciona una carpeta vacía.'; Exit;
           end;
           Extension := Lowercase(ExtractFileExt(Name));
@@ -231,7 +231,8 @@ begin
       Result := 'No se pudo completar la instalación de SIGNA (código ' + IntToStr(ExitCode) + '). Revisa permisos, espacio libre y que SIGNA esté cerrado.'
     else if not FileExists(AddBackslash(WizardDirValue) + 'current\sq.version') or
             not FileExists(AddBackslash(WizardDirValue) + 'current\GestorDocente.Desktop.exe') or
-            not FileExists(AddBackslash(WizardDirValue) + 'Update.exe') then
+            not FileExists(AddBackslash(WizardDirValue) + 'Update.exe') or
+            not FileExists(AddBackslash(WizardDirValue) + 'SIGNA.exe') then
       Result := 'La instalación no generó todos los archivos necesarios. No se confirmó una instalación exitosa.';
   finally
     WizardForm.CancelButton.Enabled := True;

@@ -24,6 +24,7 @@ foreach($file in @('GestorDocente.Desktop.exe','GestorDocente.Desktop.dll','e_sq
     if(-not (Test-Path -LiteralPath (Join-Path $current $file))){throw "Falta $file en la instalación"}
 }
 if(-not (Test-Path -LiteralPath (Join-Path $installDir 'Update.exe'))){throw 'Falta el actualizador Velopack'}
+if(-not (Test-Path -LiteralPath (Join-Path $installDir 'SIGNA.exe'))){throw 'Falta el acceso estable de Velopack'}
 if(Test-Path -LiteralPath (Join-Path $installDir 'unins000.exe')){throw 'El asistente creó un desinstalador duplicado'}
 if((Get-Item (Join-Path $current 'GestorDocente.Desktop.exe')).VersionInfo.ProductName -ne 'SIGNA'){throw 'Identidad incorrecta'}
 $versionOutput=Join-Path $env:RUNNER_TEMP 'SIGNA-version.txt'
