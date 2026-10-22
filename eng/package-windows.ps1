@@ -23,5 +23,5 @@ $setups=@(Get-ChildItem -LiteralPath $velopack -Filter '*Setup.exe')
 if($setups.Count -ne 1){throw 'No se encontró un único instalador Velopack'}
 $installer=Join-Path $release "SIGNA-$Version-windows-x64-setup.exe"
 if(Test-Path -LiteralPath $installer){throw 'No se sobrescriben instaladores existentes'}
-Copy-Item -LiteralPath $setups[0].FullName -Destination $installer
+& (Join-Path $PSScriptRoot 'wrap-windows-installer.ps1') -Version $Version -Payload $setups[0].FullName -OutputDirectory $release
 Get-FileHash -LiteralPath (Join-Path $release "SIGNA-$Version-windows-x64-setup.exe") -Algorithm SHA256

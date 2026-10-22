@@ -1,0 +1,80 @@
+name: Revisar instalador Windows de version existente
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión ya publicada; revisar solo su asistente Windows'
+        required: true
+        default: '1.6.0'
+permissions:
+  contents: read
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+jobs:
+  wizard:
+    runs-on: windows-2025
+    timeout-minutes: 25
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: global.json
+      - name: Compilar y ejecutar pruebas
+        shell: pwsh
+        run: |
+          if($env:RELEASE_VERSION -notmatch '^\d+\.\d+\.\d+$'){throw 'Versión inválida'}
+          [xml]$props=Get-Content Directory.Build.props
+          if($props.Project.PropertyGroup.Version -ne $env:RELEASE_VERSION){throw 'La versión no coincide con el proyecto'}
+          dotnet restore GestorDocente.slnx --locked-mode
+          if($LASTEXITCODE){exit $LASTEXITCODE}
+          dotnet build GestorDocente.slnx -c Release --no-restore
+          if($LASTEXITCODE){exit $LASTEXITCODE}
+          dotnet test GestorDocente.slnx -c Release --no-build --no-restore --logger trx --results-directory artifacts/test-results
+          if($LASTEXITCODE){exit $LASTEXITCODE}
+          python -m unittest discover -s eng/tests -v
+          if($LASTEXITCODE){exit $LASTEXITCODE}
+      - name: Obtener y verificar Setup original publicado
+        shell: pwsh
+        run: |
+          $base='artifacts/packages/revision'
+          New-Item -ItemType Directory -Path $base -Force | Out-Null
+          $release=gh api "repos/$env:GH_REPO/releases/tags/v$env:RELEASE_VERSION" | ConvertFrom-Json
+          if($LASTEXITCODE -or $release.draft -or $release.prerelease){throw 'Se requiere una Release estable existente'}
+          $release | ConvertTo-Json -Depth 20 | Set-Content "$base/original-release.json" -Encoding utf8
+          $name="SIGNA-$env:RELEASE_VERSION-windows-x64-setup.exe"
+          gh release download "v$env:RELEASE_VERSION" --pattern $name --pattern SHA256SUMS.txt --dir "$base/original"
+          if($LASTEXITCODE){throw 'No se pudo descargar el original'}
+          $asset=$release.assets | Where-Object name -eq $name
+          $hash=(Get-FileHash "$base/original/$name" -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($asset.digest -ne "sha256:$hash"){throw 'El original no coincide con GitHub'}
+      - name: Crear asistente y probar instalacion aislada
+        shell: pwsh
+        run: |
+          $base='artifacts/packages/revision'
+          $name="SIGNA-$env:RELEASE_VERSION-windows-x64-setup.exe"
+          ./eng/wrap-windows-installer.ps1 -Version $env:RELEASE_VERSION -Payload "$base/original/$name" -OutputDirectory "$base/revisado"
+          ./eng/test-windows.ps1 -Version $env:RELEASE_VERSION -Installer "$base/revisado/$name"
+          python eng/revise-windows-checksum.py "$base/original/SHA256SUMS.txt" "$base/revisado/$name" "$base/revisado/SHA256SUMS.txt" "$env:RELEASE_VERSION"
+          if($LASTEXITCODE){throw 'Falló la revisión del manifiesto'}
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: instalador-windows-revisado
+          path: artifacts/packages/revision/revisado/*
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: pruebas-instalador-windows
+          path: |
+            artifacts/test-results/*.trx
+            ${{ runner.temp }}/SIGNA-*.log
+          if-no-files-found: ignore
+          retention-days: 14
