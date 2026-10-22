@@ -49,6 +49,9 @@ $manifest=Join-Path $current 'sq.version';$manifestBytes=[System.IO.File]::ReadA
 $text=[System.Text.Encoding]::UTF8.GetString($manifestBytes).Replace("<version>$Version</version>",'<version>99.0.0</version>')
 [System.IO.File]::WriteAllText($manifest,$text,[System.Text.UTF8Encoding]::new($false))
 if((Invoke-Wizard $installDir 'SIGNA-rechazo-downgrade.log') -eq 0){throw 'Se admitió reemplazar una versión superior'}
+$text=[System.Text.Encoding]::UTF8.GetString($manifestBytes).Replace("<version>$Version</version>",'<version>0.invalido.0</version>')
+[System.IO.File]::WriteAllText($manifest,$text,[System.Text.UTF8Encoding]::new($false))
+if((Invoke-Wizard $installDir 'SIGNA-rechazo-version-invalida.log') -eq 0){throw 'Se admitió un manifiesto incompatible'}
 [System.IO.File]::WriteAllBytes($manifest,$manifestBytes)
 if((Invoke-Wizard $installDir 'SIGNA-reparar.log') -ne 0){Get-Content (Join-Path $env:RUNNER_TEMP 'SIGNA-reparar.log') -Tail 25;throw 'La reparación compatible no funciona'}
 if((Get-FileHash -LiteralPath $sentinel).Hash -ne $before){throw 'La reparación alteró datos externos'}

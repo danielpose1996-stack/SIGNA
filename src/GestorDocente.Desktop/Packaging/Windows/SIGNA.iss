@@ -92,6 +92,10 @@ begin
     Left := StrToIntDef(Existing[Index], -1);
     Right := StrToIntDef(Target[Index], -1);
     if (Left < 0) or (Right < 0) then Exit;
+  end;
+  for Index := 0 to 2 do begin
+    Left := StrToIntDef(Existing[Index], -1);
+    Right := StrToIntDef(Target[Index], -1);
     if Left > Right then Exit;
     if Left < Right then begin Result := True; Exit; end;
   end;
@@ -152,16 +156,16 @@ begin
 end;
 
 function ValidateDestination(Dir: String): String;
-var Parent, Previous: String; Manifest: AnsiString;
+var Parent, Previous: String; Manifest: AnsiString; Probe: TFindRec;
 begin
   Result := '';
   Dir := NormalPath(Dir);
   if (Length(Dir) < 4) or (CompareText(Dir, AddBackslash(ExtractFileDrive(Dir))) = 0) or
-     (CompareText(Dir, ExpandConstant('{userprofile}')) = 0) or
+     (CompareText(Dir, GetEnv('USERPROFILE')) = 0) or
      (CompareText(Dir, ExpandConstant('{userdocs}')) = 0) or
      (CompareText(Dir, ExpandConstant('{userdesktop}')) = 0) or
      (CompareText(Dir, ExpandConstant('{localappdata}')) = 0) or
-     (CompareText(Dir, ExpandConstant('{appdata}')) = 0) or
+     (CompareText(Dir, ExpandConstant('{userappdata}')) = 0) or
      WithinPath(Dir, ExpandConstant('{win}')) or
      WithinPath(Dir, ExpandConstant('{localappdata}\AulaRegistro')) then begin
     Result := 'Elige una carpeta propia para SIGNA, separada de tus documentos y de la base de datos.'; Exit;
@@ -174,6 +178,10 @@ begin
     Previous := Parent; Parent := ExtractFileDir(Parent);
   until CompareText(Parent, Previous) = 0;
   if not DirExists(Dir) then Exit;
+  if not FindFirst(AddBackslash(Dir) + '*', Probe) then begin
+    Result := 'No se pudo revisar la carpeta. Elige un destino con permisos de lectura y escritura.'; Exit;
+  end;
+  FindClose(Probe);
   if not HasEntries(Dir) then Exit;
   if not LoadStringFromFile(AddBackslash(Dir) + 'current\sq.version', Manifest) then begin
     Result := 'Esta carpeta no está vacía y no es una instalación de SIGNA. Elige una carpeta vacía; no se reemplazaron tus archivos.'; Exit;

@@ -60,6 +60,10 @@ jobs:
           $base='artifacts/packages/revision'
           $name="SIGNA-$env:RELEASE_VERSION-windows-x64-setup.exe"
           ./eng/wrap-windows-installer.ps1 -Version $env:RELEASE_VERSION -Payload "$base/original/$name" -OutputDirectory "$base/revisado"
+          $nestedRejected=$false
+          try { ./eng/wrap-windows-installer.ps1 -Version $env:RELEASE_VERSION -Payload "$base/revisado/$name" -OutputDirectory "$base/anidado" }
+          catch { $nestedRejected=$true }
+          if(-not $nestedRejected){throw 'No se rechazó el empaquetado de un asistente ya envuelto'}
           ./eng/test-windows.ps1 -Version $env:RELEASE_VERSION -Installer "$base/revisado/$name"
           python eng/revise-windows-checksum.py "$base/original/SHA256SUMS.txt" "$base/revisado/$name" "$base/revisado/SHA256SUMS.txt" "$env:RELEASE_VERSION"
           if($LASTEXITCODE){throw 'Falló la revisión del manifiesto'}

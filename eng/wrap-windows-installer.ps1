@@ -8,6 +8,9 @@ $ErrorActionPreference='Stop'
 if($Version -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$'){throw 'Versión inválida'}
 $payloadFile=Get-Item -LiteralPath $Payload
 if($payloadFile.Length -lt 1000000){throw 'El Setup Velopack está incompleto'}
+if($payloadFile.VersionInfo.FileDescription.Trim() -ne 'SIGNA' -or $payloadFile.VersionInfo.ProductName.Trim() -ne 'SIGNA'){
+    throw 'Se requiere el Setup Velopack original de SIGNA, no un asistente ya envuelto'
+}
 if(-not (Test-Path -LiteralPath $Compiler)){throw 'Se requiere el compilador Inno Setup 6 aprobado'}
 $repoRoot=Split-Path $PSScriptRoot -Parent
 $destination=[System.IO.Path]::GetFullPath($OutputDirectory)
