@@ -278,6 +278,8 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 
 El workflow de publicación compila y prueba en cinco sistemas/arquitecturas: Windows x64, Ubuntu x64/ARM64 y macOS Intel/Apple Silicon. Incluye pruebas de red, cancelación, caché corrupta, SQLite ficticio con WAL y presentación Avalonia Headless. Verifica instalación/desinstalación en Windows y Ubuntu, bundles macOS y hashes de las siete distribuciones y cinco canales antes de publicar. El ciclo real de actualización y reinicio entre versiones instaladas y la revisión del escritorio corresponden a las pruebas manuales del docente. macOS continúa sin certificado Developer ID/notarización.
 
+La [publicación verificada de 1.6.1](https://github.com/danielpose1996-stack/SIGNA/actions/runs/39722533263) aprobó **429 pruebas en cada uno de los cinco sistemas/arquitecturas**, diez pruebas de empaquetado y comprobaciones nativas; los 19 adjuntos y sus 17 hashes se verificaron antes de publicar la Release estable.
+
 ## Contribuir y gestionar cambios
 
 La rama principal es `main`. Después de clonar, Git configura automáticamente `origin` con la URL de SIGNA. Puedes comprobar y actualizar tu copia con:

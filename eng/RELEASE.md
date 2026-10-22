@@ -31,6 +31,8 @@ Incluyen .NET y el icono oficial. Consulta **INSTALACION.md**, **SHA256SUMS.txt*
 
 El workflow compila y ejecuta las suites en cinco sistemas/arquitecturas, verifica los paquetes y sus hashes antes de marcar esta Release como estable. Comprueba instalación, reparación y desinstalación en Windows, instalación/desinstalación en Ubuntu y bundles/DMG en macOS, utilizando datos ficticios en entornos efímeros. La interfaz se revisa mediante capturas Avalonia Headless en tres tamaños y colores. Las pruebas manuales y el ciclo real de actualización/reinicio entre dos versiones instaladas corresponden al docente.
 
+**Resultado de la publicación:** 429 pruebas de la aplicación aprobadas en cada uno de los cinco sistemas/arquitecturas, diez pruebas de empaquetado y comprobaciones nativas correctas. Los 19 adjuntos y sus 17 hashes se verificaron después de subirlos. [Ejecución completa](https://github.com/danielpose1996-stack/SIGNA/actions/runs/39722533263).
+
 No se incluyen materias, estudiantes ni bases de prueba. Continúa sin firma oficial de Windows ni Apple Developer ID/notarización; macOS conserva firma ad hoc de integridad. Licencia MIT.
 
 [Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).
