@@ -12,38 +12,36 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.0:** actualizaciones integradas mediante Velopack, búsqueda automática y manual, verificación de paquetes y protección de datos antes del reinicio. Añade AppImage Linux actualizable y conserva los instaladores nativos. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.0).
+**Versión 1.6.1:** botón **Buscar actualizaciones** con icono, borde, fondo y estados de interacción visibles. Conserva Velopack y la protección de datos. Soporte actual: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.1](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.1).
 
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows x64 | `SIGNA-1.6.0-windows-x64-setup.exe` |
-| Linux x64 o ARM64, actualización integrada | `SIGNA-1.6.0-linux-x64.AppImage` o `SIGNA-1.6.0-linux-arm64.AppImage` |
-| Ubuntu/Debian x64 o ARM64 | `SIGNA-1.6.0-linux-x64.deb` o `SIGNA-1.6.0-linux-arm64.deb` |
-| Fedora y derivados x64 o ARM64 | `SIGNA-1.6.0-linux-x64.rpm` o `SIGNA-1.6.0-linux-arm64.rpm` |
-| Arch Linux / Omarchy x64 | `SIGNA-1.6.0-archlinux-x64.pkg.tar.zst` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.0-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.0-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.1-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.1-linux-x64.AppImage` o `SIGNA-1.6.1-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.1-linux-x64.deb` o `SIGNA-1.6.1-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.1-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.1-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Revisión del instalador Windows 1.6.0:** se añadió el asistente de carpeta/licencia manteniendo la misma versión. Descarga nuevamente el EXE de esta Release para utilizarlo. Los paquetes de actualización de Velopack y las descargas de macOS/Linux conservan sus archivos originales; el hash del EXE se actualiza en `SHA256SUMS.txt`.
+**Desde SIGNA 1.6.0 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.1 cuando esté publicada como estable. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
-**Arch Linux / Omarchy (x86_64):** descarga el paquete `.pkg.tar.zst` y ejecuta `sudo pacman -U ./SIGNA-1.6.0-archlinux-x64.pkg.tar.zst`. Incluye .NET y declara sus bibliotecas nativas, incluido XWayland para escritorios Wayland como Hyprland. Puedes abrir SIGNA desde el menú de aplicaciones o ejecutar `signa`. Para desinstalar: `sudo pacman -R signa`. No requiere AUR ni convertir paquetes DEB/RPM. La comprobación automatizada de instalación se realiza en Arch; la revisión visual en Omarchy queda pendiente del docente. También puedes utilizar la AppImage x64 si prefieres la actualización integrada.
+**Soporte Linux:** desde 1.6.1 se publica y valida únicamente para Ubuntu. Ya no se generan paquetes RPM ni Arch/Omarchy y no se ofrece soporte Debian. Ubuntu conserva `.deb` porque también es su formato de instalación. Las Releases históricas permanecen intactas; esta decisión no elimina datos ni instalaciones anteriores. Para compatibilidad e instalación vigentes, sigue esta guía y las instrucciones de la Release, aunque un manual de una edición anterior mencione otras distribuciones.
 
 Lee [las instrucciones completas](eng/INSTALL.md) y compara los hashes con `SHA256SUMS.txt` de la Release. **Esta distribución no tiene firma oficial de Windows ni certificado Apple Developer ID/notarización:** pueden aparecer advertencias de seguridad. La firma ad hoc de macOS comprueba integridad, sin acreditar al desarrollador. No se necesita desactivar las protecciones globales del equipo.
 
 ## Qué permite hacer
 
-**Actualización 1.6.0 — disponible en Releases:**
+**Actualizaciones integradas:**
 
 - Comprobación de versiones estables en segundo plano al iniciar, sin impedir trabajar sin internet, y opción **Buscar actualizaciones** en el menú lateral.
 - Aviso con versión actual y nueva; **Actualizar SIGNA** descarga, verifica, instala y reinicia, con progreso, cancelación antes del reinicio y posibilidad de reintentar si falla.
 - Protección de SQLite, preferencias y respaldos: verifica integridad, rechaza paquetes dañados y bloquea el reinicio ante cambios sin guardar, operaciones activas u otras instancias. No cambia las reglas académicas, el esquema ni la ubicación de los datos.
-- Instaladores preparados con Velopack para Windows y macOS; nueva edición AppImage actualizable para Linux, conservando DEB, RPM y Arch/Omarchy bajo sus gestores de paquetes.
+- Instaladores preparados con Velopack para Windows y macOS; AppImage actualizable para Ubuntu y paquete `.deb` para apt. El botón lateral de búsqueda tiene una apariencia visible de botón y funciona con los colores personalizados.
 
-Las instalaciones hasta 1.5.0 requieren instalar una vez la nueva edición para recibir actualizaciones internas posteriores. Descarga la edición de tu sistema en [SIGNA 1.6.0](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.0). Consulta [el procedimiento, la arquitectura y la protección de datos](docs/ACTUALIZACIONES.md), el [historial de cambios](CHANGELOG.md) y las [notas de la actualización](eng/RELEASE.md).
+Las instalaciones hasta 1.5.0 requieren instalar una vez la nueva edición para recibir actualizaciones internas posteriores. Descarga la edición de tu sistema en [Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest). Consulta [el procedimiento, la arquitectura y la protección de datos](docs/ACTUALIZACIONES.md), el [historial de cambios](CHANGELOG.md) y las [notas de la actualización](eng/RELEASE.md).
 
 Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas utilizar SIGNA.
 
@@ -259,7 +257,7 @@ chmod +x GestorDocente.Desktop
 
 Las ventanas usan el mismo PNG oficial de SIGNA. Para añadir SIGNA al menú de aplicaciones con ese icono, desde la carpeta copiada ejecuta opcionalmente `sh Registrar-icono.sh`. Registra el acceso y una copia intacta del PNG en las carpetas XDG del usuario, sin permisos de administrador. Si mueves la carpeta del programa, ejecuta otra vez el registro desde su nueva ubicación. El registro no inicia el programa ni modifica datos.
 
-La versión actual de Avalonia utiliza X11 y, en una sesión Wayland, XWayland. El sistema debe disponer de las [bibliotecas nativas de Avalonia](https://docs.avaloniaui.net/docs/deployment/linux) (`libx11-6`, `libice6`, `libsm6`, `libfontconfig1` en Debian/Ubuntu) y de las [dependencias nativas de .NET 10 para su distribución](https://learn.microsoft.com/en-us/dotnet/core/install/linux). La publicación autocontenida incluye el runtime .NET y las bibliotecas de SQLite/Skia, pero requiere las bibliotecas del sistema; usa una distribución soportada por .NET 10, por ejemplo Ubuntu 24.04 con sus dependencias instaladas. No se han instalado bibliotecas ni realizado pruebas manuales de Linux desde el equipo Windows.
+La versión actual de Avalonia utiliza X11 y, en una sesión Wayland, XWayland. El sistema debe disponer de las [bibliotecas nativas de Avalonia](https://docs.avaloniaui.net/docs/deployment/linux) (`libx11-6`, `libice6`, `libsm6`, `libfontconfig1` en Ubuntu) y de las [dependencias nativas de .NET 10 para Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install). La publicación autocontenida incluye el runtime .NET y las bibliotecas de SQLite/Skia, pero requiere las bibliotecas del sistema. La plataforma Linux validada es Ubuntu 24.04 LTS x64/ARM64; otras distribuciones no forman parte del soporte. No se han instalado bibliotecas ni realizado pruebas manuales de Linux desde el equipo Windows.
 
 Para ejecutar desde el código fuente en Linux, con el SDK de .NET 10 instalado: `dotnet run --project src/GestorDocente.Desktop`. Los datos mantienen su ubicación de usuario mediante `LocalApplicationData`; en Linux normalmente se encuentran bajo `~/.local/share/AulaRegistro`, o en `GESTOR_DOCENTE_DATA_DIR` si se configura. Para trasladar datos entre equipos utiliza el respaldo local cifrado existente.
 
@@ -278,7 +276,7 @@ Las pruebas usan datos ficticios y bases temporales. Las materias guardadas con 
 | Infrastructure | Persistencia en SQLite temporal, conflictos de revisión, integridad, Excel, PDF y respaldos/restauración. |
 | Acceptance | ViewModels y controles Avalonia con Headless: navegación, formularios, tablas, selección y actualización de métricas. |
 
-La validación de 1.6.0 aprobó **427 pruebas de la aplicación en cada uno de los cinco sistemas/arquitecturas y 6 pruebas de empaquetado**, con compilaciones Release correctas. Incluye fallos de red, cancelación, caché corrupta, datos SQLite ficticios con WAL, conservación de notas y preferencias, y presentación Avalonia Headless. El workflow generó los diez instaladores/distribuciones y los cinco canales de actualización en sistemas nativos, comprobó instalación/desinstalación en Windows y Arch, paquetes Linux, bundles macOS y hashes antes de publicar. El ciclo real de actualización y reinicio entre versiones instaladas y la revisión del escritorio corresponden a las pruebas manuales del docente. macOS todavía requiere firma/notarización si se distribuye como una aplicación firmada.
+El workflow de publicación compila y prueba en cinco sistemas/arquitecturas: Windows x64, Ubuntu x64/ARM64 y macOS Intel/Apple Silicon. Incluye pruebas de red, cancelación, caché corrupta, SQLite ficticio con WAL y presentación Avalonia Headless. Verifica instalación/desinstalación en Windows y Ubuntu, bundles macOS y hashes de las siete distribuciones y cinco canales antes de publicar. El ciclo real de actualización y reinicio entre versiones instaladas y la revisión del escritorio corresponden a las pruebas manuales del docente. macOS continúa sin certificado Developer ID/notarización.
 
 ## Contribuir y gestionar cambios
 

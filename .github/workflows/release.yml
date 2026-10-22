@@ -5,7 +5,7 @@ on:
       version:
         description: 'Versión mayor.menor.parche sin prefijo v'
         required: true
-        default: '1.6.0'
+        default: '1.6.1'
 permissions:
   contents: read
 concurrency:
@@ -53,7 +53,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y rpm cpio libfontconfig1 libx11-6 libice6 libsm6 libfuse2t64
+          sudo apt-get install -y libfontconfig1 libx11-6 libice6 libsm6 libfuse2t64
       - name: Compilar y probar en el sistema nativo (Headless)
         run: |
           dotnet restore GestorDocente.slnx --locked-mode
@@ -65,12 +65,9 @@ jobs:
         run: |
           ./eng/package-windows.ps1 -Version $env:RELEASE_VERSION
           ./eng/test-windows.ps1 -Version $env:RELEASE_VERSION
-      - name: Crear y comprobar paquetes Linux
+      - name: Crear y comprobar paquetes Ubuntu
         if: runner.os == 'Linux'
         run: bash eng/package-linux.sh "$RELEASE_VERSION" "$RELEASE_RID"
-      - name: Crear y comprobar paquete Arch Linux y Omarchy
-        if: matrix.rid == 'linux-x64'
-        run: bash eng/package-arch.sh "$RELEASE_VERSION"
       - name: Crear y comprobar DMG macOS
         if: runner.os == 'macOS'
         run: bash eng/package-macos.sh "$RELEASE_VERSION" "$RELEASE_RID"
@@ -124,5 +121,5 @@ jobs:
           gh release upload "$tag" artifacts/packages/release/*
           gh release download "$tag" --dir artifacts/packages/verificar
           (cd artifacts/packages/verificar && sha256sum --check SHA256SUMS.txt)
-          test "$(gh release view "$tag" --json assets --jq '.assets | length')" -eq 22
+          test "$(gh release view "$tag" --json assets --jq '.assets | length')" -eq 19
           gh release edit "$tag" --draft=false --latest

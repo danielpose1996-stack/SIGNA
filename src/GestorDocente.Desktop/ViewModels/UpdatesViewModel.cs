@@ -29,7 +29,7 @@ public sealed class UpdatesViewModel:ObservableObject
     public string CompatibilityMessage=>!Enabled ? "Las actualizaciones se comprueban en la edición instalada, fuera de la demostración." :
         !HasUpdate || available!.CanInstall ? "" : updater!.IsManagedInstallation ?
             "Esta publicación todavía no incluye un paquete instalable para este equipo. Consulta la página oficial o inténtalo más tarde." :
-            "Esta instalación requiere instalar una vez la edición preparada con Velopack. En Linux usa AppImage para actualizaciones internas; los paquetes DEB/RPM/Arch se administran con su gestor. Tus datos conservan su ubicación.";
+            "Esta instalación requiere instalar una vez la edición preparada con Velopack. En Ubuntu usa AppImage para actualizaciones internas; el paquete .deb se actualiza con apt. Tus datos conservan su ubicación.";
     public string Notification=>$"SIGNA {AvailableVersion} disponible · Versión actual {CurrentVersion}";
     public string Status{get=>status;private set=>Set(ref status,value);}
     public int Progress{get=>progress;private set=>Set(ref progress,value);}

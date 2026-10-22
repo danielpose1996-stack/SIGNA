@@ -1,5 +1,12 @@
 # Historial de cambios de SIGNA
 
+## 1.6.1 — 21 de octubre de 2026
+
+- Botón lateral «Buscar actualizaciones» con icono vectorial, fondo, borde y estados de puntero/pulsación/foco. Conserva su comando y la ventana de actualización existentes, con colores compatibles con la personalización.
+- Soporte futuro: Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. Ubuntu conserva AppImage actualizable y `.deb`; se retiran RPM y Arch/Omarchy del empaquetado y ya no se ofrece soporte Debian. Las Releases históricas permanecen intactas.
+- Versión de parche 1.6.1 y cinco canales Velopack conservados para recibir la actualización desde 1.6.0. Manifiesto y workflow ajustados a siete distribuciones y 19 adjuntos, con rechazo de paquetes retirados o datos privados.
+- Sin cambios en cálculos académicos, SQLite, preferencias ni respaldos.
+
 ## 1.6.0 — 21 de octubre de 2026
 
 - **Revisión del instalador Windows, misma versión 1.6.0:** asistente con licencia MIT y selección de carpeta, sobre el Setup original de Velopack. Protege carpetas ajenas y datos/respaldos dentro del destino, mantiene el único desinstalador de Velopack y actualiza el SHA-256 del EXE. No cambian el tag, las funciones académicas, los cinco feeds/nupkg ni los instaladores macOS/Linux. Volver a descargar el EXE permite utilizar el asistente nuevo.

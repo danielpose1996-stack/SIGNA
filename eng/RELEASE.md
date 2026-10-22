@@ -1,39 +1,36 @@
-**SIGNA 1.6.0 — Actualizaciones integradas**
+**SIGNA 1.6.1 — Acceso claro a actualizaciones y soporte Windows, macOS y Ubuntu**
 
-### Novedades
+### Mejoras
 
-- **Instalador Windows revisado, sin cambiar 1.6.0:** ahora muestra la licencia MIT y permite seleccionar la carpeta. Conserva Velopack como gestor de actualizaciones/desinstalación y rechaza carpetas con datos o archivos ajenos. Si ya descargaste el EXE anterior, descárgalo nuevamente para obtener el asistente nuevo. Se conserva el tag, los cinco paquetes/feeds de actualización y los instaladores de macOS/Linux; se actualiza únicamente el EXE de Windows y su hash, además de las instrucciones.
+- **Buscar actualizaciones** ahora tiene icono vectorial, fondo, borde y estados visibles al pasar el cursor, pulsar y navegar con teclado. Se adapta a los colores personalizados y conserva el flujo de actualización existente.
+- Versión de parche **1.6.1**: mejora compatible sobre 1.6.0, sin cambios en reglas académicas, cálculos, SQLite, preferencias ni respaldos.
+- Soporte actual: **Windows 10/11 x64**, **macOS 15 o posterior Intel/Apple Silicon** y **Ubuntu 24.04 LTS x64/ARM64**.
+- En Ubuntu se conservan **AppImage actualizable** y **.deb para apt**. Se retiran los paquetes RPM y Arch/Omarchy de las nuevas publicaciones; ya no se ofrece soporte Debian ni otras distribuciones. Ubuntu también usa .deb, por lo que ese formato se mantiene. Las Releases históricas permanecen intactas.
+- Manifiesto y pipeline ajustados a siete distribuciones y cinco canales Velopack, con comprobaciones de integridad y rechazo de paquetes retirados o archivos privados.
 
-- **Buscar actualizaciones** en el menú lateral y comprobación de versiones estables al iniciar, en segundo plano. Sin conexión puedes seguir trabajando normalmente.
-- Aviso con versión actual y disponible. **Actualizar SIGNA** descarga, verifica, instala y reinicia mediante Velopack, con progreso, cancelación antes del reinicio y mensajes para reintentar ante errores.
-- Se rechazan versiones preliminares, downgrades y candidatos distintos del revisado. Se comprueba tamaño/SHA-256 tras descargar y antes del reinicio, también para archivos ya existentes en caché.
-- Protección ante cambios sin guardar, operaciones activas, otras instancias, SQLite inválido y datos o respaldos dentro de la carpeta reemplazable. Conserva la ubicación, el esquema y los registros de SQLite, las preferencias y los respaldos cifrados.
-- Instalador Windows preparado con Velopack, DMG macOS con bundle actualizable y **AppImage Linux x64/ARM64**. Se mantienen los paquetes DEB, RPM y Arch/Omarchy.
+### Cómo actualizar
 
-### Transición desde versiones anteriores
+Si tienes **1.6.0 con Velopack**, abre **Buscar actualizaciones**, revisa la versión y pulsa **Actualizar SIGNA**. Guarda antes tus cambios, cierra otras instancias y conserva un respaldo local cifrado fuera de la carpeta del programa. La actualización verifica el paquete y los datos antes de instalar y reiniciar; sin internet puedes continuar trabajando.
 
-Las ediciones hasta 1.5.0 no tienen este actualizador: instala **una vez** la nueva edición para poder recibir actualizaciones internas posteriores. Crea antes un respaldo local cifrado, conserva su contraseña y cierra SIGNA. En Windows no es necesario desinstalar primero la edición anterior; utiliza el acceso nuevo y evita abrir ambas ediciones a la vez. En macOS reemplaza SIGNA.app desde el DMG y ejecútala desde su ubicación definitiva. En Linux utiliza AppImage para la actualización integrada; DEB/RPM/Arch se administran con apt/dnf/pacman.
+Las ediciones hasta 1.5.0 necesitan instalar una vez la edición actualizable desde esta Release. En Ubuntu, la actualización integrada corresponde a AppImage; el paquete .deb se actualiza descargando la nueva edición y utilizando apt. No abras dos ediciones a la vez.
 
-No se incluyen bases, estudiantes ni materias de prueba en los instaladores. No hay cambios de reglas académicas ni de esquema SQLite. Los respaldos deben guardarse fuera de la carpeta del programa.
+En Windows se mantiene el asistente de **licencia MIT y selección de carpeta**, con Velopack como único gestor de actualizaciones/desinstalación. Los datos académicos mantienen su ubicación fuera de los archivos del programa.
 
-### Archivos
+Un commit en el repositorio no activa una actualización: la Release estable debe incluir su feed y paquete completo. Los cinco canales conservan sus nombres para poder actualizar desde 1.6.0.
 
-- Windows 10/11 x64: `SIGNA-1.6.0-windows-x64-setup.exe`.
-- Linux x64/ARM64: `SIGNA-1.6.0-linux-x64.AppImage` y `SIGNA-1.6.0-linux-arm64.AppImage`, más los DEB/RPM de ambas arquitecturas.
-- Arch Linux/Omarchy x64: `SIGNA-1.6.0-archlinux-x64.pkg.tar.zst`.
-- macOS 15 o posterior: `SIGNA-1.6.0-osx-x64.dmg` (Intel) y `SIGNA-1.6.0-osx-arm64.dmg` (Apple Silicon).
-- Los cinco archivos `releases.<canal>.json` y sus paquetes `-full.nupkg` son utilizados por el actualizador; no son instaladores para abrir manualmente.
+### Descargas
+
+- Windows 10/11 x64: `SIGNA-1.6.1-windows-x64-setup.exe`.
+- Ubuntu 24.04 LTS x64/ARM64: `SIGNA-1.6.1-linux-x64.AppImage`, `SIGNA-1.6.1-linux-arm64.AppImage` y los paquetes `.deb` de ambas arquitecturas.
+- macOS 15+: `SIGNA-1.6.1-osx-x64.dmg` (Intel) y `SIGNA-1.6.1-osx-arm64.dmg` (Apple Silicon).
+- Cinco feeds `releases.<canal>.json` y cinco paquetes `-full.nupkg` para el actualizador. No son instaladores para abrir manualmente.
 
 Incluyen .NET y el icono oficial. Consulta **INSTALACION.md**, **SHA256SUMS.txt** y [la guía de actualizaciones](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
 
 ### Validación y limitaciones
 
-El workflow compila y prueba en cada sistema nativo, comprueba las distribuciones y exige los cinco feeds completos con canal, versión, identidad y SHA-256 correctos antes de publicar. Las pruebas incluyen estados del actualizador, fallos/cancelación, datos SQLite ficticios y WAL, caché corrupta y presentación Avalonia Headless. Las pruebas manuales, incluida la transición y el ciclo de instalación/reinicio entre versiones instaladas, corresponden al docente.
+El workflow compila y ejecuta las suites en cinco sistemas/arquitecturas, verifica los paquetes y sus hashes antes de marcar esta Release como estable. Comprueba instalación, reparación y desinstalación en Windows, instalación/desinstalación en Ubuntu y bundles/DMG en macOS, utilizando datos ficticios en entornos efímeros. La interfaz se revisa mediante capturas Avalonia Headless en tres tamaños y colores. Las pruebas manuales y el ciclo real de actualización/reinicio entre dos versiones instaladas corresponden al docente.
 
-**Validación de esta publicación:** 427 pruebas aprobadas en cada uno de los cinco sistemas/arquitecturas (Windows x64, Linux x64/ARM64 y macOS Intel/Apple Silicon), seis pruebas de empaquetado y comprobaciones nativas de las distribuciones. Incluye instalación/desinstalación en Windows y Arch con conservación de datos ficticios, verificación de bundles/DMG y AppImage, y descarga de los archivos subidos para comprobar sus SHA-256 antes de marcar la Release como estable.
+No se incluyen materias, estudiantes ni bases de prueba. Continúa sin firma oficial de Windows ni Apple Developer ID/notarización; macOS conserva firma ad hoc de integridad. Licencia MIT.
 
-**Validación del instalador Windows revisado:** compilación correcta, 427 pruebas de la aplicación y nueve pruebas de empaquetado aprobadas. En un equipo efímero de GitHub Actions se verificaron instalación en una carpeta elegida con espacios y caracteres Unicode, reparación, desinstalación y rechazo de destinos inseguros o con datos, conservando los archivos ficticios. La revisión visual del asistente queda a cargo del docente.
-
-Continúa **sin firma oficial de Windows ni Apple Developer ID/notarización**, según las distribuciones actuales. La firma ad hoc de macOS verifica integridad, no identidad del desarrollador. Pueden aparecer advertencias del sistema; no desactives globalmente sus protecciones. El paquete Arch también se distribuye sin firma oficial de repositorio.
-
-Licencia MIT. [Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).
+[Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).

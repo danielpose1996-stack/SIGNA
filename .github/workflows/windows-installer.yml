@@ -5,7 +5,7 @@ on:
       version:
         description: 'Versión ya publicada; revisar solo su asistente Windows'
         required: true
-        default: '1.6.0'
+        default: '1.6.1'
 permissions:
   contents: read
 env:

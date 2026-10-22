@@ -1,11 +1,15 @@
 using Avalonia.Headless.XUnit;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.VisualTree;
+using Avalonia.Media;
 using GestorDocente.Application;
 using GestorDocente.Desktop.ViewModels;
 using GestorDocente.Desktop.Views;
+using GestorDocente.Desktop.Controls;
+using GestorDocente.Desktop.Styles;
 using GestorDocente.Domain;
 using Xunit;
 
@@ -91,16 +95,32 @@ public class ApplicationUpdateUiTests
         Assert.Equal(1,updater.Handoffs);Assert.Equal(4.335m,new AcademicCutReadIndex(model.Service.Cut(1)).Grade(student.Id,"t1"));
     }
 
-    [AvaloniaFact]
-    public async Task Sidebar_notification_and_update_dialog_show_real_versions_and_fit_small_windows()
+    [AvaloniaTheory]
+    [InlineData(1200,1,"#0067F5")]
+    [InlineData(1100,1.25,"#FFFFFF")]
+    [InlineData(1580,1,"#000000")]
+    public async Task Sidebar_notification_and_update_dialog_show_real_versions_and_fit_small_windows(double width,double scale,string accent)
     {
         var updater=new Updater{Offer=new("1.7.0",true)};
         var model=new MainViewModel(new WorkspaceService(new Store()),updater:updater,updateSafety:new Safety());
-        var main=new MainWindow{DataContext=model,Width=1200,Height=800};main.Show();await model.Updates.CheckAsync();main.UpdateLayout();
+        InterfaceTheme.Apply(Avalonia.Application.Current!,new(Accent:accent));
+        var main=new MainWindow{DataContext=model,Width=width,Height=850};
+        if(scale!=1 && main.Content is Control root){main.Content=null;main.Content=new LayoutTransformControl{LayoutTransform=new ScaleTransform(scale,scale),Child=root};}
+        main.Show();await model.Updates.CheckAsync();main.UpdateLayout();
         try
         {
-            Assert.Contains(main.GetVisualDescendants().OfType<Button>(),b=>AutomationProperties.GetName(b)=="Buscar actualizaciones de SIGNA");
-            Assert.True(model.Updates.ShowNotification);Capture(main,"aviso-actualizacion.png");
+            var button=main.FindControl<Button>("CheckUpdatesButton");Assert.NotNull(button);
+            Assert.Equal("Buscar actualizaciones de SIGNA",AutomationProperties.GetName(button));
+            Assert.Same(model.UpdatesCommand,button.Command);Assert.True(button.IsEffectivelyVisible);
+            Assert.True(button.BorderThickness.Left>=1);Assert.True(Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color.A>0);
+            Assert.Contains(button.GetVisualDescendants().OfType<VectorIcon>(),icon=>icon.Kind=="restore");
+            Assert.InRange(button.Bounds.Height,44,64);
+            var start=button.TranslatePoint(default,main)!.Value;
+            var end=button.TranslatePoint(new Point(button.Bounds.Width,button.Bounds.Height),main)!.Value;
+            Assert.InRange(start.X,0,main.Bounds.Width);Assert.InRange(start.Y,0,main.Bounds.Height);
+            Assert.InRange(end.X,0,main.Bounds.Width);Assert.InRange(end.Y,0,main.Bounds.Height);
+            Assert.True(button.Focus());Assert.True(button.IsFocused);
+            Assert.True(model.Updates.ShowNotification);Capture(main,$"aviso-actualizacion-{width}-{scale}.png");
             var dialog=new UpdatesWindow{DataContext=model.Updates,Width=480,Height=460};dialog.Show();dialog.UpdateLayout();
             try
             {
@@ -111,7 +131,7 @@ public class ApplicationUpdateUiTests
             finally{dialog.Close();}
             model.Updates.DismissCommand.Execute(null);Assert.False(model.Updates.ShowNotification);Assert.True(model.Updates.HasUpdate);
         }
-        finally{main.Close();}
+        finally{main.Close();InterfaceTheme.Apply(Avalonia.Application.Current!,new());}
     }
     private static void Capture(Window window,string name)
     {
