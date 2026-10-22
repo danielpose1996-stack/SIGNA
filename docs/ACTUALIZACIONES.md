@@ -16,7 +16,7 @@ Las versiones hasta 1.5.0 se distribuyeron con otro sistema de empaquetado. Nece
 
 1. Crea un respaldo local cifrado en **Respaldos**, fuera de la carpeta del programa, y conserva la contraseña.
 2. Cierra SIGNA. Descarga el instalador de tu sistema y arquitectura desde la página oficial. Comprueba su SHA-256.
-3. En Windows abre el nuevo Setup; instala por usuario sin requerir desinstalar primero la edición anterior. Abre el acceso nuevo. La ruta del programa cambia de la utilizada por Inno Setup; puede quedar un acceso antiguo. Evita abrir simultáneamente ambas ediciones.
+3. En Windows abre el nuevo Setup, revisa la licencia MIT y selecciona una carpeta de instalación. El asistente delega en Velopack y admite una carpeta local vacía o una instalación SIGNA compatible, con permisos de escritura; rechaza archivos ajenos, datos y respaldos dentro del destino. Instala por usuario sin requerir desinstalar primero la edición anterior. Abre el acceso nuevo. Si eliges otra carpeta, la instalación anterior puede permanecer en su ubicación; evita abrir simultáneamente ambas ediciones. La ubicación de SQLite y los respaldos no depende de la carpeta del programa.
 4. En macOS arrastra el nuevo SIGNA.app del DMG a Aplicaciones, confirma reemplazar el programa y expulsa el DMG. Ejecuta SIGNA desde su ubicación definitiva, con permiso para reemplazar el bundle. El sistema puede solicitar autorización al actualizar una aplicación situada en `/Applications`.
 5. En Linux, para usar la actualización integrada, descarga la AppImage de tu arquitectura, guárdala en una carpeta propia estable y escribible, dale permiso de ejecución (`chmod +x SIGNA-1.6.0-linux-x64.AppImage`) y ábrela. Conserva el archivo fuera de carpetas de descargas temporales. Requiere las bibliotecas de .NET/Avalonia y soporte AppImage/FUSE de la distribución. En Wayland necesita XWayland.
 6. Comprueba que tus materias están disponibles en la nueva edición. Las futuras versiones estables podrán instalarse con **Actualizar SIGNA**, sin repetir la instalación inicial.
@@ -24,6 +24,8 @@ Las versiones hasta 1.5.0 se distribuyeron con otro sistema de empaquetado. Nece
 Los paquetes **DEB, RPM y Arch/Omarchy se conservan**. Se actualizan descargando la versión nueva y usando apt, dnf o pacman, respectivamente. SIGNA puede avisar de una versión nueva y abrir su página oficial, pero no sobrescribe archivos administrados por el gestor de paquetes. Para la actualización interna en esos equipos usa voluntariamente la edición AppImage; no necesitas migrar tus datos si ejecutas ambas ediciones con la misma cuenta y ubicación de datos. No abras dos ediciones a la vez.
 
 Las distribuciones continúan sin firma oficial de Windows ni Apple Developer ID/notarización. Velopack y SHA-256 no sustituyen esos certificados. macOS conserva firma ad hoc de integridad y puede requerir autorizar la app verificada conforme al procedimiento de Apple.
+
+El instalador Windows de 1.6.0 se revisó para agregar el selector de carpeta y la licencia sin cambiar la versión. Se conserva el Setup Velopack original dentro del asistente y los mismos feeds/paquetes completos, con sus hashes originales. Solo cambia el EXE externo y su entrada en `SHA256SUMS.txt`. Descarga otra vez ese EXE si necesitas elegir carpeta; la revisión no aparece como una actualización académica nueva en SIGNA 1.6.0.
 
 ## Conservación de información
 

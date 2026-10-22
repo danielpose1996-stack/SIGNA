@@ -2,6 +2,8 @@
 
 ## 1.6.0 — 21 de octubre de 2026
 
+- **Revisión del instalador Windows, misma versión 1.6.0:** asistente con licencia MIT y selección de carpeta, sobre el Setup original de Velopack. Protege carpetas ajenas y datos/respaldos dentro del destino, mantiene el único desinstalador de Velopack y actualiza el SHA-256 del EXE. No cambian el tag, las funciones académicas, los cinco feeds/nupkg ni los instaladores macOS/Linux. Volver a descargar el EXE permite utilizar el asistente nuevo.
+
 - Actualizaciones estables mediante Velopack 1.2.161 y GitHub Releases oficiales. Comprobación al abrir sin bloquear el trabajo offline, búsqueda manual, aviso con ambas versiones y descarga por acción del docente con progreso/cancelación, instalación y reinicio controlado.
 - Verificación de tamaño/SHA-256 después de descargar y antes del reinicio, incluida la caché existente. Versiones/canales por sistema y arquitectura, sin versiones preliminares ni downgrade; errores y reintento sin cerrar SIGNA.
 - Guardas ante guardados, notas pendientes, otra instancia, rutas inseguras o SQLite inválido. Conserva ubicación y esquema de SQLite, preferencias y respaldos locales cifrados; no se incluyen datos personales en los paquetes.

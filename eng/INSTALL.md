@@ -16,7 +16,9 @@ Descarga el archivo de tu sistema desde https://github.com/danielpose1996-stack/
 | Mac Intel | `SIGNA-1.6.0-osx-x64.dmg` |
 | Mac Apple Silicon (M1/M2/M3/etc.) | `SIGNA-1.6.0-osx-arm64.dmg` |
 
-**Windows:** abre el instalador. Instala SIGNA para tu usuario, crea accesos en el menú Inicio y el escritorio. No solicita administrador. Para desinstalar usa Aplicaciones instaladas; los datos se conservan.
+**Windows:** abre el instalador, revisa la licencia MIT y elige la carpeta de instalación. La opción predeterminada es `%LOCALAPPDATA%\SIGNA`; puedes usar otra carpeta local donde tu cuenta tenga permisos de escritura. Elige una carpeta vacía o la instalación compatible de SIGNA que quieras reparar. El asistente rechaza carpetas con archivos ajenos, bases o respaldos para no reemplazar tus datos. Instala SIGNA para tu usuario, crea accesos en Inicio y el escritorio y conserva Velopack para actualizaciones/desinstalación. No solicita administrador. Para desinstalar usa Aplicaciones instaladas; los datos se conservan.
+
+La revisión del instalador conserva **1.6.0** y el nombre del EXE. Si descargaste la primera edición de ese instalador y deseas el selector de carpeta, vuelve a descargarlo y comprueba el hash nuevo. Las actualizaciones integradas del programa se ofrecerán cuando se publique una versión superior; esta revisión del asistente no modifica los paquetes de actualización ni requiere reinstalar para seguir usando la aplicación.
 
 **Ubuntu/Debian:** en la carpeta de descarga ejecuta `sudo apt install ./SIGNA-1.6.0-linux-x64.deb` (cambia a ARM64 si corresponde). Apt resuelve las bibliotecas del sistema. Para retirar el programa: `sudo apt remove signa`.
 
