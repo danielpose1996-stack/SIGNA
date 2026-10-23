@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 
 namespace GestorDocente.Infrastructure;
 
-public sealed class SqliteBackupPreferencesStore(string databasePath):IBackupPreferencesStore
+public sealed class SqliteBackupPreferencesStore(string databasePath,ISavedChangesObserver? changes=null):IBackupPreferencesStore
 {
     private readonly string path=Path.GetFullPath(databasePath);
     public string? LoadFolder(){using var db=Open(SqliteOpenMode.ReadOnly);return Read(db);}
@@ -29,7 +29,7 @@ public sealed class SqliteBackupPreferencesStore(string databasePath):IBackupPre
         command.CommandText="PRAGMA user_version";
         if(Convert.ToInt32(command.ExecuteScalar())!=1)throw InvalidPreferences();
         command.CommandText="CREATE TABLE IF NOT EXISTS backup_preferences(id INTEGER PRIMARY KEY CHECK(id=1),folder TEXT NOT NULL); INSERT INTO backup_preferences(id,folder) VALUES(1,$folder) ON CONFLICT(id) DO UPDATE SET folder=excluded.folder";
-        command.Parameters.AddWithValue("$folder",folder);command.ExecuteNonQuery();transaction.Commit();
+        command.Parameters.AddWithValue("$folder",folder);command.ExecuteNonQuery();transaction.Commit();changes?.Saved();
     }
     private SqliteConnection Open(SqliteOpenMode mode)
     {

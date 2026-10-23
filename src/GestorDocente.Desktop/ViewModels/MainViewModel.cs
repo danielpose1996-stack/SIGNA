@@ -210,7 +210,7 @@ public sealed partial class MainViewModel : ObservableObject
     public RelayCommand ConfigureCommand {get;}
     public string? ConfigurationGroupId {get;private set;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null,BackupPreferencesService? backupPreferences=null,ILocalDataResetService? dataReset=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null,BackupPreferencesService? backupPreferences=null,ILocalDataResetService? dataReset=null,AutomaticBackupCoordinator? automaticBackups=null)
     {
         Service=service;
         searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
@@ -218,7 +218,9 @@ public sealed partial class MainViewModel : ObservableObject
         PasteGradesCommand=new(value=>{FlushSearch();if(value is string id && GradeRows.Count>0 && !FileBusy && !Service.IsSaving)GradePasteRequested?.Invoke(id);},_=>HasOpenCourse && GradeRows.Count>0 && !FileBusy && !Service.IsSaving);
         ConfigureAttendanceGradingCommand=new(_=>AttendanceGradingRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
-        Updates=new(updater,updateSafety,BeginUpdateMaintenance);
+        AutomaticBackups=automaticBackups;
+        if(automaticBackups is not null)automaticBackups.Changed+=OnAutomaticBackupChanged;
+        Updates=new(updater,updateSafety,BeginUpdateMaintenance,PrepareAutomaticBackupForUpdateAsync);
         Updates.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(Updates.CanUseApplication))Raise(nameof(CanInteractWithWorkspace));};
         UpdatesCommand=new(_=>UpdatesRequested?.Invoke(),_=>!FileBusy);
         PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
@@ -391,8 +393,8 @@ public sealed partial class MainViewModel : ObservableObject
         if(FileBusy || Service.IsSaving)throw new AcademicValidationException("Espera a que termine la operación o el guardado antes de actualizar SIGNA.");
         if(allGradeRows.Any(r=>r.HasPendingEdits) || allAttendanceRows.Any(r=>r.HasPendingEdits))
             throw new AcademicValidationException("Hay notas o asistencias pendientes de guardar. Revísalas y guárdalas antes de actualizar SIGNA.");
-        FileBusy=true;
-        return new UpdateMaintenance(()=>FileBusy=false);
+        var pause=AutomaticBackups?.Pause();FileBusy=true;
+        return new UpdateMaintenance(()=>{FileBusy=false;pause?.Dispose();});
     }
     private sealed class UpdateMaintenance(Action release):IDisposable{public void Dispose()=>release();}
     public async Task CopyCourseParametersAsync(CourseSummary course)

@@ -8,8 +8,10 @@ namespace GestorDocente.Infrastructure;
 public sealed class SqliteCatalogStore : ICatalogStore
 {
     private readonly string connectionString;
-    public SqliteCatalogStore(string path)
+    private readonly ISavedChangesObserver? changes;
+    public SqliteCatalogStore(string path,ISavedChangesObserver? changes=null)
     {
+        this.changes=changes;
         var fullPath=Path.GetFullPath(path);
         var directory=Path.GetDirectoryName(fullPath)!;
         var newDirectory=!Directory.Exists(directory);
@@ -54,6 +56,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
     {
         using var db=Open();using var cmd=db.CreateCommand();cmd.CommandText="INSERT INTO semesters(id,year,term) VALUES($id,$year,$term)";cmd.Parameters.AddWithValue("$id",semester.Id);cmd.Parameters.AddWithValue("$year",semester.Year);cmd.Parameters.AddWithValue("$term",semester.Term);
         try{cmd.ExecuteNonQuery();}catch(SqliteException ex)when(ex.SqliteErrorCode==19){throw new AcademicValidationException("El semestre ya existe. Actualiza la lista.");}
+        changes?.Saved();
     }
     public void AddCourse(CourseRecord course,AcademicWorkspace workspace)
     {
@@ -68,6 +71,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
         cmd.Parameters.AddWithValue("$schema",workspace.SchemaVersion);
         foreach(var (key,value) in new[]{("$id",course.Id),("$semester",course.SemesterId),("$code",course.Code),("$name",course.Name),("$school",course.School),("$group",course.Group),("$payload",payload)})cmd.Parameters.AddWithValue(key,value);
         try{cmd.ExecuteNonQuery();tx.Commit();}catch(SqliteException ex)when(ex.SqliteErrorCode==19){throw new AcademicValidationException("La materia ya existe o el semestre no está disponible. No se guardó un registro parcial.");}
+        changes?.Saved();
     }
     public void UpdateCourse(CourseRecord original,CourseRecord updated)
     {
@@ -124,7 +128,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
             payload.Parameters.AddWithValue("$id",updated.Id);
             if(payload.ExecuteNonQuery()!=1)throw new AcademicValidationException("No se pudo guardar la materia completa. No se modificó el catálogo.");
         }
-        tx.Commit();
+        tx.Commit();changes?.Saved();
     }
     public void DeleteCourse(string courseId)
     {
@@ -137,9 +141,9 @@ public sealed class SqliteCatalogStore : ICatalogStore
         course.CommandText="DELETE FROM courses WHERE id=$id";
         course.Parameters.AddWithValue("$id",courseId);
         if(course.ExecuteNonQuery()!=1)throw new AcademicValidationException("No se pudo eliminar la materia completa; no se modificó el catálogo.");
-        tx.Commit();
+        tx.Commit();changes?.Saved();
     }
-    public IWorkspaceStore OpenCourse(string id)=>new CourseStore(connectionString,id);
+    public IWorkspaceStore OpenCourse(string id)=>new CourseStore(connectionString,id,changes);
 
     public SemesterDeletionPreview InspectSemesterDeletion(string semesterId)
     {
@@ -161,7 +165,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
             command.Parameters.AddWithValue("$id",confirmed.Semester.Id);
             if(command.ExecuteNonQuery()!=expected)throw new AcademicValidationException("No se pudo eliminar el semestre completo. No se modificaron los datos.");
         }
-        tx.Commit();
+        tx.Commit();changes?.Saved();
     }
     private static SemesterDeletionPreview ReadSemesterDeletion(SqliteConnection db,SqliteTransaction tx,string semesterId)
     {
@@ -193,7 +197,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
         return new(semester,revisions.AsReadOnly(),students,grades,attendance);
     }
 
-    private sealed class CourseStore(string connectionString,string id):IWorkspaceStore
+    private sealed class CourseStore(string connectionString,string id,ISavedChangesObserver? changes):IWorkspaceStore
     {
         private long revision;
         public AcademicWorkspace? Load()
@@ -228,7 +232,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
             using var tx=db.BeginTransaction();using var cmd=db.CreateCommand();cmd.Transaction=tx;
             cmd.CommandText="UPDATE course_workspaces SET payload=$payload,schema_version=$schema,revision=revision+1 WHERE course_id=$id AND revision=$revision";cmd.Parameters.AddWithValue("$schema",workspace.SchemaVersion);cmd.Parameters.AddWithValue("$payload",payload);cmd.Parameters.AddWithValue("$id",id);cmd.Parameters.AddWithValue("$revision",revision);
             if(cmd.ExecuteNonQuery()!=1)throw new AcademicValidationException("Otra instancia modificó esta materia. No se guardó el cambio; pulsa Actualizar para volver a leerla antes de reintentar.");
-            tx.Commit();revision++;
+            tx.Commit();revision++;changes?.Saved();
         }
     }
 }

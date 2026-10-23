@@ -1,38 +1,37 @@
-**SIGNA 1.6.1 — Acceso claro a actualizaciones y soporte Windows, macOS y Ubuntu**
+**SIGNA 1.6.2 — Respaldos automáticos y gestión local simplificada**
 
-### Mejoras
+### Novedades y correcciones
 
-- **Buscar actualizaciones** ahora tiene icono vectorial, fondo, borde y estados visibles al pasar el cursor, pulsar y navegar con teclado. Se adapta a los colores personalizados y conserva el flujo de actualización existente.
-- Versión de parche **1.6.1**: mejora compatible sobre 1.6.0, sin cambios en reglas académicas, cálculos, SQLite, preferencias ni respaldos.
-- Soporte actual: **Windows 10/11 x64**, **macOS 15 o posterior Intel/Apple Silicon** y **Ubuntu 24.04 LTS x64/ARM64**.
-- En Ubuntu se conservan **AppImage actualizable** y **.deb para apt**. Se retiran los paquetes RPM y Arch/Omarchy de las nuevas publicaciones; ya no se ofrece soporte Debian ni otras distribuciones. Ubuntu también usa .deb, por lo que ese formato se mantiene. Las Releases históricas permanecen intactas.
-- Manifiesto y pipeline ajustados a siete distribuciones y cinco canales Velopack, con comprobaciones de integridad y rechazo de paquetes retirados o archivos privados.
+- **Respaldos automáticos en segundo plano:** después de guardar cambios, SIGNA espera 30 segundos para agruparlos. Si continúas guardando, la espera se limita a dos minutos. No se generan copias por cada pulsación ni cuando no hay cambios.
+- **La misma carpeta para manuales y automáticos:** elige una vez la carpeta en Respaldos; puedes cambiarla cuando quieras. No se solicita ubicación en cada copia ni se inventa otro destino si la carpeta está desconectada.
+- **Máximo cinco automáticos:** al verificar una nueva copia, se elimina la automática más antigua que corresponda. Un índice de propiedad y hashes separa los automáticos de los manuales y preventivos, que nunca entran en la rotación. Cambiar de carpeta conserva las copias anteriores.
+- **Copias completas y portables:** semestres, materias, estudiantes y contactos, cortes, porcentajes, actividades, subactividades, notas, asistencias, fechas y preferencias. Se usa la API consistente de SQLite y se verifican el contenido, la integridad y las relaciones antes de publicar cada copia.
+- **Respaldos nuevos sin contraseña:** se conserva la lectura de archivos cifrados anteriores con su contraseña original. Protege el acceso a la carpeta de los archivos nuevos, porque ya no están cifrados.
+- **Estado y errores visibles:** Respaldos informa el resultado y los problemas de carpeta, permisos, espacio o integridad. Los errores no interrumpen los guardados académicos; se reintenta con espera. Restauración, limpieza y actualización esperan a que termine la copia en curso. Al cerrar normalmente se intenta respaldar los cambios pendientes.
+- **Limpiar datos de este equipo:** confirmación previa y reinicio del catálogo y configuraciones, conservando todos los respaldos y archivos del actualizador. La restauración mantiene su verificación y copia preventiva.
 
-### Cómo actualizar
+### Cómo actualizar y activar los automáticos
 
-Si tienes **1.6.0 con Velopack**, abre **Buscar actualizaciones**, revisa la versión y pulsa **Actualizar SIGNA**. Guarda antes tus cambios, cierra otras instancias y conserva un respaldo local cifrado fuera de la carpeta del programa. La actualización verifica el paquete y los datos antes de instalar y reiniciar; sin internet puedes continuar trabajando.
+1. Guarda tus cambios y conserva un respaldo antes de actualizar. Cierra otras instancias de SIGNA.
+2. Desde **1.6.0/1.6.1 con Velopack**, pulsa **Buscar actualizaciones → Actualizar SIGNA**. Se descarga, verifica e instala 1.6.2 y se reinicia conservando los datos.
+3. Abre **Respaldos → Elegir carpeta**. La selección queda recordada; tanto Generar respaldo como los automáticos usan esa ubicación. Las copias anteriores siguen siendo restaurables.
+4. Continúa trabajando y guardando normalmente. Consulta el estado automático en Respaldos. Puedes restaurar cualquier .aulabk automático en otro equipo mediante Elegir copia y restaurar.
 
-Las ediciones hasta 1.5.0 necesitan instalar una vez la edición actualizable desde esta Release. En Ubuntu, la actualización integrada corresponde a AppImage; el paquete .deb se actualiza descargando la nueva edición y utilizando apt. No abras dos ediciones a la vez.
-
-En Windows se mantiene el asistente de **licencia MIT y selección de carpeta**, con Velopack como único gestor de actualizaciones/desinstalación. Los datos académicos mantienen su ubicación fuera de los archivos del programa.
-
-Un commit en el repositorio no activa una actualización: la Release estable debe incluir su feed y paquete completo. Los cinco canales conservan sus nombres para poder actualizar desde 1.6.0.
+Sin internet SIGNA sigue funcionando. La actualización interna de Ubuntu corresponde a AppImage; el paquete .deb se actualiza descargando la nueva edición e instalándola con apt. Las ediciones hasta 1.5.0 necesitan instalar una vez la edición preparada con Velopack.
 
 ### Descargas
 
-- Windows 10/11 x64: `SIGNA-1.6.1-windows-x64-setup.exe`.
-- Ubuntu 24.04 LTS x64/ARM64: `SIGNA-1.6.1-linux-x64.AppImage`, `SIGNA-1.6.1-linux-arm64.AppImage` y los paquetes `.deb` de ambas arquitecturas.
-- macOS 15+: `SIGNA-1.6.1-osx-x64.dmg` (Intel) y `SIGNA-1.6.1-osx-arm64.dmg` (Apple Silicon).
-- Cinco feeds `releases.<canal>.json` y cinco paquetes `-full.nupkg` para el actualizador. No son instaladores para abrir manualmente.
+- **Windows 10/11 x64:** `SIGNA-1.6.2-windows-x64-setup.exe`, asistente con licencia MIT y selección de carpeta.
+- **Ubuntu 24.04 LTS x64/ARM64:** `SIGNA-1.6.2-linux-x64.AppImage`, `SIGNA-1.6.2-linux-arm64.AppImage` y paquetes `.deb` de ambas arquitecturas.
+- **macOS 15+, Intel/Apple Silicon:** `SIGNA-1.6.2-osx-x64.dmg` y `SIGNA-1.6.2-osx-arm64.dmg`.
+- Cinco feeds `releases.<canal>.json` y cinco paquetes `-full.nupkg` para el actualizador; no son instaladores que debas abrir manualmente.
 
-Incluyen .NET y el icono oficial. Consulta **INSTALACION.md**, **SHA256SUMS.txt** y [la guía de actualizaciones](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
+Los instaladores incluyen .NET y el icono oficial. Consulta **INSTALACION.md** y **SHA256SUMS.txt**. No se generan paquetes Arch/Omarchy ni RPM; se conservan las Releases históricas.
 
-### Validación y limitaciones
+### Validación y límites
 
-El workflow compila y ejecuta las suites en cinco sistemas/arquitecturas, verifica los paquetes y sus hashes antes de marcar esta Release como estable. Comprueba instalación, reparación y desinstalación en Windows, instalación/desinstalación en Ubuntu y bundles/DMG en macOS, utilizando datos ficticios en entornos efímeros. La interfaz se revisa mediante capturas Avalonia Headless en tres tamaños y colores. Las pruebas manuales y el ciclo real de actualización/reinicio entre dos versiones instaladas corresponden al docente.
+El pipeline compila y prueba en cinco sistemas/arquitecturas antes de publicar, con pruebas de instalación y empaquetado nativas, manifiesto completo y verificación de los archivos descargados después de subirlos. Las pruebas de respaldos usan exclusivamente datos ficticios y bases temporales; comprueban agrupación, rotación, fallos, concurrencia, integridad, portabilidad y coordinación con la interfaz. La presentación se revisa mediante capturas Avalonia Headless. Las pruebas manuales finales y el ciclo real entre versiones instaladas corresponden al docente.
 
-**Resultado de la publicación:** 429 pruebas de la aplicación aprobadas en cada uno de los cinco sistemas/arquitecturas, diez pruebas de empaquetado y comprobaciones nativas correctas. Los 19 adjuntos y sus 17 hashes se verificaron después de subirlos. [Ejecución completa](https://github.com/danielpose1996-stack/SIGNA/actions/runs/39722533263).
+No se incluyen materias, bases de datos ni estudiantes de prueba. Windows sigue sin firma oficial y macOS sin Apple Developer ID/notarización; se mantiene firma ad hoc de integridad. Licencia MIT.
 
-No se incluyen materias, estudiantes ni bases de prueba. Continúa sin firma oficial de Windows ni Apple Developer ID/notarización; macOS conserva firma ad hoc de integridad. Licencia MIT.
-
-[Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md).
+[Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md) · [Actualizaciones](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).

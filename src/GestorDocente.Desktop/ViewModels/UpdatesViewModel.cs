@@ -10,6 +10,7 @@ public sealed class UpdatesViewModel:ObservableObject
     private readonly IApplicationUpdater? updater;
     private readonly IUpdateSafetyCheck? safety;
     private readonly Func<IDisposable>? acquireMaintenance;
+    private readonly Func<Task>? waitForMaintenance;
     private CancellationTokenSource? cancellation;
     private AvailableApplicationUpdate? available;
     private bool automaticallyChecked,isInstalling,dismissed;
@@ -40,9 +41,9 @@ public sealed class UpdatesViewModel:ObservableObject
     public RelayCommand DismissCommand{get;}
     public event Action? RestartRequested;
 
-    public UpdatesViewModel(IApplicationUpdater? updater,IUpdateSafetyCheck? safety,Func<IDisposable>? acquireMaintenance=null)
+    public UpdatesViewModel(IApplicationUpdater? updater,IUpdateSafetyCheck? safety,Func<IDisposable>? acquireMaintenance=null,Func<Task>? waitForMaintenance=null)
     {
-        this.updater=updater;this.safety=safety;this.acquireMaintenance=acquireMaintenance;
+        this.updater=updater;this.safety=safety;this.acquireMaintenance=acquireMaintenance;this.waitForMaintenance=waitForMaintenance;
         CheckCommand=new(_=>_ = CheckAsync(),_=>Enabled && !IsBusy);
         InstallCommand=new(_=>_ = InstallAsync(),_=>CanInstall);
         CancelCommand=new(_=>Cancel(),_=>CanCancel);
@@ -77,6 +78,7 @@ public sealed class UpdatesViewModel:ObservableObject
                 throw new ApplicationUpdateException(ApplicationUpdateFailure.Busy,"No se pudo preparar un reinicio seguro. Cierra este diálogo e intenta de nuevo.");
             using var maintenance=acquireMaintenance?.Invoke();
             isInstalling=true;Progress=0;State=ApplicationUpdateState.Downloading;
+            if(waitForMaintenance is not null)await waitForMaintenance();
             Status="Descargando y verificando la actualización…";
             var reporter=new Progress<int>(value=>{if(State==ApplicationUpdateState.Downloading)Progress=Math.Clamp(value,0,100);});
             await updater.DownloadAsync(update,reporter,tokenSource.Token);Progress=100;

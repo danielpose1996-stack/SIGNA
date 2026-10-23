@@ -82,6 +82,7 @@ id_ed25519
 # Exportaciones, respaldos y datos personales de uso local
 /backups/
 /respaldos/
+.signa-automaticos*
 /exports/
 /datos-locales/
 

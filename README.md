@@ -12,23 +12,23 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.1:** botón **Buscar actualizaciones** con icono, borde, fondo y estados de interacción visibles. Conserva Velopack y la protección de datos. Soporte actual: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.1](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.1).
+**Versión 1.6.2:** respaldos automáticos en segundo plano en la carpeta elegida, con un máximo de cinco copias automáticas y conservación independiente de las manuales. Incluye respaldos nuevos sin contraseña, carpeta recordada y limpieza local confirmada. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.2](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.2).
 
-**Cambios recientes en `main`:** respaldos sin contraseña, carpeta recordada y limpieza local confirmada, descritos en [Respaldos locales completos](#respaldos-locales-completos). Estos cambios todavía no forman parte del instalador publicado 1.6.1.
+Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.1-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.1-linux-x64.AppImage` o `SIGNA-1.6.1-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.1-linux-x64.deb` o `SIGNA-1.6.1-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.1-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.1-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.2-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.2-linux-x64.AppImage` o `SIGNA-1.6.2-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.2-linux-x64.deb` o `SIGNA-1.6.2-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.2-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.2-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.1 cuando esté publicada como estable. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0/1.6.1 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.2. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** desde 1.6.1 se publica y valida únicamente para Ubuntu. Ya no se generan paquetes RPM ni Arch/Omarchy y no se ofrece soporte Debian. Ubuntu conserva `.deb` porque también es su formato de instalación. Las Releases históricas permanecen intactas; esta decisión no elimina datos ni instalaciones anteriores. Para compatibilidad e instalación vigentes, sigue esta guía y las instrucciones de la Release, aunque un manual de una edición anterior mencione otras distribuciones.
 
@@ -208,7 +208,7 @@ El PDF individual permanece en Asistencias; Reportes se retiró del menú latera
 
 ## Respaldos locales completos
 
-**Cambios en `main`, posteriores a la Release 1.6.1:** las instrucciones siguientes describen el código actualizado. El instalador 1.6.1 ya publicado conserva el flujo anterior con contraseña hasta que se publique una nueva versión.
+**Desde SIGNA 1.6.2:** respaldos manuales y automáticos completos sin contraseña, con lectura compatible de los archivos cifrados anteriores.
 
 1. Abre **Respaldos → Elegir carpeta** y selecciona dónde conservar tus archivos: una carpeta del equipo o una unidad externa. La ubicación queda guardada; puedes utilizar **Cambiar carpeta** cuando quieras.
 2. Pulsa **Generar respaldo**. Se crea directamente allí un archivo `.aulabk` nuevo, fechado y con nombre único, sin solicitar contraseña ni ubicación de nuevo. No se sobrescriben archivos. Si la carpeta desaparece o la unidad está desconectada, se informa el problema y eliges otra; no se cambia el destino silenciosamente.
@@ -218,6 +218,8 @@ El PDF individual permanece en Asistencias; Reportes se retiró del menú latera
 6. Para empezar de nuevo, utiliza **Limpiar datos de este equipo** y revisa la confirmación. Se eliminan los datos operativos y las configuraciones, incluido el perfil y la carpeta preferida. **Todos los archivos de respaldo se conservan**, también dentro de la carpeta de datos o de `Recovery`. Después puedes volver a elegir carpeta y generar copias o restaurar una existente. Los archivos de actualización no se modifican.
 
 Cierra otras instancias y espera a que terminen los guardados antes de restaurar o limpiar. Las operaciones de datos impiden cerrar SIGNA hasta terminar. Si restauras en otro sistema y la carpeta guardada no existe, utiliza **Cambiar carpeta**; el contenido del respaldo sigue siendo portable.
+
+**Automáticos:** después de confirmar cambios, SIGNA espera 30 segundos para agruparlos, con un límite de dos minutos bajo guardados continuos. El trabajo se ejecuta en segundo plano y conserva cinco copias `signa-auto-...aulabk` en la carpeta predeterminada. Solo se elimina la más antigua después de verificar la nueva. Los manuales y preventivos no se rotan; cambiar de carpeta conserva los anteriores. No edites `.signa-automaticos.json` ni el archivo de exclusión: identifican los automáticos que puede gestionar SIGNA. Los archivos desconocidos o modificados externamente no se eliminan; un índice incoherente se informa para revisarlo sin arriesgar otras copias. Un fallo muestra el motivo en Respaldos y se reintenta con espera, sin impedir guardar datos. Al cerrar normalmente se intenta respaldar lo pendiente sin esperar el intervalo.
 
 La base activa y los respaldos nuevos **no están cifrados**: protege el acceso a la cuenta, el disco y la carpeta de copias. No adjuntes `.db`, `.aulabk` ni listados reales a commits o incidencias. El [manual PDF](docs/manuales/Manual_de_Usuario_SIGNA.pdf) corresponde a una edición anterior; para este flujo sigue las instrucciones actuales de esta sección.
 

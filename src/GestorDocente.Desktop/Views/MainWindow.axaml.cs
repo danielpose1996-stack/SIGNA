@@ -9,12 +9,34 @@ namespace GestorDocente.Desktop.Views;
 public partial class MainWindow : Window
 {
     private MainViewModel? observed;
+    private bool closingAfterBackup,closingBackup;
     public MainWindow()
     {
         InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();
-        Closing+=(_,e)=>{if(observed is {IsMaintainingLocalData:true} model){e.Cancel=true;model.BackupStatus="Espera a que termine la operación de datos antes de cerrar SIGNA.";}};
+        Closing+=FinishBackupsBeforeClosing;
         Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();if(observed is {} model)_=model.Updates.CheckAsync(automatic:true);};
-        Closed+=(_,_)=>{observed?.Dashboard.Suspend();observed?.Updates.Cancel();};
+        Closed+=(_,_)=>{observed?.Dashboard.Suspend();observed?.Updates.Cancel();observed?.ReleaseAutomaticBackups();};
+    }
+    private async void FinishBackupsBeforeClosing(object? sender,WindowClosingEventArgs e)
+    {
+        if(observed is not {} model || closingAfterBackup)return;
+        if(model.IsMaintainingLocalData){e.Cancel=true;model.BackupStatus="Espera a que termine la operación de datos antes de cerrar SIGNA.";return;}
+        if(model.AutomaticBackups is null)return;
+        if(model.Service.IsSaving || model.Appearance.IsBusy){e.Cancel=true;model.Message="Espera a que termine el guardado antes de cerrar SIGNA.";return;}
+        e.Cancel=true;if(closingBackup)return;closingBackup=true;
+        model.SetClosingForBackup(true);
+        try
+        {
+            await model.StopAutomaticBackupsAsync(flushPending:!model.Updates.IsInstalling);
+            if(!model.Updates.IsInstalling && model.AutomaticBackups.LastError is {} error &&
+                !await new ConfirmWindow(error+"\n\nLos datos guardados siguen en este equipo. Puedes cancelar el cierre para revisar la carpeta o generar un respaldo manual. ¿Cerrar SIGNA de todas formas?","Cerrar SIGNA",scrollable:true){Width=620,Height=310}.ShowDialog<bool>(this))
+            {model.AutomaticBackups.ResumeAfterCancelledClose();return;}
+            closingAfterBackup=true;
+            // Post avoids a recursive Close inside Avalonia's original Closing event.
+            Avalonia.Threading.Dispatcher.UIThread.Post(Close);
+        }
+        catch(Exception ex){model.BackupStatus=SafeError(ex);model.AutomaticBackups.ResumeAfterCancelledClose();}
+        finally{closingBackup=false;if(!closingAfterBackup)model.SetClosingForBackup(false);}
     }
     private void Attach()
     {
@@ -23,6 +45,7 @@ public partial class MainWindow : Window
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;observed.BackupFolderRequested-=ChooseBackupFolder;observed.LocalDataResetRequested-=ClearLocalData;}
+        if(observed is {} previous){_ = previous.StopAutomaticBackupsAsync(false);previous.ReleaseAutomaticBackups();}
         observed=DataContext as MainViewModel;
         if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
@@ -246,6 +269,7 @@ public partial class MainWindow : Window
         try
         {
             using var maintenance=model.BeginLocalDataMaintenance();
+            await model.WaitForAutomaticBackupAsync();
             var folder=model.BackupFolder ?? throw new AcademicValidationException("Elige primero la carpeta para tus respaldos.");
             model.BackupStatus="Generando y verificando el respaldo…";
             var result=await Task.Run(()=>backup.CreateInFolder(folder));
@@ -260,6 +284,7 @@ public partial class MainWindow : Window
         try
         {
             using var maintenance=model.BeginLocalDataMaintenance();
+            await model.WaitForAutomaticBackupAsync();
             var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Elegir respaldo de SIGNA",AllowMultiple=false,FileTypeFilter=[BackupType]});
             if(files.Count==0)return;
             using var file=files[0];var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige un archivo local de respaldo.");
@@ -295,6 +320,7 @@ public partial class MainWindow : Window
         try
         {
             using var maintenance=model.BeginLocalDataMaintenance();
+            await model.WaitForAutomaticBackupAsync();
             var question="Se eliminarán de este equipo todos los semestres, materias, estudiantes, calificaciones, asistencias y configuraciones, incluida la carpeta preferida de respaldos. SIGNA quedará como recién instalado. Todos tus archivos de respaldo se conservarán, estén donde estén; podrás restaurarlos después. Los archivos de actualización no se modificarán. Esta operación no se puede deshacer sin un respaldo. ¿Limpiar los datos de este equipo?";
             if(!await new ConfirmWindow(question,"Limpiar datos",scrollable:true){Width=640,Height=350}.ShowDialog<bool>(this))
             {model.BackupStatus="Limpieza cancelada. Todos los datos se conservan.";return;}

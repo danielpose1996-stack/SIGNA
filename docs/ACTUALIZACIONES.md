@@ -2,6 +2,8 @@
 
 SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón de búsqueda y limita el soporte futuro a Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. Las ediciones hasta **1.5.0** necesitan instalar una vez la edición nueva para recibir actualizaciones internas posteriores.
 
+**1.6.2** agrega respaldos automáticos después de guardar, misma carpeta manual y retención de cinco automáticos. Incluye las nuevas copias sin contraseña, carpeta recordada y limpieza local con confirmación. Desde una instalación Velopack 1.6.0/1.6.1 puedes recibir esta actualización sin desinstalar. La actualización espera a que termine una copia automática antes de verificar los datos y reiniciar.
+
 ## Para el docente
 
 Al abrir SIGNA se comprueba en segundo plano si hay una versión estable nueva en el [repositorio oficial](https://github.com/danielpose1996-stack/SIGNA/releases/latest). No se envían materias, estudiantes, notas, preferencias ni respaldos. Sin internet puedes trabajar normalmente; no aparece un diálogo que impida abrir la aplicación.
@@ -34,6 +36,8 @@ No cambian el esquema de SQLite ni la ubicación histórica de los datos: `Local
 El actualizador sustituye **archivos del programa**, sin restaurar, recrear o migrar la base, mover los respaldos ni cambiar sus contraseñas. Antes del reinicio se valida SQLite en modo de solo lectura, incluidas las relaciones y los agregados académicos. La comprobación admite datos confirmados en WAL. Si detecta una base o un respaldo dentro de la carpeta reemplazable del programa, bloquea la actualización e informa el motivo: conserva esos archivos fuera del programa antes de continuar.
 
 Los respaldos `.aulabk` permanecen donde los guardaste, tanto los nuevos sin contraseña como los cifrados anteriores. La base activa sigue sin cifrar. La limpieza local solo reinicializa el catálogo y sus preferencias; no elimina copias ni archivos del actualizador. Mantén respaldos periódicos y conserva la contraseña de los archivos antiguos: el actualizador no sustituye ese cuidado.
+
+En 1.6.2 los automáticos se distinguen por `signa-auto-...aulabk`, con un índice `.signa-automaticos.json` y un archivo de exclusión en la carpeta elegida. No edites esos archivos de control. La retención solo elimina automáticos registrados y sin modificaciones externas después de verificar una nueva copia. Los manuales y preventivos no se rotan. Si cambias de carpeta, las copias de la anterior se conservan. Si la carpeta restaurada pertenece a otro equipo y no existe aquí, elige una nueva: SIGNA no cambia silenciosamente de destino.
 
 ## Publicación y arquitectura
 

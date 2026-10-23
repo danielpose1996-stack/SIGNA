@@ -1,6 +1,10 @@
 # Historial de cambios de SIGNA
 
-## Sin publicar — 23 de octubre de 2026
+## 1.6.2 — 23 de octubre de 2026
+
+- Respaldos automáticos después de escrituras confirmadas: agrupa cambios durante 30 segundos y limita la espera a dos minutos bajo guardados continuos, sin consultas por pulsación ni trabajo de copia en el hilo de interfaz.
+- Misma carpeta predeterminada de los manuales; máximo cinco automáticos verificados, identificados mediante un índice de propiedad y hashes. Solo se rota después de verificar la nueva copia; nunca se eliminan manuales, preventivos ni archivos desconocidos.
+- Estado y errores visibles en Respaldos, reintento espaciado si falla, coordinación con restauración, limpieza y actualización, y respaldo de cambios pendientes al cerrar normalmente. Las copias automáticas se restauran en otro equipo igual que las manuales.
 
 - Respaldos locales nuevos sin contraseña ni cifrado, con longitud, SHA-256 y validación física/referencial/académica de SQLite. Lectura compatible de los respaldos antiguos con su contraseña original.
 - Carpeta predeterminada guardada y modificable. «Generar respaldo» crea una copia fechada con nombre único directamente allí; una carpeta no disponible se informa sin cambiar de destino automáticamente.

@@ -3,7 +3,7 @@ using GestorDocente.Domain;
 using Microsoft.Data.Sqlite;
 
 namespace GestorDocente.Infrastructure;
-public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePreferencesStore
+public sealed class SqliteInterfacePreferencesStore(string path,ISavedChangesObserver? changes=null):IInterfacePreferencesStore
 {
     private readonly string path=Path.GetFullPath(path);
     public InterfacePreferences Load()
@@ -56,7 +56,7 @@ public sealed class SqliteInterfacePreferencesStore(string path):IInterfacePrefe
             """;
         command.Parameters.AddWithValue("$avatar",preferences.Avatar.ToString());
         command.Parameters.AddWithValue("$name",preferences.TeacherName);command.Parameters.AddWithValue("$accent",preferences.Accent);command.Parameters.AddWithValue("$grades",preferences.ColorGrades ? 1 : 0);
-        command.ExecuteNonQuery();tx.Commit();
+        command.ExecuteNonQuery();tx.Commit();changes?.Saved();
     }
     // Storage compatibility only: these historical choices are no longer a UI feature.
     private static string LegacyAccent(string value)=>value switch

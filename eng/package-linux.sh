@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-version=${1:-1.6.1}
+version=${1:-1.6.2}
 rid=${2:-linux-x64}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Versión inválida' >&2; exit 1; }
 case "$rid" in linux-x64) deb_arch=amd64;; linux-arm64) deb_arch=arm64;; *) exit 1;; esac
@@ -68,7 +68,7 @@ Depends: libc6 (>= 2.39), libgcc-s1, libstdc++6, zlib1g, libssl3t64, libicu74, l
 Installed-Size: $(du -sk "$stage/usr" | cut -f1)
 Description: Sistema Integral de Gestión de Notas y Asistencias
  Aplicación de escritorio local para docentes, con notas, asistencias,
- reportes PDF y respaldos cifrados. Incluye el runtime de .NET.
+ reportes PDF y respaldos locales automaticos. Incluye el runtime de .NET.
 EOF
 dpkg-deb --root-owner-group --build "$stage" "$release/SIGNA-$version-$rid.deb"
 python3 eng/verify-linux.py "$stage" "$rid"
