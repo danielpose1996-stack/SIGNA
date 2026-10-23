@@ -6,13 +6,15 @@ Aplicación de escritorio independiente de cualquier institución para materias,
 
 **Repositorio oficial:** [danielpose1996-stack/SIGNA](https://github.com/danielpose1996-stack/SIGNA). **Licencia:** [MIT](LICENSE).
 
-SIGNA está pensado para que un docente conserve y consulte sus materias a lo largo de varios períodos académicos. La gestión diaria funciona sin internet: los datos se guardan en el computador y pueden trasladarse a otro equipo mediante respaldos locales cifrados. El repositorio contiene el software y sus pruebas; las bases de datos, listados reales de estudiantes y respaldos del docente no se publican.
+SIGNA está pensado para que un docente conserve y consulte sus materias a lo largo de varios períodos académicos. La gestión diaria funciona sin internet: los datos se guardan en el computador y pueden trasladarse a otro equipo mediante respaldos locales. El repositorio contiene el software y sus pruebas; las bases de datos, listados reales de estudiantes y respaldos del docente no se publican.
 
 ## Descargar e instalar
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
 **Versión 1.6.1:** botón **Buscar actualizaciones** con icono, borde, fondo y estados de interacción visibles. Conserva Velopack y la protección de datos. Soporte actual: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.1](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.1).
+
+**Cambios recientes en `main`:** respaldos sin contraseña, carpeta recordada y limpieza local confirmada, descritos en [Respaldos locales completos](#respaldos-locales-completos). Estos cambios todavía no forman parte del instalador publicado 1.6.1.
 
 **Manual de usuario:** [Abrir o descargar el Manual de Usuario SIGNA (PDF)](docs/manuales/Manual_de_Usuario_SIGNA.pdf). Incluye la instalación y los procedimientos paso a paso para usar las materias, los estudiantes, las notas, las asistencias y los respaldos.
 
@@ -53,7 +55,7 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple o ponderado opcional, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Pegar una columna de notas con vista previa, ordenar nombres A–Z/Z–A y generar un PDF de toda la lista, identificada solo por nombre. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
 | **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Orden visual por nombre, nota opcional de asistencia por corte, numeración visible consecutiva y PDF individual. |
-| **Respaldos** | Guardar y restaurar una copia local cifrada de toda la base SQLite, con contraseña, comprobaciones de integridad y confirmación antes de reemplazar datos. |
+| **Respaldos** | Generar copias nuevas sin contraseña en una carpeta recordada; restaurar con verificación y copia preventiva. Limpiar datos operativos con confirmación, conservando todos los respaldos y el actualizador. Las copias antiguas cifradas siguen siendo restaurables con su contraseña. |
 | **Apariencia** | Elegir un color con lienzo HSV y código HEX sincronizados, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 
 No se necesita servidor, cuenta de SIGNA ni inicio de sesión para usar estas funciones. Los respaldos se guardan únicamente de forma local; el usuario elige dónde crear el archivo y desde dónde restaurarlo.
@@ -86,7 +88,7 @@ SIGNA es una aplicación de escritorio por capas. Su backend son servicios C# ej
 | --- | --- | --- |
 | `GestorDocente.Domain` | Modelos y reglas académicas, sin acceso a la interfaz ni a SQLite. | Estudiantes, cortes, actividades, semanas, validación de porcentajes, cálculo de notas y resumen de asistencia. |
 | `GestorDocente.Application` | Casos de uso y contratos de los servicios. Coordina validación, cambios y guardado. | `WorkspaceService`, `CatalogService`, importación, proyecciones de métricas/PDF y contratos de almacenamiento y respaldos. |
-| `GestorDocente.Infrastructure` | Implementaciones que leen o escriben archivos y datos. | `Microsoft.Data.Sqlite`, lectura de Excel, generación de PDF con SkiaSharp, respaldos cifrados y preferencias de apariencia. |
+| `GestorDocente.Infrastructure` | Implementaciones que leen o escriben archivos y datos. | `Microsoft.Data.Sqlite`, Excel, PDF con SkiaSharp, respaldos consistentes sin contraseña, lectura cifrada histórica y preferencias. |
 | `GestorDocente.Desktop` | Presentación Avalonia y composición de los servicios. | Vistas AXAML, ViewModels, navegación, diálogos, estilos compartidos, iconos y configuración de publicación por plataforma. |
 
 El flujo de una operación, por ejemplo crear una semana con todos presentes, es:
@@ -109,7 +111,7 @@ SQLite guarda el catálogo de semestres y materias, las preferencias de interfaz
 
 Las operaciones de guardado utilizan transacciones y control de revisión: si otra instancia modificó la materia, el cambio se rechaza y se informa al usuario. La preparación y persistencia de las operaciones asíncronas se ejecutan fuera del hilo de la interfaz; sus notificaciones actualizan las tablas y los resúmenes después del guardado. La búsqueda de estudiantes filtra las proyecciones en memoria y no consulta SQLite por cada tecla.
 
-Los respaldos usan la API de copia consistente de SQLite, validan integridad física, relaciones y datos académicos, y cifran el archivo con una contraseña elegida por el docente. La aplicación no conserva esa contraseña. Antes de una restauración se verifica la copia y se protege el estado actual mediante un respaldo preventivo. La base activa sigue siendo un archivo SQLite sin cifrar; el cifrado corresponde a los archivos de respaldo.
+Los respaldos nuevos usan la API de copia consistente de SQLite, sin contraseña ni cifrado. Se verifican longitud, SHA-256, integridad física, relaciones y datos académicos antes de publicar el archivo; el hash detecta corrupción, no autentica frente a cambios deliberados. Se conserva el lector de archivos cifrados históricos, que requiere su contraseña original. Antes de restaurar se verifica la copia y se conserva un respaldo preventivo sin contraseña. La limpieza local reinicializa el catálogo mediante una transacción y compacta su archivo; no elimina carpetas ni archivos de respaldo o actualización.
 
 ### Estructura del repositorio
 
@@ -202,19 +204,22 @@ El porcentaje individual se calcula como `(P + T) / (P + T + A) × 100`. El grá
 
 Al crear una semana puedes activar **Marcar presente a todos**: se guardan la semana y un P para cada estudiante de la materia en una sola operación. La opción inicia desactivada y vuelve a desactivarse después de crear la semana; sin activarla, las celdas quedan pendientes como antes. Puedes cambiar cualquier asistencia después. El porcentaje, el gráfico, el detalle y el PDF utilizan los registros actualizados.
 
-En **Respaldos** puedes crear un archivo local cifrado `.aulabk` y restaurarlo con la contraseña que elijas. Consérvala: la aplicación no la almacena ni puede recuperarla. Cierra otras instancias antes de restaurar. Antes de reemplazar una base se verifica el respaldo y se crea una copia preventiva cifrada en `Recovery` junto a los datos locales. El PDF individual permanece en Asistencias; Reportes se retiró del menú lateral.
+El PDF individual permanece en Asistencias; Reportes se retiró del menú lateral.
 
 ## Respaldos locales completos
 
-1. Abre **Respaldos → Crear respaldo cifrado**, elige una contraseña de al menos 12 caracteres y selecciona dónde guardar un archivo nuevo `.aulabk`. No se sobrescriben copias existentes.
-2. El archivo contiene toda la base de SIGNA: semestres (también los vacíos), materias, estudiantes con documento/nombre/correo/celular, cortes y ponderaciones, actividades/subactividades, notas y asistencias con sus tipos y fechas. También conserva los registros retirados, los identificadores que mantienen las relaciones y el nombre, color e icono del perfil configurados.
-3. La copia se genera con [BackupDatabase de Microsoft.Data.Sqlite](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/backup), incluyendo los cambios confirmados que estén en WAL. Se comprueban integridad SQLite, claves foráneas y datos académicos, sin modificar los payloads ni sus revisiones. El archivo cifrado también se verifica antes de publicarlo.
-4. Para continuar en otro computador, instala una versión compatible de SIGNA y copia el archivo `.aulabk`. En **Elegir copia y restaurar**, selecciona el archivo, introduce su contraseña y revisa la confirmación. Se recupera el catálogo completo; se reemplazan los datos actuales después de conservar una copia preventiva cifrada en `Recovery`.
-5. Si la contraseña, el archivo, la versión o las relaciones son inválidos, la restauración se rechaza y los datos actuales se conservan. La aplicación no almacena ni recupera contraseñas. Cierra otras instancias antes de restaurar.
+**Cambios en `main`, posteriores a la Release 1.6.1:** las instrucciones siguientes describen el código actualizado. El instalador 1.6.1 ya publicado conserva el flujo anterior con contraseña hasta que se publique una nueva versión.
 
-Los respaldos funcionan sin cuenta ni internet. La selección de carpetas y archivos se realiza mediante los diálogos del sistema operativo. Las copias previas `.aulabk` mantienen su compatibilidad.
+1. Abre **Respaldos → Elegir carpeta** y selecciona dónde conservar tus archivos: una carpeta del equipo o una unidad externa. La ubicación queda guardada; puedes utilizar **Cambiar carpeta** cuando quieras.
+2. Pulsa **Generar respaldo**. Se crea directamente allí un archivo `.aulabk` nuevo, fechado y con nombre único, sin solicitar contraseña ni ubicación de nuevo. No se sobrescriben archivos. Si la carpeta desaparece o la unidad está desconectada, se informa el problema y eliges otra; no se cambia el destino silenciosamente.
+3. El archivo contiene toda la base: semestres, materias, estudiantes y contactos, cortes y porcentajes, actividades/subactividades, calificaciones, asistencias y fechas, registros retirados y preferencias del docente, incluida la carpeta configurada. Se utiliza [BackupDatabase de Microsoft.Data.Sqlite](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/backup) para incluir los cambios confirmados en WAL y se valida sin modificar los datos originales.
+4. Para recuperar una copia en este u otro equipo, utiliza **Elegir copia y restaurar**. Se comprueban el archivo, SQLite y las relaciones antes de solicitar confirmación para reemplazar los datos. Se conserva una copia preventiva sin contraseña en `Recovery`, junto a la base operativa. Si el catálogo actual está dañado y es legible, sus bytes se conservan como copia de emergencia claramente identificada.
+5. Las copias nuevas no necesitan contraseña. Solo los respaldos cifrados anteriores solicitan su contraseña original; la aplicación no puede recuperarla. Un archivo dañado, una contraseña antigua incorrecta o datos incompatibles impiden la restauración sin reemplazar los actuales.
+6. Para empezar de nuevo, utiliza **Limpiar datos de este equipo** y revisa la confirmación. Se eliminan los datos operativos y las configuraciones, incluido el perfil y la carpeta preferida. **Todos los archivos de respaldo se conservan**, también dentro de la carpeta de datos o de `Recovery`. Después puedes volver a elegir carpeta y generar copias o restaurar una existente. Los archivos de actualización no se modifican.
 
-La base SQLite activa usa los permisos de la cuenta del sistema operativo y **no está cifrada**; los archivos de respaldo sí lo están. Mantén protegida la cuenta y el disco del equipo. No incluyas bases, archivos `.aulabk` ni listados de alumnos en commits o incidencias públicas.
+Cierra otras instancias y espera a que terminen los guardados antes de restaurar o limpiar. Las operaciones de datos impiden cerrar SIGNA hasta terminar. Si restauras en otro sistema y la carpeta guardada no existe, utiliza **Cambiar carpeta**; el contenido del respaldo sigue siendo portable.
+
+La base activa y los respaldos nuevos **no están cifrados**: protege el acceso a la cuenta, el disco y la carpeta de copias. No adjuntes `.db`, `.aulabk` ni listados reales a commits o incidencias. El [manual PDF](docs/manuales/Manual_de_Usuario_SIGNA.pdf) corresponde a una edición anterior; para este flujo sigue las instrucciones actuales de esta sección.
 
 ## Icono oficial y distribución
 
@@ -259,7 +264,7 @@ Las ventanas usan el mismo PNG oficial de SIGNA. Para añadir SIGNA al menú de 
 
 La versión actual de Avalonia utiliza X11 y, en una sesión Wayland, XWayland. El sistema debe disponer de las [bibliotecas nativas de Avalonia](https://docs.avaloniaui.net/docs/deployment/linux) (`libx11-6`, `libice6`, `libsm6`, `libfontconfig1` en Ubuntu) y de las [dependencias nativas de .NET 10 para Ubuntu](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install). La publicación autocontenida incluye el runtime .NET y las bibliotecas de SQLite/Skia, pero requiere las bibliotecas del sistema. La plataforma Linux validada es Ubuntu 24.04 LTS x64/ARM64; otras distribuciones no forman parte del soporte. No se han instalado bibliotecas ni realizado pruebas manuales de Linux desde el equipo Windows.
 
-Para ejecutar desde el código fuente en Linux, con el SDK de .NET 10 instalado: `dotnet run --project src/GestorDocente.Desktop`. Los datos mantienen su ubicación de usuario mediante `LocalApplicationData`; en Linux normalmente se encuentran bajo `~/.local/share/AulaRegistro`, o en `GESTOR_DOCENTE_DATA_DIR` si se configura. Para trasladar datos entre equipos utiliza el respaldo local cifrado existente.
+Para ejecutar desde el código fuente en Linux, con el SDK de .NET 10 instalado: `dotnet run --project src/GestorDocente.Desktop`. Los datos mantienen su ubicación de usuario mediante `LocalApplicationData`; en Linux normalmente se encuentran bajo `~/.local/share/AulaRegistro`, o en `GESTOR_DOCENTE_DATA_DIR` si se configura. Para trasladar datos entre equipos utiliza un respaldo local compatible.
 
 ## Desarrollo y pruebas
 

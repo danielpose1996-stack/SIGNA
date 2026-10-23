@@ -11,7 +11,7 @@ namespace GestorDocente.Infrastructure.Tests;
 public class UpdateSafetyTests
 {
     [Fact]
-    public async Task Replacing_application_files_preserves_complete_catalog_preferences_and_encrypted_backups()
+    public async Task Replacing_application_files_preserves_complete_catalog_preferences_and_unencrypted_backups()
     {
         using var fixture=new Fixture();var catalog=new CatalogService(new SqliteCatalogStore(fixture.Database));
         var term=catalog.CreateSemester(2026,1);var course=catalog.CreateCourse(term.Id,"F-01","Materia ficticia","Escuela","A");
@@ -19,7 +19,7 @@ public class UpdateSafetyTests
         workspace.ConfigureGroups(1,[new(){Id="a",Name="Parcial",Weight=100}]);
         workspace.SetGrade(1,workspace.Current.Students[0].Id,"a",4.5m);workspace.AddWeek(1,WeekKind.Activities,new(2026,10,21),true);
         var preferences=new SqliteInterfacePreferencesStore(fixture.Database);var appearance=new InterfacePreferences(TeacherName:"Docente ficticio",Accent:"#123456");preferences.Save(appearance);
-        var backup=Path.Combine(fixture.Directory,"backup.aulabk");new EncryptedLocalBackupService(fixture.Database).Create(backup,"Clave-ficticia-2026");
+        var backup=Path.Combine(fixture.Directory,"backup.aulabk");new LocalBackupService(fixture.Database,()=>false).Create(backup);
         var backupHash=SHA256.HashData(File.ReadAllBytes(backup));var before=JsonSerializer.Serialize(workspace.Current);
         var databaseHash=SHA256.HashData(File.ReadAllBytes(fixture.Database));
         var guard=new SqliteUpdateSafetyCheck(fixture.Database,()=>fixture.Installation,()=>false);

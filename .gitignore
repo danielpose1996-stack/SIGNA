@@ -60,6 +60,7 @@ __pycache__/
 *.backup
 *.aulabk
 *.aulabk.tmp
+*.aulabk.*.tmp
 
 # Credenciales y claves privadas
 .secrets/

@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 namespace GestorDocente.Infrastructure;
 
 /// <summary>Respaldo SQLite consistente y archivo portable autenticado, sin almacenar la contraseña.</summary>
-public sealed class EncryptedLocalBackupService(string databasePath):ILocalBackupService
+public sealed class EncryptedLocalBackupService(string databasePath)
 {
     private const int ChunkSize=1024*1024;
     private const int Iterations=600_000;
@@ -114,7 +114,7 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
     private string TemporaryDatabasePath()=>Path.Combine(Path.GetDirectoryName(source)!,
         ".aula-respaldo-"+Guid.NewGuid().ToString("N")+".db");
 
-    private void Snapshot(string target)
+    internal void Snapshot(string target)
     {
         if(!File.Exists(source))throw new AcademicValidationException("No existe una base local para respaldar.");
         if(!OperatingSystem.IsWindows())
@@ -162,7 +162,7 @@ public sealed class EncryptedLocalBackupService(string databasePath):ILocalBacku
         finally{CryptographicOperations.ZeroMemory(key);}
     }
 
-    private static void Decrypt(string archive,string destination,string password)
+    internal static void Decrypt(string archive,string destination,string password)
     {
         try
         {

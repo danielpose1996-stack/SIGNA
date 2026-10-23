@@ -9,7 +9,6 @@ namespace GestorDocente.Infrastructure.Tests;
 
 public class LocalBackupCompletenessTests
 {
-    private const string Password="Contraseña ficticia portable de prueba";
 
     [Fact]
     public async Task Whole_catalog_restores_identical_records_in_another_directory()
@@ -48,13 +47,13 @@ public class LocalBackupCompletenessTests
         workspace=catalog.Open(course.Id);
         await catalog.Open(other.Id).AddStudentAsync("Estudiante en otro semestre");
         var before=ReadRecords(source);var archive=files.PathFor("copias", "respaldo.aulabk");
-        var created=new EncryptedLocalBackupService(source).Create(archive,Password);
+        var created=new LocalBackupService(source,()=>false).Create(archive);
         Assert.Equal(3,created.SemesterCount);Assert.Equal(3,created.CourseCount);Assert.Equal(3,created.StudentCount);Assert.Equal(before,ReadRecords(source));
 
         var target=files.PathFor("equipo-b", "datos.db");
         var previous=new CatalogService(new SqliteCatalogStore(target));previous.CreateSemester(2025,2);
         var previousRecords=ReadRecords(target);
-        var result=new EncryptedLocalBackupService(target).Restore(archive,Password);
+        var result=new LocalBackupService(target,()=>false).Restore(archive);
         Assert.Equal(before,ReadRecords(target));Assert.False(result.PreviousCopyWasRaw);
         var restoredCatalog=new CatalogService(new SqliteCatalogStore(target));Assert.Equal(3,restoredCatalog.Semesters.Count);
         var restored=restoredCatalog.Open(course.Id).Current;
@@ -64,7 +63,7 @@ public class LocalBackupCompletenessTests
         Assert.DoesNotContain(restored.Cuts.SelectMany(c=>c.Grades),g=>g.ActivityId=="sub3");
         Assert.Single(restored.Cuts[3].RemovedWeeks);
         var recovery=files.PathFor("recuperacion", "datos.db");
-        new EncryptedLocalBackupService(recovery).Restore(result.PreviousBackupPath,Password);
+        new LocalBackupService(recovery,()=>false).Restore(result.PreviousBackupPath);
         Assert.Equal(previousRecords,ReadRecords(recovery));
     }
 
@@ -80,9 +79,9 @@ public class LocalBackupCompletenessTests
             command.Parameters.AddWithValue("$payload",JsonSerializer.Serialize(data));command.ExecuteNonQuery();
         }
         var before=ReadRecords(source);var archive=files.PathFor("copias", "historico.aulabk");
-        var backup=new EncryptedLocalBackupService(source);backup.Create(archive,Password);backup.Inspect(archive,Password);
+        var backup=new LocalBackupService(source,()=>false);backup.Create(archive);backup.Inspect(archive);
         Assert.Equal(before,ReadRecords(source));
-        var target=files.PathFor("otro-equipo", "datos.db");new EncryptedLocalBackupService(target).Restore(archive,Password);
+        var target=files.PathFor("otro-equipo", "datos.db");new LocalBackupService(target,()=>false).Restore(archive);
         Assert.Equal(before,ReadRecords(target));
     }
 
@@ -95,7 +94,7 @@ public class LocalBackupCompletenessTests
         using var files=new Files();var source=files.PathFor("original", "datos.db");Seed(source);
         using(var db=Open(source)){using var command=db.CreateCommand();command.CommandText=damage;command.ExecuteNonQuery();}
         var archive=files.PathFor("copias", "invalido.aulabk");var before=File.ReadAllBytes(source);
-        Assert.Throws<AcademicValidationException>(()=>new EncryptedLocalBackupService(source).Create(archive,Password));
+        Assert.Throws<AcademicValidationException>(()=>new LocalBackupService(source,()=>false).Create(archive));
         Assert.False(File.Exists(archive));Assert.Equal(before,File.ReadAllBytes(source));
         Assert.Empty(Directory.GetFiles(System.IO.Path.GetDirectoryName(source)!,".aula-respaldo-*"));
     }
@@ -113,11 +112,11 @@ public class LocalBackupCompletenessTests
         {
             using var pending=writer.CreateCommand();pending.Transaction=transaction;
             pending.CommandText="INSERT INTO semesters VALUES('pendiente',2028,1)";pending.ExecuteNonQuery();
-            new EncryptedLocalBackupService(source).Create(files.PathFor("copias","wal.aulabk"),Password);
+            new LocalBackupService(source,()=>false).Create(files.PathFor("copias","wal.aulabk"));
             transaction.Rollback();
         }
         var target=files.PathFor("otro-equipo","datos.db");
-        new EncryptedLocalBackupService(target).Restore(files.PathFor("copias","wal.aulabk"),Password);
+        new LocalBackupService(target,()=>false).Restore(files.PathFor("copias","wal.aulabk"));
         Assert.Equal(expected,ReadRecords(target));Assert.Equal(2,new CatalogService(new SqliteCatalogStore(target)).Semesters.Count);
     }
 

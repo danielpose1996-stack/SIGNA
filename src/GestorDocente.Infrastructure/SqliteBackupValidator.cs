@@ -61,6 +61,7 @@ internal static class SqliteBackupValidator
             }
         }
         _=SqliteInterfacePreferencesStore.Read(db);
+        _=SqliteBackupPreferencesStore.Read(db);
         return(semesters.Count,courses,students);
     }
 

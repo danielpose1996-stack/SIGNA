@@ -3,7 +3,7 @@
     <Border Background="{DynamicResource Soft}" Padding="18,10" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" IsVisible="{Binding Updates.ShowNotification}">
       <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock Text="{Binding Updates.Notification}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Actualizar SIGNA" Classes="primary" Command="{Binding UpdatesCommand}" Margin="12,0,8,0" /><Button Grid.Column="2" Content="Más tarde" Classes="quiet" Command="{Binding Updates.DismissCommand}" /></Grid>
     </Border>
-    <Grid Grid.Row="1" ColumnDefinitions="236,*" IsEnabled="{Binding Updates.CanUseApplication}">
+    <Grid Grid.Row="1" ColumnDefinitions="236,*" IsEnabled="{Binding CanInteractWithWorkspace}">
       <Border Background="{DynamicResource Sidebar}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,*,Auto" Margin="14,28,14,20">
           <StackPanel Margin="18,0,0,28" Spacing="3">

@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();
+        Closing+=(_,e)=>{if(observed is {IsMaintainingLocalData:true} model){e.Cancel=true;model.BackupStatus="Espera a que termine la operación de datos antes de cerrar SIGNA.";}};
         Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();if(observed is {} model)_=model.Updates.CheckAsync(automatic:true);};
         Closed+=(_,_)=>{observed?.Dashboard.Suspend();observed?.Updates.Cancel();};
     }
@@ -21,13 +22,13 @@ public partial class MainWindow : Window
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
-        if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;}
+        if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;observed.BackupFolderRequested-=ChooseBackupFolder;observed.LocalDataResetRequested-=ClearLocalData;}
         observed=DataContext as MainViewModel;
         if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
-        if(observed is not null) {observed.PropertyChanged+=OnModelPropertyChanged;observed.ConfigurationRequested+=OpenConfiguration;observed.CutWeightsRequested+=OpenCutWeights;observed.CutDeletionRequested+=DeleteCut;observed.CatalogEditorRequested+=OpenCatalog;observed.CourseEditionRequested+=EditCourse;observed.CourseDeletionRequested+=DeleteCourse;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.StudentEditorRequested+=AddStudent;observed.StudentDetailsRequested+=ViewStudentDetails;observed.ExportRequested+=ExportReport;observed.AttendancePdfRequested+=ExportAttendancePdf;observed.NotesPdfRequested+=ExportNotesPdf;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;}
+        if(observed is not null) {observed.PropertyChanged+=OnModelPropertyChanged;observed.ConfigurationRequested+=OpenConfiguration;observed.CutWeightsRequested+=OpenCutWeights;observed.CutDeletionRequested+=DeleteCut;observed.CatalogEditorRequested+=OpenCatalog;observed.CourseEditionRequested+=EditCourse;observed.CourseDeletionRequested+=DeleteCourse;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.StudentEditorRequested+=AddStudent;observed.StudentDetailsRequested+=ViewStudentDetails;observed.ExportRequested+=ExportReport;observed.AttendancePdfRequested+=ExportAttendancePdf;observed.NotesPdfRequested+=ExportNotesPdf;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;observed.BackupFolderRequested+=ChooseBackupFolder;observed.LocalDataResetRequested+=ClearLocalData;}
         MinWidth=observed?.IsCourses==true ? 780 : 1100;
     }
     private void OnModelPropertyChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e)
@@ -217,73 +218,101 @@ public partial class MainWindow : Window
     private static FilePickerFileType ExcelType=>new("Libro de Excel (.xlsx)"){Patterns=["*.xlsx"],MimeTypes=["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]};
     private static FilePickerFileType ExcelImportType=>new("Libros de Excel (.xls, .xlsx, .xlsm, .xlsb)"){Patterns=["*.xls","*.xlsx","*.xlsm","*.xlsb"],MimeTypes=["application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.ms-excel.sheet.macroEnabled.12","application/vnd.ms-excel.sheet.binary.macroEnabled.12"]};
     private static FilePickerFileType PdfType=>new("Documento PDF (.pdf)"){Patterns=["*.pdf"],MimeTypes=["application/pdf"]};
-    private static FilePickerFileType BackupType=>new("Respaldo cifrado de SIGNA (.aulabk)"){Patterns=["*.aulabk"]};
+    private static FilePickerFileType BackupType=>new("Respaldo de SIGNA (.aulabk)"){Patterns=["*.aulabk"]};
     private async Task<string?> RequestBackupPassword(string title,bool confirmation)
     {
         ModalOverlay.IsVisible=true;
         try{return await new BackupPasswordWindow(title,confirmation).ShowDialog<string?>(this);}
         finally{ModalOverlay.IsVisible=false;}
     }
-    private async void CreateBackup()
+    private async void ChooseBackupFolder()
     {
-        if(observed is not {} model || model.LocalBackup is not {} backup || model.FileBusy)return;
+        if(observed is not {} model || model.FileBusy)return;
         model.FileBusy=true;
         try
         {
-            var password=await RequestBackupPassword("Contraseña del respaldo",true);
-            if(password is null)return;
-            var suggested=$"signa-{DateTime.Now:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}.aulabk";
-            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Crear respaldo cifrado",SuggestedFileName=suggested,DefaultExtension="aulabk",FileTypeChoices=[BackupType]});
-            if(file is null)return;
-            var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige una carpeta local para el respaldo.");
-            if(!path.EndsWith(".aulabk",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("El respaldo debe usar la extensión .aulabk.");
-            model.BackupStatus="Creando y verificando el respaldo cifrado…";
-            var result=await Task.Run(()=>backup.Create(path,password));
-            model.BackupStatus=$"Respaldo completo verificado: {result.Path} · {result.SemesterCount} semestres, {result.CourseCount} materias, {result.StudentCount} estudiantes.";
+            var folders=await StorageProvider.OpenFolderPickerAsync(new(){Title="Carpeta para los respaldos de SIGNA",AllowMultiple=false});
+            if(folders.Count==0)return;
+            using var folder=folders[0];var path=folder.TryGetLocalPath() ?? throw new AcademicValidationException("Elige una carpeta local disponible.");
+            await model.SetBackupFolderAsync(path);
+            model.BackupStatus="Carpeta guardada. Generar respaldo creará un archivo nuevo aquí, sin pedir ubicación ni contraseña.";
         }
         catch(Exception ex){model.BackupStatus=SafeError(ex);}
         finally{model.FileBusy=false;}
     }
+    private async void CreateBackup()
+    {
+        if(observed is not {} model || model.LocalBackup is not {} backup || model.FileBusy)return;
+        try
+        {
+            using var maintenance=model.BeginLocalDataMaintenance();
+            var folder=model.BackupFolder ?? throw new AcademicValidationException("Elige primero la carpeta para tus respaldos.");
+            model.BackupStatus="Generando y verificando el respaldo…";
+            var result=await Task.Run(()=>backup.CreateInFolder(folder));
+            model.BackupStatus=$"Respaldo completo verificado: {result.Path} · {result.SemesterCount} semestres, {result.CourseCount} materias, {result.StudentCount} estudiantes.";
+        }
+        catch(Exception ex){model.BackupStatus=SafeError(ex);}
+    }
     private async void RestoreBackup()
     {
         if(observed is not {} model || model.LocalBackup is not {} backup || model.FileBusy)return;
-        model.FileBusy=true;
         var replaced=false;
         try
         {
-            if(model.Service.IsSaving)throw new AcademicValidationException("Espera a que termine el guardado de la materia antes de restaurar.");
-            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Elegir respaldo cifrado",AllowMultiple=false,FileTypeFilter=[BackupType]});
+            using var maintenance=model.BeginLocalDataMaintenance();
+            var files=await StorageProvider.OpenFilePickerAsync(new(){Title="Elegir respaldo de SIGNA",AllowMultiple=false,FileTypeFilter=[BackupType]});
             if(files.Count==0)return;
-            using var file=files[0];
-            var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige un archivo local de respaldo.");
-            var password=await RequestBackupPassword("Contraseña para restaurar",false);
-            if(password is null)return;
-            model.BackupStatus="Verificando contraseña e integridad…";
+            using var file=files[0];var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Elige un archivo local de respaldo.");
+            string? password=null;
+            if(await Task.Run(()=>backup.RequiresPassword(path)))
+            {
+                password=await RequestBackupPassword("Contraseña del respaldo antiguo",false);
+                if(password is null)return;
+            }
+            model.BackupStatus="Verificando el archivo y los datos…";
             var inspection=await Task.Run(()=>backup.Inspect(path,password));
-            var question=$"Se reemplazará toda la información local con {inspection.SemesterCount} semestres, {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes del respaldo, incluyendo contactos, cortes, porcentajes, actividades, notas y asistencias. Antes se conservará una copia preventiva cifrada de los datos actuales. Cierra otras instancias del programa. ¿Restaurar ahora?";
+            var question=$"Se reemplazará toda la información local con {inspection.SemesterCount} semestres, {inspection.CourseCount} materias y {inspection.StudentCount} estudiantes del respaldo, incluyendo contactos, cortes, porcentajes, actividades, notas y asistencias. Antes se conservará una copia preventiva sin contraseña. Cierra otras instancias del programa. ¿Restaurar ahora?";
             if(!await new ConfirmWindow(question,"Restaurar respaldo",scrollable:true){Width=620,Height=300}.ShowDialog<bool>(this))
             {model.BackupStatus="Restauración cancelada. Los datos actuales se conservan.";return;}
             model.BackupStatus="Guardando copia preventiva y restaurando…";
-            var result=await Task.Run(()=>backup.Restore(path,password));
-            replaced=true;
-            var next=await App.CreateProductionViewModelAsync();
-            DataContext=next;
-            next.NavigateCommand.Execute("Respaldos");
+            var result=await Task.Run(()=>backup.Restore(path,password));replaced=true;
+            var next=await App.CreateProductionViewModelAsync();DataContext=next;next.NavigateCommand.Execute("Respaldos");
             next.BackupStatus=result.PreviousCopyWasRaw ?
-                $"Restauración completa. El archivo anterior dañado se conservó cifrado en {result.PreviousBackupPath}; puede no ser una base válida." :
-                $"Restauración completa: {result.SemesterCount} semestres, {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior cifrada: {result.PreviousBackupPath}.";
+                $"Restauración completa. El archivo anterior dañado se conservó en {result.PreviousBackupPath}; puede no ser una base válida." :
+                $"Restauración completa: {result.SemesterCount} semestres, {result.CourseCount} materias y {result.StudentCount} estudiantes. Copia anterior sin contraseña: {result.PreviousBackupPath}.";
             next.Message="Respaldo restaurado. Selecciona una materia para continuar.";
         }
         catch(Exception ex)
         {
-            if(replaced)
-            {
-                DataContext=null;
-                Content=new TextBlock{Margin=new(30),TextWrapping=Avalonia.Media.TextWrapping.Wrap,Text="El respaldo se restauró, pero la aplicación no pudo volver a abrir el catálogo. Cierra y abre la aplicación antes de escribir nuevos datos. Error: "+SafeError(ex)};
-            }
+            if(replaced)ShowReloadFailure("El respaldo se restauró",ex);
             else model.BackupStatus=SafeError(ex);
         }
-        finally{if(!replaced)model.FileBusy=false;}
+    }
+    private async void ClearLocalData()
+    {
+        if(observed is not {} model || model.DataReset is not {} reset || model.FileBusy)return;
+        var cleared=false;
+        try
+        {
+            using var maintenance=model.BeginLocalDataMaintenance();
+            var question="Se eliminarán de este equipo todos los semestres, materias, estudiantes, calificaciones, asistencias y configuraciones, incluida la carpeta preferida de respaldos. SIGNA quedará como recién instalado. Todos tus archivos de respaldo se conservarán, estén donde estén; podrás restaurarlos después. Los archivos de actualización no se modificarán. Esta operación no se puede deshacer sin un respaldo. ¿Limpiar los datos de este equipo?";
+            if(!await new ConfirmWindow(question,"Limpiar datos",scrollable:true){Width=640,Height=350}.ShowDialog<bool>(this))
+            {model.BackupStatus="Limpieza cancelada. Todos los datos se conservan.";return;}
+            model.BackupStatus="Limpiando los datos de este equipo…";
+            var result=await Task.Run(()=>reset.Reset(confirmed:true));cleared=true;
+            var next=await App.CreateProductionViewModelAsync();DataContext=next;next.NavigateCommand.Execute("Respaldos");
+            next.BackupStatus=string.IsNullOrEmpty(result.Warning) ? "Datos locales eliminados. Tus respaldos se conservaron. Puedes empezar de nuevo o restaurar una copia." : result.Warning;
+        }
+        catch(Exception ex)
+        {
+            if(cleared)ShowReloadFailure("Los datos locales se limpiaron",ex);
+            else model.BackupStatus=SafeError(ex);
+        }
+    }
+    private void ShowReloadFailure(string operation,Exception error)
+    {
+        DataContext=null;
+        Content=new TextBlock{Margin=new(30),TextWrapping=Avalonia.Media.TextWrapping.Wrap,Text=operation+", pero no se pudo volver a abrir el catálogo. Cierra y abre SIGNA antes de escribir nuevos datos. Error: "+SafeError(error)};
     }
     private async void OpenImport()
     {

@@ -14,7 +14,7 @@ Guarda las notas pendientes, termina las operaciones y cierra otras instancias d
 
 Las versiones hasta 1.5.0 se distribuyeron con otro sistema de empaquetado. Necesitan instalar **una vez** la nueva edición desde Releases. No pueden recibir Velopack mediante un actualizador que todavía no tienen.
 
-1. Crea un respaldo local cifrado en **Respaldos**, fuera de la carpeta del programa, y conserva la contraseña.
+1. Crea un respaldo local en **Respaldos**, fuera de la carpeta del programa. Si usas un archivo cifrado de una edición anterior, conserva su contraseña original.
 2. Cierra SIGNA. Descarga el instalador de tu sistema y arquitectura desde la página oficial. Comprueba su SHA-256.
 3. En Windows abre el nuevo Setup, revisa la licencia MIT y selecciona una carpeta de instalación. El asistente delega en Velopack y admite una carpeta local vacía o una instalación SIGNA compatible, con permisos de escritura; rechaza archivos ajenos, datos y respaldos dentro del destino. Instala por usuario sin requerir desinstalar primero la edición anterior. Abre el acceso nuevo. Si eliges otra carpeta, la instalación anterior puede permanecer en su ubicación; evita abrir simultáneamente ambas ediciones. La ubicación de SQLite y los respaldos no depende de la carpeta del programa.
 4. En macOS arrastra el nuevo SIGNA.app del DMG a Aplicaciones, confirma reemplazar el programa y expulsa el DMG. Ejecuta SIGNA desde su ubicación definitiva, con permiso para reemplazar el bundle. El sistema puede solicitar autorización al actualizar una aplicación situada en `/Applications`.
@@ -33,7 +33,7 @@ No cambian el esquema de SQLite ni la ubicación histórica de los datos: `Local
 
 El actualizador sustituye **archivos del programa**, sin restaurar, recrear o migrar la base, mover los respaldos ni cambiar sus contraseñas. Antes del reinicio se valida SQLite en modo de solo lectura, incluidas las relaciones y los agregados académicos. La comprobación admite datos confirmados en WAL. Si detecta una base o un respaldo dentro de la carpeta reemplazable del programa, bloquea la actualización e informa el motivo: conserva esos archivos fuera del programa antes de continuar.
 
-Los respaldos cifrados `.aulabk` permanecen donde los guardaste. La base activa sigue sin cifrar; la actualización no cambia esa política. Mantén respaldos periódicos: ni el actualizador ni sus comprobaciones pueden proteger frente a fallos de disco, pérdida de contraseña o borrados externos.
+Los respaldos `.aulabk` permanecen donde los guardaste, tanto los nuevos sin contraseña como los cifrados anteriores. La base activa sigue sin cifrar. La limpieza local solo reinicializa el catálogo y sus preferencias; no elimina copias ni archivos del actualizador. Mantén respaldos periódicos y conserva la contraseña de los archivos antiguos: el actualizador no sustituye ese cuidado.
 
 ## Publicación y arquitectura
 

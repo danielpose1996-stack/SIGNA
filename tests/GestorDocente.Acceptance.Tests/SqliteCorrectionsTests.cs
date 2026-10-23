@@ -57,15 +57,16 @@ public class SqliteCorrectionsTests
     }
 
     [AvaloniaFact]
-    public async Task Backups_menu_opens_password_dialog_without_requiring_login()
+    public async Task Backups_create_directly_in_the_selected_folder_without_a_password_dialog()
     {
         var vm=new MainViewModel(new WorkspaceService(new MemoryStore()),localBackup:new StubBackup());
         var window=new MainWindow{DataContext=vm};window.Show();window.UpdateLayout();
+        await vm.SetBackupFolderAsync(Path.GetTempPath());
         vm.NavigateCommand.Execute("Respaldos");vm.CreateBackupCommand.Execute(null);
-        var prompt=Assert.Single(window.OwnedWindows.OfType<BackupPasswordWindow>());
-        Assert.True(prompt.IsVisible);
-        prompt.Close(null);
+        for(var i=0;i<100 && vm.FileBusy;i++)await Task.Delay(10);
         await Dispatcher.UIThread.InvokeAsync(()=>{});
+        Assert.Empty(window.OwnedWindows.OfType<BackupPasswordWindow>());
+        Assert.Contains("Respaldo completo verificado",vm.BackupStatus);
         Assert.False(vm.FileBusy);
         window.Close();
     }
@@ -129,8 +130,10 @@ public class SqliteCorrectionsTests
     }
     private sealed class StubBackup:ILocalBackupService
     {
-        public LocalBackupResult Create(string destination,string password)=>throw new NotSupportedException();
-        public LocalBackupResult Inspect(string archive,string password)=>throw new NotSupportedException();
-        public LocalRestoreResult Restore(string archive,string password)=>throw new NotSupportedException();
+        public LocalBackupResult Create(string destination)=>new(destination,0,0);
+        public LocalBackupResult CreateInFolder(string folder)=>new(Path.Combine(folder,"ficticio.aulabk"),0,0);
+        public bool RequiresPassword(string archive)=>false;
+        public LocalBackupResult Inspect(string archive,string? legacyPassword=null)=>throw new NotSupportedException();
+        public LocalRestoreResult Restore(string archive,string? legacyPassword=null)=>throw new NotSupportedException();
     }
 }

@@ -1,5 +1,12 @@
 # Historial de cambios de SIGNA
 
+## Sin publicar — 23 de octubre de 2026
+
+- Respaldos locales nuevos sin contraseña ni cifrado, con longitud, SHA-256 y validación física/referencial/académica de SQLite. Lectura compatible de los respaldos antiguos con su contraseña original.
+- Carpeta predeterminada guardada y modificable. «Generar respaldo» crea una copia fechada con nombre único directamente allí; una carpeta no disponible se informa sin cambiar de destino automáticamente.
+- «Limpiar datos de este equipo» con confirmación, transacción y reinicio del catálogo/perfil/configuraciones. Conserva los respaldos de cualquier carpeta y los archivos del actualizador; bloquea operaciones simultáneas y cierre mientras trabaja con los datos.
+- Restauración normal y de recuperación al iniciar compatibles con ambos formatos; copia preventiva sin contraseña y recarga del catálogo después de restaurar o limpiar.
+
 ## 1.6.1 — 21 de octubre de 2026
 
 - Botón lateral «Buscar actualizaciones» con icono vectorial, fondo, borde y estados de puntero/pulsación/foco. Conserva su comando y la ventana de actualización existentes, con colores compatibles con la personalización.

@@ -2,7 +2,7 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="24,0,24,24" Spacing="20">
       <Border Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="18">
-        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="{DynamicResource AccentText}" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales cifrados" FontWeight="SemiBold" /><TextBlock Text="La copia funciona sin internet. Guarda tu contraseña en un lugar seguro: sin ella no podrás restaurar el archivo." Foreground="{DynamicResource Muted}" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" /></StackPanel></Grid>
+        <Grid ColumnDefinitions="28,*"><c:VectorIcon Kind="info" Stroke="{DynamicResource AccentText}" Width="23" Height="23" VerticalAlignment="Top" /><StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="6"><TextBlock Text="Respaldos locales sin contraseña" FontWeight="SemiBold" /><TextBlock Text="Las copias funcionan sin internet y contienen toda tu información. Se guardan sin cifrado: protege el acceso a la carpeta donde las conservas." Foreground="{DynamicResource Muted}" TextWrapping="Wrap" /><TextBlock Text="{Binding BackupStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Ink}" /></StackPanel></Grid>
       </Border>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="20">
         <Border Classes="card" Padding="24">
@@ -10,9 +10,10 @@
             <c:VectorIcon Kind="backup" Stroke="{DynamicResource AccentText}" Width="34" Height="34" HorizontalAlignment="Left" />
             <TextBlock Text="Respaldo local" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Una copia que tú conservas" Classes="muted" />
-            <TextBlock Text="Selecciona dónde guardar un archivo nuevo .aulabk: una carpeta de este equipo o una memoria externa." TextWrapping="Wrap" />
+            <TextBlock Text="Elige una carpeta una sola vez. Cada respaldo se guardará allí con fecha y un nombre único, sin sobrescribir los anteriores." TextWrapping="Wrap" />
             <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Toda la información de SIGNA" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="Semestres, materias, estudiantes con sus contactos, cortes y porcentajes, actividades, subactividades, calificaciones y asistencias, incluidas las fechas registradas. Se verifican los datos y sus relaciones." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
-            <Button x:Name="CreateLocalBackupButton" Classes="primary" Content="Crear respaldo cifrado" Command="{Binding CreateBackupCommand}" HorizontalAlignment="Left" />
+            <Border Background="{DynamicResource Soft}" BorderBrush="{DynamicResource InputLine}" BorderThickness="1" CornerRadius="5" Padding="12"><StackPanel Spacing="10"><TextBlock Text="Carpeta predeterminada" FontWeight="SemiBold" /><TextBlock x:Name="BackupFolderPath" Text="{Binding BackupFolderLabel}" TextWrapping="Wrap" ToolTip.Tip="{Binding BackupFolder}" /><Button x:Name="ChooseBackupFolderButton" Content="{Binding BackupFolderAction}" Command="{Binding ChooseBackupFolderCommand}" HorizontalAlignment="Left" /></StackPanel></Border>
+            <Button x:Name="CreateLocalBackupButton" Classes="primary" Content="Generar respaldo" Command="{Binding CreateBackupCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="card" Padding="24">
@@ -20,12 +21,19 @@
             <c:VectorIcon Kind="restore" Width="34" Height="34" Stroke="{DynamicResource AccentText}" HorizontalAlignment="Left" />
             <TextBlock Text="Restaurar una copia" FontSize="21" FontWeight="SemiBold" />
             <TextBlock Text="Continúa tu trabajo en este u otro computador" Classes="muted" TextWrapping="Wrap" />
-            <TextBlock Text="Selecciona un archivo .aulabk y escribe su contraseña. Se verifica el cifrado, la integridad de SQLite y todas las relaciones antes de recuperar los datos." TextWrapping="Wrap" />
-            <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Reemplazo con confirmación" FontWeight="SemiBold" /><TextBlock Text="La restauración recupera todo el catálogo respaldado y reemplaza los datos actuales. Antes se conserva una copia preventiva cifrada. Cierra otras instancias del programa." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
+            <TextBlock Text="Selecciona un archivo .aulabk. Se verifica su integridad, SQLite y todas sus relaciones antes de recuperar los datos. Solo las copias antiguas cifradas necesitan su contraseña original." TextWrapping="Wrap" />
+            <Border Background="{DynamicResource Soft}" CornerRadius="5" Padding="14"><StackPanel Spacing="8"><TextBlock Text="Reemplazo con confirmación" FontWeight="SemiBold" /><TextBlock Text="La restauración recupera todo el catálogo respaldado y reemplaza los datos actuales. Antes se conserva una copia preventiva sin contraseña. Cierra otras instancias del programa." Classes="muted" FontSize="13" TextWrapping="Wrap" /></StackPanel></Border>
             <Button x:Name="RestoreLocalBackupButton" Content="Elegir copia y restaurar" Command="{Binding RestoreBackupCommand}" HorizontalAlignment="Left" />
           </StackPanel>
         </Border>
       </Grid>
+      <Border Classes="card" BorderBrush="#E5B9BD" Padding="22">
+        <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="14">
+          <c:VectorIcon Kind="trash" Stroke="#B32135" Width="25" Height="25" VerticalAlignment="Top" />
+          <StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="Limpiar datos de este equipo" FontSize="17" FontWeight="SemiBold" /><TextBlock Text="Elimina el catálogo y las configuraciones de SIGNA para empezar de nuevo. Se solicitará confirmación. Tus archivos de respaldo y el actualizador se conservan." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+          <Button Grid.Column="2" x:Name="ClearLocalDataButton" Content="Limpiar datos de este equipo" Foreground="#B32135" BorderBrush="#C87780" Command="{Binding ClearLocalDataCommand}" VerticalAlignment="Center" Margin="8,0,0,0" />
+        </Grid>
+      </Border>
       <Button Content="Volver a Inicio" Command="{Binding NavigateCommand}" CommandParameter="Inicio" HorizontalAlignment="Left" />
     </StackPanel>
   </ScrollViewer>

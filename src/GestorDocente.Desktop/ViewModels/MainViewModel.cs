@@ -6,7 +6,7 @@ namespace GestorDocente.Desktop.ViewModels;
 
 public sealed record GroupCard(string Name,string WeightLabel,string TypeLabel,RelayCommand ConfigureCommand,string Id="");
 public enum NavigationSection { Home, Courses, Academic, Backups }
-public sealed class MainViewModel : ObservableObject
+public sealed partial class MainViewModel : ObservableObject
 {
     public WorkspaceService Service {get;private set;}
     public CatalogService? Catalog {get;}
@@ -75,14 +75,14 @@ public sealed class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
     public RelayCommand ExportNotesPdfCommand{get;}
     public RelayCommand CreateBackupCommand{get;}
     public RelayCommand RestoreBackupCommand{get;}
-    private string backupStatus="Elige dónde guardar una copia cifrada. Conservarás la contraseña para restaurarla.";
+    private string backupStatus="Elige una carpeta una sola vez. Las copias nuevas se guardan sin contraseña.";
     public string BackupStatus{get=>backupStatus;set=>Set(ref backupStatus,value);}
     public bool CanUseLocalBackup=>LocalBackup is not null;
     public bool IsDemo=>Service.Current.IsDemo;
@@ -210,7 +210,7 @@ public sealed class MainViewModel : ObservableObject
     public RelayCommand ConfigureCommand {get;}
     public string? ConfigurationGroupId {get;private set;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null,BackupPreferencesService? backupPreferences=null,ILocalDataResetService? dataReset=null)
     {
         Service=service;
         searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
@@ -219,10 +219,14 @@ public sealed class MainViewModel : ObservableObject
         ConfigureAttendanceGradingCommand=new(_=>AttendanceGradingRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
         Updates=new(updater,updateSafety,BeginUpdateMaintenance);
+        Updates.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(Updates.CanUseApplication))Raise(nameof(CanInteractWithWorkspace));};
         UpdatesCommand=new(_=>UpdatesRequested?.Invoke(),_=>!FileBusy);
         PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
         Catalog=catalog;
         WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;AttendancePdfExporter=attendancePdfExporter;NotesPdfExporter=notesPdfExporter;
+        BackupPreferences=backupPreferences ?? new(new MemoryBackupPreferencesStore());DataReset=dataReset;
+        ChooseBackupFolderCommand=new(_=>BackupFolderRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
+        ClearLocalDataCommand=new(_=>LocalDataResetRequested?.Invoke(),_=>DataReset is not null && !FileBusy && !Service.IsSaving);
         if(localBackup is null)BackupStatus="Los respaldos se habilitan en el catálogo local, fuera de la demostración.";
         ImportStudentsCommand=new(_=>ImportRequested?.Invoke(),_=>HasOpenCourse && WorkbookReader is not null && !FileBusy);
         AddStudentCommand=new(_=>StudentEditorRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
@@ -230,7 +234,7 @@ public sealed class MainViewModel : ObservableObject
         ExportReportCommand=new(_=>ExportRequested?.Invoke(),_=>HasOpenCourse && ReportExporter is not null && !FileBusy);
         ExportAttendancePdfCommand=new(_=>AttendancePdfRequested?.Invoke(),_=>HasOpenCourse && SelectedStudent is not null && AttendancePdfExporter is not null && !FileBusy);
         ExportNotesPdfCommand=new(_=>NotesPdfRequested?.Invoke(),_=>HasOpenCourse && NotesPdfExporter is not null && !FileBusy && !Service.IsSaving);
-        CreateBackupCommand=new(_=>BackupRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
+        CreateBackupCommand=new(_=>BackupRequested?.Invoke(),_=>CanUseLocalBackup && !string.IsNullOrWhiteSpace(BackupFolder) && !FileBusy && !Service.IsSaving);
         RestoreBackupCommand=new(_=>RestoreRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         Home=new(service,catalog,loadImmediately:false);
         Dashboard=new(catalog,()=>Service.Current,loadImmediately:false);
