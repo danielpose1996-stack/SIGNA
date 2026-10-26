@@ -4,6 +4,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 **1.6.2** agrega respaldos automáticos después de guardar, misma carpeta manual y retención de cinco automáticos. Incluye las nuevas copias sin contraseña, carpeta recordada y limpieza local con confirmación. Desde una instalación Velopack 1.6.0/1.6.1 puedes recibir esta actualización sin desinstalar. La actualización espera a que termine una copia automática antes de verificar los datos y reiniciar.
 
+**1.6.3** permite eliminar con confirmación la lista completa de estudiantes de una materia desde Notas o Asistencias, conservando cortes, actividades y configuración. La actualización no elimina listas por sí misma: solo lo hace una acción explícita y confirmada del docente. Sin cambios de esquema ni ubicación de SQLite; conserva respaldos y configuración existentes. Disponible mediante Buscar actualizaciones desde las ediciones 1.6.0–1.6.2 preparadas con Velopack.
+
 ## Para el docente
 
 Al abrir SIGNA se comprueba en segundo plano si hay una versión estable nueva en el [repositorio oficial](https://github.com/danielpose1996-stack/SIGNA/releases/latest). No se envían materias, estudiantes, notas, preferencias ni respaldos. Sin internet puedes trabajar normalmente; no aparece un diálogo que impida abrir la aplicación.

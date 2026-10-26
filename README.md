@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.2:** respaldos automáticos en segundo plano en la carpeta elegida, con un máximo de cinco copias automáticas y conservación independiente de las manuales. Incluye respaldos nuevos sin contraseña, carpeta recordada y limpieza local confirmada. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.2](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.2).
+**Versión 1.6.3:** opción **Eliminar lista** en Notas y Asistencias para reemplazar un listado incorrecto, con confirmación y borrado completo de sus notas/asistencias. Conserva la materia, cortes, actividades y configuraciones, sin afectar otras materias. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.3](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.3).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.2-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.2-linux-x64.AppImage` o `SIGNA-1.6.2-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.2-linux-x64.deb` o `SIGNA-1.6.2-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.2-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.2-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.3-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.3-linux-x64.AppImage` o `SIGNA-1.6.3-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.3-linux-x64.deb` o `SIGNA-1.6.3-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.3-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.3-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0/1.6.1 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.2. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.2 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.3. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** desde 1.6.1 se publica y valida únicamente para Ubuntu. Ya no se generan paquetes RPM ni Arch/Omarchy y no se ofrece soporte Debian. Ubuntu conserva `.deb` porque también es su formato de instalación. Las Releases históricas permanecen intactas; esta decisión no elimina datos ni instalaciones anteriores. Para compatibilidad e instalación vigentes, sigue esta guía y las instrucciones de la Release, aunque un manual de una edición anterior mencione otras distribuciones.
 
@@ -69,6 +69,8 @@ Se copian los cortes y sus porcentajes, las actividades y subactividades activas
 ### Registro masivo de estudiantes
 
 En una materia, abre **Agregar estudiante → Varios estudiantes**. Pega un nombre completo por línea en Nombres completos. Si tienes documentos, correos o celulares, pega cada lista en su columna y en el mismo orden. Cada columna opcional utilizada debe tener tantas filas como nombres; deja una línea vacía donde falte un dato. Las columnas que no uses pueden quedar completamente vacías. Pulsa **Revisar lista**, comprueba la correspondencia de los datos y corrige las filas señaladas antes de pulsar **Agregar estudiantes**. Los documentos no vacíos deben ser únicos dentro de la materia; el registro masivo no sobrescribe estudiantes existentes. Modificar una lista exige revisarla nuevamente y un error conserva el borrador.
+
+**Reemplazar una lista incorrecta:** en Notas o Asistencias de la materia, pulsa **Eliminar lista** (papelera roja junto a las acciones del listado). Revisa la asignatura, período, grupo y conteos del diálogo. Al confirmar se eliminan **todos** sus estudiantes y sus notas/asistencias en **todos** los cortes, incluso si la tabla está filtrada. Se conservan la materia, los cortes, actividades/subactividades, porcentajes, semanas y configuraciones, y las demás materias. Después puedes importar o agregar la lista correcta. Cancelar o Escape conserva todo. Los borradores pendientes deben guardarse o corregirse antes. Para recuperar datos eliminados necesitarás restaurar un respaldo anterior; los archivos de respaldo no se borran.
 
 ### Importación, pegado de notas y valoración de asistencia
 

@@ -2,14 +2,14 @@
   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
     <Border Classes="card" Padding="0">
       <Grid RowDefinitions="Auto,*,Auto">
-        <WrapPanel Orientation="Horizontal" Margin="10,4">
+        <WrapPanel x:Name="AttendanceActionsBar" Orientation="Horizontal" Margin="10,4">
+          <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,4,4" /></Style></WrapPanel.Styles>
           <TextBox Width="240" Text="{Binding SearchInput,Mode=TwoWay}" Watermark="Buscar estudiante…" AutomationProperties.Name="Filtrar tabla de asistencia" Margin="0,0,8,4" />
-          <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,4">
+            <Button x:Name="DeleteStudentListButton" Classes="danger" Command="{Binding DeleteStudentListCommand}" AutomationProperties.Name="Eliminar lista de estudiantes" ToolTip.Tip="Eliminar todos los estudiantes y sus notas/asistencias de esta materia, con confirmación"><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="trash" Width="16" Height="16" /><TextBlock Text="Eliminar lista" FontSize="12" /></StackPanel></Button>
             <Button Classes="quiet" Content="Importar Excel" Command="{Binding ImportStudentsCommand}" /><Button Classes="quiet" Content="Semanas" Command="{Binding ManageWeeksCommand}" AutomationProperties.Name="Gestionar semanas de asistencia" ToolTip.Tip="Crear, editar o eliminar semanas de este corte" />
             <Button Classes="quiet" Content="Recuperar" Command="{Binding RecoveryCommand}" />
             <Button Classes="quiet" Content="Detalle" Command="{Binding ToggleDetailCommand}" ToolTip.Tip="Mostrar u ocultar el detalle del estudiante seleccionado" />
             <Button x:Name="AttendanceGradingButton" Classes="quiet" Content="{Binding AttendanceGradingLabel}" Command="{Binding ConfigureAttendanceGradingCommand}" ToolTip.Tip="Configurar una nota informativa por corte, independiente de las calificaciones académicas" />
-          </StackPanel>
           <Grid ColumnDefinitions="36,*" ColumnSpacing="8" Width="170" Margin="12,0,0,4" IsVisible="{Binding DetailHidden}" ToolTip.Tip="Porcentaje global: (P + T) / (P + T + A). J, sin clase y pendientes se excluyen.">
             <c:AttendanceRing Percentage="{Binding GroupAttendancePercentage}" Width="36" Height="36" AutomationProperties.Name="Porcentaje general de asistencia" />
             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center"><TextBlock Text="Asistencia general" Classes="muted" FontSize="11" /><TextBlock Text="{Binding GroupAttendanceLabel}" FontSize="12" FontWeight="SemiBold" /></StackPanel>

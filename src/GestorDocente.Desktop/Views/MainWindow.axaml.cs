@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private async void FinishBackupsBeforeClosing(object? sender,WindowClosingEventArgs e)
     {
         if(observed is not {} model || closingAfterBackup)return;
+        if(model.IsDeletingStudentList){e.Cancel=true;model.Message="Espera a que termine la eliminación de la lista antes de cerrar SIGNA.";return;}
         if(model.IsMaintainingLocalData){e.Cancel=true;model.BackupStatus="Espera a que termine la operación de datos antes de cerrar SIGNA.";return;}
         if(model.AutomaticBackups is null)return;
         if(model.Service.IsSaving || model.Appearance.IsBusy){e.Cancel=true;model.Message="Espera a que termine el guardado antes de cerrar SIGNA.";return;}
@@ -44,6 +45,7 @@ public partial class MainWindow : Window
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
+        if(observed is not null)observed.StudentListDeletionRequested-=DeleteStudentList;
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;observed.BackupFolderRequested-=ChooseBackupFolder;observed.LocalDataResetRequested-=ClearLocalData;}
         if(observed is {} previous){_ = previous.StopAutomaticBackupsAsync(false);previous.ReleaseAutomaticBackups();}
         observed=DataContext as MainViewModel;
@@ -51,6 +53,7 @@ public partial class MainWindow : Window
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
+        if(observed is not null)observed.StudentListDeletionRequested+=DeleteStudentList;
         if(observed is not null) {observed.PropertyChanged+=OnModelPropertyChanged;observed.ConfigurationRequested+=OpenConfiguration;observed.CutWeightsRequested+=OpenCutWeights;observed.CutDeletionRequested+=DeleteCut;observed.CatalogEditorRequested+=OpenCatalog;observed.CourseEditionRequested+=EditCourse;observed.CourseDeletionRequested+=DeleteCourse;observed.WeekEditorRequested+=OpenWeeks;observed.RecoveryRequested+=OpenRecovery;observed.ImportRequested+=OpenImport;observed.StudentEditorRequested+=AddStudent;observed.StudentDetailsRequested+=ViewStudentDetails;observed.ExportRequested+=ExportReport;observed.AttendancePdfRequested+=ExportAttendancePdf;observed.NotesPdfRequested+=ExportNotesPdf;observed.BackupRequested+=CreateBackup;observed.RestoreRequested+=RestoreBackup;observed.BackupFolderRequested+=ChooseBackupFolder;observed.LocalDataResetRequested+=ClearLocalData;}
         MinWidth=observed?.IsCourses==true ? 780 : 1100;
     }

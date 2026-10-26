@@ -29,7 +29,7 @@ public sealed partial class MainViewModel
     private bool closingForBackup;
     public void SetClosingForBackup(bool value){closingForBackup=value;Raise(nameof(CanInteractWithWorkspace));}
     public bool IsMaintainingLocalData=>maintainingLocalData;
-    public bool CanInteractWithWorkspace=>!maintainingLocalData && !closingForBackup && Updates.CanUseApplication;
+    public bool CanInteractWithWorkspace=>!maintainingLocalData && !closingForBackup && !IsDeletingStudentList && Updates.CanUseApplication;
     public async Task SetBackupFolderAsync(string folder)
     {
         await BackupPreferences.SetFolderAsync(folder);

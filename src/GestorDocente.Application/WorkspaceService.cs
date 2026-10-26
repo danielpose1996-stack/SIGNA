@@ -181,6 +181,24 @@ public sealed class WorkspaceService
             ?? throw new AcademicValidationException("El estudiante ya no pertenece a esta materia.");
         return new(Current,student);
     }
+    public StudentListDeletionPreview PreviewStudentListDeletion()
+    {
+        EnsureWritable();
+        if(Current.Students.Count==0)throw new AcademicValidationException("Esta materia no tiene estudiantes para eliminar.");
+        return new(Current);
+    }
+    public Task DeleteStudentListAsync(StudentListDeletionPreview preview,bool confirmed=false)
+    {
+        if(!confirmed)throw new AcademicValidationException("Confirma la eliminación de la lista completa antes de continuar.");
+        if(!ReferenceEquals(preview.Source,Current))
+            throw new AcademicValidationException("La materia cambió después de mostrar la confirmación. Revisa de nuevo la lista antes de eliminarla.");
+        if(Current.Students.Count==0)throw new AcademicValidationException("Esta materia ya no tiene estudiantes para eliminar.");
+        return ChangeWorkspaceAsync(next=>
+        {
+            next.Students.Clear();
+            foreach(var cut in next.Cuts){cut.Grades.Clear();cut.Attendance.Clear();}
+        },new(WorkspaceChangeKind.Students));
+    }
     public Task DeleteStudentAsync(StudentDeletionPreview preview,bool confirmed=false)
     {
         if(!confirmed)throw new AcademicValidationException("Confirma la eliminación del estudiante antes de continuar.");

@@ -75,7 +75,7 @@ public sealed partial class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
@@ -232,6 +232,7 @@ public sealed partial class MainViewModel : ObservableObject
         if(localBackup is null)BackupStatus="Los respaldos se habilitan en el catálogo local, fuera de la demostración.";
         ImportStudentsCommand=new(_=>ImportRequested?.Invoke(),_=>HasOpenCourse && WorkbookReader is not null && !FileBusy);
         AddStudentCommand=new(_=>StudentEditorRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
+        DeleteStudentListCommand=new(_=>StudentListDeletionRequested?.Invoke(),_=>CanDeleteStudentList);
         ViewStudentDetailsCommand=new(value=>{if(value is Student student)StudentDetailsRequested?.Invoke(student);},_=>HasOpenCourse && !FileBusy);
         ExportReportCommand=new(_=>ExportRequested?.Invoke(),_=>HasOpenCourse && ReportExporter is not null && !FileBusy);
         ExportAttendancePdfCommand=new(_=>AttendancePdfRequested?.Invoke(),_=>HasOpenCourse && SelectedStudent is not null && AttendancePdfExporter is not null && !FileBusy);
@@ -530,7 +531,7 @@ public sealed partial class MainViewModel : ObservableObject
         if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
         foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);
         SaveStatus="Materia abierta · datos guardados en este equipo";
-        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();
+        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();
     }
     private async Task ReloadCourseAsync()
     {
@@ -614,7 +615,7 @@ public sealed partial class MainViewModel : ObservableObject
         ApplySearchFilter();
         UpdateCourseAverage(projection.Totals);
         Raise(nameof(CanAddWeek));Raise(nameof(StudentCount));
-        AddWeekCommand.Refresh();
+        AddWeekCommand.Refresh();DeleteStudentListCommand.Refresh();
     }
     private void ApplySearchFilter()
     {

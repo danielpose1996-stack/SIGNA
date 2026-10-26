@@ -19,11 +19,16 @@ public sealed class InformationWindow : Window
 }
 public sealed class ConfirmWindow : Window
 {
-    public ConfirmWindow(string text,string action="Eliminar del borrador",bool scrollable=false)
+    public ConfirmWindow(string text,string action="Eliminar del borrador",bool scrollable=false,bool destructive=false)
     {
         Title="Confirmar cambio";Width=460;Height=220;CanResize=false;WindowStartupLocation=WindowStartupLocation.CenterOwner;
         var cancel=new Button {Content="Cancelar"};cancel.Click+=(_,_)=>Close(false);
-        var confirm=new Button {Content=action};confirm.Classes.Add("primary");confirm.Click+=(_,_)=>Close(true);
+        var confirm=new Button {Content=action};confirm.Classes.Add(destructive ? "danger" : "primary");confirm.Click+=(_,_)=>Close(true);
+        if(destructive)
+        {
+            Opened+=(_,_)=>cancel.Focus();
+            KeyDown+=(_,e)=>{if(e.Key==Avalonia.Input.Key.Escape){e.Handled=true;Close(false);}};
+        }
         var message=new TextBlock {Text=text,TextWrapping=TextWrapping.Wrap};
         var buttons=new StackPanel {Orientation=Orientation.Horizontal,Spacing=10,HorizontalAlignment=HorizontalAlignment.Right,Children={cancel,confirm}};
         if(scrollable)

@@ -1,5 +1,13 @@
 # Historial de cambios de SIGNA
 
+## 1.6.3 — 26 de octubre de 2026
+
+- «Eliminar lista» en las barras de Notas y Asistencias, con papelera, estilo de acción destructiva y confirmación que muestra la materia y los conteos afectados. Elimina la lista completa aunque haya un filtro activo.
+- Borrado de estudiantes, datos de contacto y registros de notas/asistencias de todos los cortes en un único guardado transaccional. Conserva materia, semestre, cortes, pesos, actividades, subactividades, semanas, fechas, configuraciones e historial de configuración; no afecta otras materias.
+- Cancelación/Escape sin cambios, validación de confirmaciones obsoletas, control de operaciones simultáneas y errores de escritura sin borrados parciales. Las ediciones pendientes se conservan y deben resolverse antes de continuar.
+- Actualización inmediata de Notas, Asistencias, selección, conteos y Nota consolidada. Se limpia la búsqueda y permanecen disponibles la importación y el registro de estudiantes para cargar un nuevo listado.
+- Barra adaptable en ventanas pequeñas y escala 125 %, manteniendo el texto «Eliminar lista» y los accesos existentes. Sin cambios de esquema, reglas académicas ni ubicación de los datos; conserva respaldos y actualizaciones Velopack.
+
 ## 1.6.2 — 23 de octubre de 2026
 
 - Respaldos automáticos después de escrituras confirmadas: agrupa cambios durante 30 segundos y limita la espera a dos minutos bajo guardados continuos, sin consultas por pulsación ni trabajo de copia en el hilo de interfaz.

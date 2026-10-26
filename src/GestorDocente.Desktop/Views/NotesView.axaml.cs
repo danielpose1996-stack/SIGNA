@@ -18,8 +18,8 @@ public partial class NotesView : UserControl
     }
     private void ArrangeActions()
     {
-        SetActionClass("compact",StudentActionsBar.Bounds.Width<1040);
-        SetActionClass("tight",StudentActionsBar.Bounds.Width<720);
+        SetActionClass("compact",StudentActionsBar.Bounds.Width<1180);
+        SetActionClass("tight",StudentActionsBar.Bounds.Width<940);
     }
     private void SetActionClass(string name,bool active)
     {
