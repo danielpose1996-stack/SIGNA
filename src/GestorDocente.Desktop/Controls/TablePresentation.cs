@@ -49,6 +49,19 @@ public static class TablePresentation
     };
     public static double HeaderWidth(string text,double minimum=110,double maximum=220)=>
         Math.Clamp(MeasureWidth(text.Split('\n'),11)+24,minimum,maximum);
+    public static DataGridTemplateColumn CompletedGrade(string title,int cut,ViewModels.AppearanceViewModel appearance)=>new()
+    {
+        Header=Header(title),Width=new(Math.Max(110,HeaderWidth(title))),
+        CellTemplate=new FuncDataTemplate<object>((_,_)=>
+        {
+            var stack=new StackPanel{Spacing=0,VerticalAlignment=VerticalAlignment.Center,Margin=new(2)};
+            var grade=new ResultGrade();grade.Bind(ResultGrade.ValueProperty,new Binding($"CutValues[{cut}]"));
+            grade.Bind(ResultGrade.ColorizeProperty,new Binding(nameof(ViewModels.AppearanceViewModel.CurrentColorGrades)){Source=appearance});
+            var pending=new TextBlock{Text="Pendiente",FontSize=10,TextAlignment=TextAlignment.Center,Foreground=Brushes.SlateGray};
+            pending.Bind(Control.IsVisibleProperty,new Binding($"!CutCompletion[{cut}]"));
+            stack.Bind(ToolTip.TipProperty,new Binding($"CutGrades[{cut}]"));stack.Children.Add(grade);stack.Children.Add(pending);return stack;
+        })
+    };
     internal static double MeasureWidth(IEnumerable<string> values,double fontSize)
     {
         // Se mide al cambiar de materia/esquema, nunca en cada pulsación del buscador.

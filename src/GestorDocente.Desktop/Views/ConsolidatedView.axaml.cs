@@ -9,7 +9,15 @@ public partial class ConsolidatedView : UserControl
 {
     private MainViewModel? model;
     private TableColumnLayout? layout;
-    public ConsolidatedView(){InitializeComponent();DataContextChanged+=(_,_)=>Attach();ConsolidatedTable.SizeChanged+=(_,_)=>layout?.Refresh();}
+    private bool? compact;
+    public ConsolidatedView(){InitializeComponent();DataContextChanged+=(_,_)=>Attach();ConsolidatedTable.SizeChanged+=(_,_)=>layout?.Refresh();SizeChanged+=(_,_)=>ArrangeCompact();}
+    private void ArrangeCompact()
+    {
+        var next=Bounds.Height<520;if(compact==next)return;compact=next;
+        RiskExpander.IsExpanded=!next;
+        CalculationDescription.IsVisible=!next;CompactCalculationDescription.IsVisible=next;
+        WeightsSummary.MaxLines=next ? 2 : 0;WeightsSummary.TextTrimming=next ? Avalonia.Media.TextTrimming.CharacterEllipsis : Avalonia.Media.TextTrimming.None;
+    }
     private void Attach()
     {
         if(model is not null)model.Consolidated.PropertyChanged-=Changed;
@@ -25,9 +33,10 @@ public partial class ConsolidatedView : UserControl
         ConsolidatedTable.Columns.Add(TablePresentation.Text("Documento","Document",108));
         ConsolidatedTable.Columns.Add(TablePresentation.Text("Nombre del estudiante","FullName",240));
         foreach(var cut in model.Consolidated.Cuts)
-            ConsolidatedTable.Columns.Add(TablePresentation.Grade(cut.Header,$"CutValues[{cut.Number}]",110,model.Appearance));
+            ConsolidatedTable.Columns.Add(TablePresentation.CompletedGrade(cut.Header,cut.Number,model.Appearance));
+        ConsolidatedTable.Columns.Add(TablePresentation.Text("Nota mínima","Minimum",110));
         ConsolidatedTable.Columns.Add(TablePresentation.Grade("Nota final\n100 %","FinalValue",120,model.Appearance));
-        ConsolidatedTable.Columns.Add(TablePresentation.Text("Estado","Status",125));
+        ConsolidatedTable.Columns.Add(TablePresentation.Text("Estado académico","Status",175));
         layout=new(ConsolidatedTable,model.Service.Current.Students);
     }
 }

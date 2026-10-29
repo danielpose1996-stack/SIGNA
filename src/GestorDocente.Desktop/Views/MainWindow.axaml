@@ -47,7 +47,7 @@
             <Button Classes="tab" Classes.active="{Binding IsConsolidated}" Command="{Binding NavigateCommand}" CommandParameter="Nota consolidada"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="chart" Width="21" Height="21" /><TextBlock Text="Nota consolidada" /></StackPanel></Button>
           </WrapPanel>
         </Border>
-        <c:CutSelector Grid.Row="3" Margin="18,6,18,0" IsVisible="{Binding IsCourseContext}" />
+        <c:CutSelector Grid.Row="3" Margin="18,6,18,0" IsVisible="{Binding ShowCutSelector}" />
         <Grid Grid.Row="4" IsVisible="{Binding IsCourseContext}"><Border Background="#FFF8E6" CornerRadius="5" Padding="10" Margin="18,8,18,0" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border></Grid>
         <Grid Grid.Row="5" Margin="18,6,18,6" IsVisible="{Binding IsCourseContext}"><v:NotesView x:Name="RetainedNotes" IsVisible="{Binding IsNotes}" /><v:AttendanceView x:Name="RetainedAttendance" IsVisible="{Binding IsAttendance}" /><v:ConsolidatedView x:Name="RetainedConsolidated" IsVisible="{Binding IsConsolidated}" /></Grid>
         <v:DashboardView Grid.Row="2" Grid.RowSpan="4" IsVisible="{Binding IsHome}" />

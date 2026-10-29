@@ -1,5 +1,17 @@
 # Historial de cambios de SIGNA
 
+## 1.6.4 — 29 de octubre de 2026
+
+- Selector desplegable de cortes en Notas y Asistencias, con configuración para agregar, renombrar y eliminar cortes con confirmación. Conserva los porcentajes existentes, la numeración y los registros de cada corte; impide eliminar el último y solicita ajustar los pesos sin redistribuirlos automáticamente.
+- «Nota mínima» antes de «Nota final» en Nota consolidada: calcula el promedio ponderado necesario en los cortes pendientes para alcanzar 3,0. Un corte está completo para un estudiante cuando tiene evaluaciones válidas y todas sus notas guardadas. Un 0,0 explícito cuenta como definitivo; una celda vacía sigue pendiente. Sin cortes completos o con porcentajes pendientes no muestra un cálculo.
+- Estados académicos automáticos: Aprobado asegurado, Normal, Delicado, Crítico y No alcanzable. Usa valores exactos para clasificar y muestra la mínima hacia arriba a dos decimales, sin cambiar las calificaciones ni los cálculos existentes de la nota final.
+- Tarjetas solo para alumnos críticos y delicados, críticos primero, con nombre, correo si existe y mínima requerida. Desplazamiento con virtualización para listados grandes y sección desplegable en ventanas con poca altura.
+- Reporte PDF de Nota consolidada con todos los estudiantes, nombres completos, cortes y porcentajes personalizados, notas, final, mínima y estado. Excluye documentos, correos, teléfonos e identificadores internos; permite elegir destino y confirma reemplazos.
+- Nombres personalizados conservados en reportes, copia de parámetros, SQLite y respaldos. Agregado académico versión 8: migración desde versión 7 que preserva las ponderaciones internas de subactividades, notas y asistencias. No cambia tablas SQL, rutas de datos, respaldos ni archivos del actualizador.
+- Guardas para conservar ediciones pendientes al cambiar/configurar cortes o generar el consolidado. Interfaz revisada con datos ficticios en ventanas normales, pequeñas y escala 125 %; 504 pruebas automatizadas locales aprobadas antes de publicar.
+
+**Actualización:** desde SIGNA 1.6.0–1.6.3 con Velopack utiliza Buscar actualizaciones → Actualizar SIGNA. Conserva un respaldo local antes de actualizar. Las versiones anteriores no abren el agregado8; para volver atrás se necesita un respaldo anterior compatible. Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. Sin nuevos certificados de firma; las pruebas manuales siguen a cargo del docente.
+
 ## 1.6.3 — 26 de octubre de 2026
 
 - «Eliminar lista» en las barras de Notas y Asistencias, con papelera, estilo de acción destructiva y confirmación que muestra la materia y los conteos afectados. Elimina la lista completa aunque haya un filtro activo.

@@ -58,7 +58,7 @@ public class WeightedSubactivitiesTests
                 db.Open();using var cmd=db.CreateCommand();cmd.CommandText="UPDATE course_workspaces SET schema_version=6,payload=$payload WHERE course_id=$id";
                 cmd.Parameters.AddWithValue("$id",course.Id);cmd.Parameters.AddWithValue("$payload",JsonSerializer.Serialize(old));cmd.ExecuteNonQuery();
             }
-            var upgraded=catalog.Open(course.Id);Assert.Equal(7,upgraded.Current.SchemaVersion);
+            var upgraded=catalog.Open(course.Id);Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,upgraded.Current.SchemaVersion);
             Assert.False(upgraded.Cut(1).Groups[0].UseWeightedAverage);Assert.Equal(4m,GradeCalculator.Cut(upgraded.Cut(1),student));
             Assert.Equal(JsonSerializer.Serialize(old.Cuts[0].Grades),JsonSerializer.Serialize(upgraded.Cut(1).Grades));
             using var check=new SqliteConnection($"Data Source={path};Pooling=False");check.Open();

@@ -41,6 +41,7 @@ public partial class MainWindow : Window
     }
     private void Attach()
     {
+        if(observed is not null){observed.CutsConfigurationRequested-=OpenCutsConfiguration;observed.ConsolidatedPdfRequested-=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested-=OpenUpdates;observed.Updates.RestartRequested-=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
@@ -49,6 +50,7 @@ public partial class MainWindow : Window
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;observed.BackupFolderRequested-=ChooseBackupFolder;observed.LocalDataResetRequested-=ClearLocalData;}
         if(observed is {} previous){_ = previous.StopAutomaticBackupsAsync(false);previous.ReleaseAutomaticBackups();}
         observed=DataContext as MainViewModel;
+        if(observed is not null){observed.CutsConfigurationRequested+=OpenCutsConfiguration;observed.ConsolidatedPdfRequested+=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
@@ -100,6 +102,17 @@ public partial class MainWindow : Window
         try{await ShowAcademicDialog(new CutWeightsWindow{DataContext=new CutWeightsViewModel(observed.Service)});}
         catch(Exception ex){observed.Message=SafeError(ex);}
     }
+    private async void OpenCutsConfiguration()
+    {
+        if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
+        try
+        {
+            using var operation=model.BeginCutConfiguration();
+            await ShowAcademicDialog(new CutManagementWindow{DataContext=new CutManagementViewModel(model.Service)});
+            if(model.Catalog is not null)await model.Home.RefreshAsync();else model.Home.Refresh();
+        }
+        catch(Exception ex){model.Message=SafeError(ex);}
+    }
     private async void DeleteCut(int number)
     {
         if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
@@ -117,9 +130,9 @@ public partial class MainWindow : Window
     }
     public async Task<bool> ConfirmCutDeletionAsync(CutDeletionPreview preview)
     {
-        var text=$"¿Eliminar definitivamente el Corte {preview.Number} de «{preview.CourseName}»?\n\nSe eliminarán sus actividades ({preview.ActivityCount}), subactividades ({preview.SubactivityCount}), notas ({preview.GradeCount}), semanas ({preview.WeekCount}) y registros de asistencia ({preview.AttendanceCount}), incluidos los retirados. Esta acción no se puede deshacer.\n\nLos cortes restantes se renumerarán y conservarán sus porcentajes. Deberás revisar que sumen 100 %. No puedes eliminar el último corte de la materia.";
+        var text=CutDeletionMessage.For(preview);
         ModalOverlay.IsVisible=true;
-        try{return await new ConfirmWindow(text,"Eliminar corte",scrollable:true){Title=$"Eliminar Corte {preview.Number}",Width=640,Height=385}.ShowDialog<bool>(this);}
+        try{return await new ConfirmWindow(text,"Eliminar corte",scrollable:true){Title=$"Eliminar {preview.Label}",Width=640,Height=385}.ShowDialog<bool>(this);}
         finally{ModalOverlay.IsVisible=false;}
     }
     private async void OpenCatalog(bool semester)

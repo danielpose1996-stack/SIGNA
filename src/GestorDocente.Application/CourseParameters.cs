@@ -14,7 +14,7 @@ public sealed class CourseParameters
         Cuts=source.Cuts.OrderBy(c=>c.Number).Select(c=>new CourseCutParameters(c.Number,c.Weight,
             c.Groups.Select(g=>new CourseActivityParameters(g.Name,g.Weight,g.Mode,g.UseWeightedAverage,
                 g.Activities.Select(a=>new CourseSubactivityParameters(a.Name,a.Weight)).ToList().AsReadOnly())).ToList().AsReadOnly(),
-            c.AttendanceGrading is {Enabled:true} policy ? policy with {} : null)).ToList().AsReadOnly();
+            c.AttendanceGrading is {Enabled:true} policy ? policy with {} : null){Name=c.Name}).ToList().AsReadOnly();
     }
 
     public static CourseParameters Capture(AcademicWorkspace source)
@@ -26,7 +26,7 @@ public sealed class CourseParameters
     /// <summary>Materializa entidades nuevas en cada creación, sin reutilizar IDs ni colecciones.</summary>
     public List<AcademicCut> CreateCuts()=>Cuts.Select(c=>new AcademicCut
     {
-        Number=c.Number,Weight=c.Weight,AttendanceGrading=c.AttendanceGrading is {} policy ? policy with {} : null,
+        Number=c.Number,Name=c.Name,Weight=c.Weight,AttendanceGrading=c.AttendanceGrading is {} policy ? policy with {} : null,
         Groups=c.Groups.Select(g=>new EvaluationGroup
         {
             Name=g.Name,Weight=g.Weight,Mode=g.Mode,UseWeightedAverage=g.UseWeightedAverage,
@@ -35,6 +35,9 @@ public sealed class CourseParameters
     }).ToList();
 }
 
-public sealed record CourseCutParameters(int Number,decimal Weight,IReadOnlyList<CourseActivityParameters> Groups,AttendanceGradePolicy? AttendanceGrading);
+public sealed record CourseCutParameters(int Number,decimal Weight,IReadOnlyList<CourseActivityParameters> Groups,AttendanceGradePolicy? AttendanceGrading)
+{
+    public string Name{get;init;}="";
+}
 public sealed record CourseActivityParameters(string Name,decimal Weight,EvaluationMode Mode,bool UseWeightedAverage,IReadOnlyList<CourseSubactivityParameters> Subactivities);
 public sealed record CourseSubactivityParameters(string Name,decimal? Weight);

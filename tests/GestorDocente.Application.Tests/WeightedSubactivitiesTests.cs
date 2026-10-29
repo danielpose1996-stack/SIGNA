@@ -57,7 +57,7 @@ public class WeightedSubactivitiesTests
         var old=DemoWorkspaceFactory.Create();old.SchemaVersion=6;
         old.Cuts[0].Groups=[Group()];old.Cuts[0].Grades=[new("s1","a",3),new("s1","b",5)];
         var original=JsonSerializer.Serialize(old);var migrated=WorkspaceMigration.Upgrade(old);
-        Assert.Equal(7,migrated.SchemaVersion);Assert.False(migrated.Cuts[0].Groups[0].UseWeightedAverage);
+        Assert.Equal(AcademicWorkspace.CurrentSchemaVersion,migrated.SchemaVersion);Assert.False(migrated.Cuts[0].Groups[0].UseWeightedAverage);
         Assert.All(migrated.Cuts[0].Groups[0].Activities,a=>Assert.Null(a.Weight));
         Assert.Equal(4m,GradeCalculator.Cut(migrated.Cuts[0],"s1"));Assert.Equal(original,JsonSerializer.Serialize(old));
         Assert.Equal(JsonSerializer.Serialize(old.Cuts[0].Grades),JsonSerializer.Serialize(migrated.Cuts[0].Grades));

@@ -31,6 +31,20 @@ public sealed class WorkspaceService
         await ChangeWorkspaceAsync(next=>next.Cuts.Add(new(){Number=number,Weight=0}));
         return number;
     }
+    public Task RenameCutsAsync(AcademicWorkspace source,IReadOnlyDictionary<int,string> names)
+    {
+        if(!ReferenceEquals(source,Current))throw new AcademicValidationException("La materia cambió. Vuelve a abrir la configuración de cortes antes de guardar los nombres.");
+        var draft=names.ToDictionary(p=>p.Key,p=>(p.Value ?? "").Trim());
+        return ChangeWorkspaceAsync(next=>
+        {
+            if(!next.Cuts.Select(c=>c.Number).Order().SequenceEqual(draft.Keys.Order()))
+                throw new AcademicValidationException("Incluye todos los cortes actuales al guardar sus nombres.");
+            if(draft.Values.Any(n=>string.IsNullOrWhiteSpace(n) || n.Length>80 || n.Any(char.IsControl)))
+                throw new AcademicValidationException("Escribe un nombre de 1 a 80 caracteres en cada corte, sin saltos de línea.");
+            foreach(var cut in next.Cuts)
+                if(draft[cut.Number]!=cut.Label)cut.Name=draft[cut.Number];
+        });
+    }
     public CutDeletionPreview PreviewCutDeletion(int number)
     {
         EnsureWritable();return new(Current,Cut(number));

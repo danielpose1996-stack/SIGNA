@@ -6,6 +6,7 @@ public sealed class CutDeletionPreview
 {
     internal AcademicWorkspace Source{get;}
     public int Number{get;}
+    public string Label=>Source.Cuts.Single(c=>c.Number==Number).Label;
     public string CourseName=>Source.CourseName;
     public decimal Weight{get;}
     public int ActivityCount{get;}

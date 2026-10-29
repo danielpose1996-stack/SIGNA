@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.4** incorpora cortes con nombres personalizados, nota mínima para aprobar con 3,0, estados de riesgo, tarjetas de seguimiento y PDF consolidado sin documentos ni contactos. Disponible desde las instalaciones Velopack 1.6.0–1.6.3. Al abrir una materia, el agregado académico pasa a versión 8 y conserva los promedios ponderados de versión 7, las notas y las asistencias. Genera un respaldo antes de actualizar: una aplicación anterior no abre el agregado nuevo y necesita una copia anterior para volver atrás. Las tablas SQL y las rutas de almacenamiento no cambian.
+
 Al abrir SIGNA se comprueba en segundo plano si hay una versión estable nueva en el [repositorio oficial](https://github.com/danielpose1996-stack/SIGNA/releases/latest). No se envían materias, estudiantes, notas, preferencias ni respaldos. Sin internet puedes trabajar normalmente; no aparece un diálogo que impida abrir la aplicación.
 
 También puedes pulsar **Buscar actualizaciones**, en la parte inferior del menú lateral. El diálogo muestra la versión actual, la disponible y el resultado de la comprobación. Si existe una actualización instalable, **Actualizar SIGNA** descarga el paquete y muestra su progreso. SIGNA comprueba su tamaño y SHA-256, verifica los datos locales y prepara la instalación y el reinicio. La descarga solo empieza por acción del docente. Puedes cancelarla antes del reinicio.
@@ -33,7 +35,7 @@ El instalador Windows mantiene el asistente de licencia MIT y carpeta, mientras 
 
 ## Conservación de información
 
-No cambian el esquema de SQLite ni la ubicación histórica de los datos: `LocalApplicationData/AulaRegistro/aula-registro.db`, o el directorio configurado explícitamente mediante `GESTOR_DOCENTE_DATA_DIR`. Incluye semestres, materias, estudiantes y contactos, cortes y ponderaciones, actividades, subactividades, notas, asistencias y preferencias de interfaz/perfil.
+No cambian las tablas SQLite ni la ubicación histórica de los datos: `LocalApplicationData/AulaRegistro/aula-registro.db`, o el directorio configurado explícitamente mediante `GESTOR_DOCENTE_DATA_DIR`. Incluye semestres, materias, estudiantes y contactos, cortes y ponderaciones, actividades, subactividades, notas, asistencias y preferencias de interfaz/perfil. El programa puede actualizar la versión de los agregados académicos al abrir las materias, según las notas de cada Release; el actualizador no realiza esa migración.
 
 El actualizador sustituye **archivos del programa**, sin restaurar, recrear o migrar la base, mover los respaldos ni cambiar sus contraseñas. Antes del reinicio se valida SQLite en modo de solo lectura, incluidas las relaciones y los agregados académicos. La comprobación admite datos confirmados en WAL. Si detecta una base o un respaldo dentro de la carpeta reemplazable del programa, bloquea la actualización e informa el motivo: conserva esos archivos fuera del programa antes de continuar.
 

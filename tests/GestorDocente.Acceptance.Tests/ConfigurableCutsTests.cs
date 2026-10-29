@@ -23,11 +23,11 @@ public class ConfigurableCutsTests
         {
             var view=window.FindControl<ConsolidatedView>("RetainedConsolidated")!;
             var table=view.FindControl<DataGrid>("ConsolidatedTable")!;
-            Assert.Equal(8,table.Columns.Count);
+            Assert.Equal(9,table.Columns.Count);
             await vm.AddCutAsync();Assert.Equal(4,vm.SelectedCut);Assert.Equal(4,vm.Cuts.Count);
             await service.ConfigureGroupsAsync(4,[new(){Id="direct",Name="Proyecto",Weight=100}]);
             await service.ConfigureCutWeightsAsync(new Dictionary<int,decimal>{{1,20},{2,20},{3,30},{4,30}});
-            Assert.Equal(9,table.Columns.Count);
+            Assert.Equal(10,table.Columns.Count);
             await service.SetGradeAsync(4,"s1","direct",5);
             var expected=GradeCalculator.Final(service.Current,"s1");
             Assert.Equal(expected,vm.Consolidated.Rows[0].FinalValue);
@@ -59,7 +59,7 @@ public class ConfigurableCutsTests
         {
             window.UpdateLayout();Assert.Equal(9,vm.Cuts.Count);
             var table=window.FindControl<ConsolidatedView>("RetainedConsolidated")!.FindControl<DataGrid>("ConsolidatedTable")!;
-            Assert.Equal(14,table.Columns.Count);Assert.True(table.Bounds.Height>200,$"Altura disponible: {table.Bounds.Height}; ventana: {window.ClientSize}");
+            Assert.Equal(15,table.Columns.Count);Assert.True(table.Bounds.Height>200,$"Altura disponible: {table.Bounds.Height}; ventana: {window.ClientSize}");
             table.ScrollIntoView(vm.Consolidated.Rows[0],table.Columns.Last());window.UpdateLayout();
             Assert.Equal(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,table.HorizontalScrollBarVisibility);
             await vm.Dashboard.RefreshAsync();Assert.Equal(9,vm.Dashboard.Courses.Single().Cuts.Count);

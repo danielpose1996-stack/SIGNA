@@ -30,6 +30,7 @@ public static class WorkspaceIntegrity
             foreach(var cut in root.GetProperty("Cuts").EnumerateArray())
             {
                 if(cut.ValueKind!=JsonValueKind.Object)Invalid();
+                if(version>=8 && (!cut.TryGetProperty("Name",out var name) || name.ValueKind!=JsonValueKind.String))Invalid();
                 foreach(var key in new[]{"Groups","Grades","Weeks","Attendance","RemovedActivities","RemovedGroups","RemovedWeeks"})
                     if(!HasArray(cut,key))Invalid();
                 if(version>=3 && (!cut.TryGetProperty("Weight",out var weight) || !weight.TryGetDecimal(out _)))Invalid();
@@ -96,6 +97,7 @@ public static class WorkspaceIntegrity
 
     private static void ValidateCut(AcademicCut cut,HashSet<string> students)
     {
+        if(cut.Name is null || cut.Name.Length>80 || cut.Name.Any(char.IsControl))Invalid();
         cut.AttendanceGrading?.Validate();
         if(cut.Groups is null || cut.RemovedGroups is null || cut.RemovedActivities is null ||
            cut.Grades is null || cut.Weeks is null || cut.RemovedWeeks is null || cut.Attendance is null ||

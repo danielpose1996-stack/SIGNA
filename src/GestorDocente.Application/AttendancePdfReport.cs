@@ -13,6 +13,8 @@ public sealed record AttendancePdfReport(
     string Student,string Document,IReadOnlyList<AttendancePdfLine> Lines,
     AttendanceSummary Summary,int Unfilled)
 {
+    public string CutName{get;init;}="";
+    public string CutLabel=>CutName.Length==0 ? $"Corte {Cut}" : CutName;
     public decimal? Percentage=>Summary.Percentage;
     public string Status=>AttendanceFormatting.Status(Summary.Classification);
 }
@@ -41,6 +43,6 @@ public static class AttendancePdfProjection
             },week.Date)).ToArray();
         return new(workspace.CourseName,workspace.CourseCode,workspace.Period,workspace.School,
             workspace.GroupName,cutNumber,student.FullName,student.Document,lines,
-            AttendanceSummary.From(states),states.Count(s=>s is null));
+            AttendanceSummary.From(states),states.Count(s=>s is null)){CutName=cut.Name};
     }
 }

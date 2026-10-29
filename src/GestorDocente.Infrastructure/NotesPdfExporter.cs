@@ -38,7 +38,7 @@ public sealed class NotesPdfExporter:INotesPdfExporter
             bold.TextSize=18;canvas.DrawText(ProductIdentity.Name,Left,31,bold);
             small.TextSize=9;canvas.DrawText(ProductIdentity.FullName,Left,47,small);
             bold.TextSize=16;canvas.DrawText("Reporte de calificaciones",Left,72,bold);
-            bold.TextSize=14;RightText(canvas,$"Corte {report.Cut}",Right,72,bold);bold.TextSize=9.5f;
+            bold.TextSize=14;if(report.CutName.Length==0)RightText(canvas,report.CutLabel,Right,72,bold);bold.TextSize=9.5f;
             float y=94;
             foreach(var text in metadata){canvas.DrawText(text,Left,y,regular);y+=14;}
             small.TextSize=8;
@@ -107,14 +107,15 @@ public sealed class NotesPdfExporter:INotesPdfExporter
     private static List<string> Metadata(NotesPdfReport report,SKPaint paint)
     {
         var result=Wrap("Asignatura: "+report.Course,paint,Right-Left);
+        if(report.CutName.Length>0)result.AddRange(Wrap("Corte académico: "+report.CutLabel,paint,Right-Left));
         result.AddRange(Wrap($"Código: {report.Code} · Período académico: {report.Period} · Grupo: {(report.Group.Length==0 ? "No especificado" : report.Group)}",paint,Right-Left));
         return result;
     }
-    private static SKPaint Paint(float size,SKColor color,SKTypeface? typeface=null)=>new(){IsAntialias=true,TextSize=size,Color=color,Typeface=typeface ?? SKTypeface.Default};
-    private static void CenterText(SKCanvas canvas,string value,float center,float baseline,SKPaint paint)=>canvas.DrawText(value,center-paint.MeasureText(value)/2,baseline,paint);
-    private static void RightText(SKCanvas canvas,string value,float right,float baseline,SKPaint paint)=>canvas.DrawText(value,right-paint.MeasureText(value),baseline,paint);
-    private static void DrawLines(SKCanvas canvas,IEnumerable<string> lines,float x,float y,float spacing,SKPaint paint){foreach(var text in lines){canvas.DrawText(text,x,y,paint);y+=spacing;}}
-    private static List<string> Wrap(string value,SKPaint paint,float width)
+    internal static SKPaint Paint(float size,SKColor color,SKTypeface? typeface=null)=>new(){IsAntialias=true,TextSize=size,Color=color,Typeface=typeface ?? SKTypeface.Default};
+    internal static void CenterText(SKCanvas canvas,string value,float center,float baseline,SKPaint paint)=>canvas.DrawText(value,center-paint.MeasureText(value)/2,baseline,paint);
+    internal static void RightText(SKCanvas canvas,string value,float right,float baseline,SKPaint paint)=>canvas.DrawText(value,right-paint.MeasureText(value),baseline,paint);
+    internal static void DrawLines(SKCanvas canvas,IEnumerable<string> lines,float x,float y,float spacing,SKPaint paint){foreach(var text in lines){canvas.DrawText(text,x,y,paint);y+=spacing;}}
+    internal static List<string> Wrap(string value,SKPaint paint,float width)
     {
         List<string> result=[];
         foreach(var paragraph in value.Replace("\r","").Split('\n'))

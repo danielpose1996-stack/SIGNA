@@ -15,7 +15,7 @@ public static class WorkspaceMigration
         else WorkspaceIntegrity.Validate(source);
         var next=WorkspaceService.Clone(source);
         // Earlier versions always used a simple average. Do not revive legacy rubric weights.
-        foreach(var cut in next.Cuts)
+        if(source.SchemaVersion<7)foreach(var cut in next.Cuts)
         {
             foreach(var group in cut.Groups.Concat(cut.RemovedGroups))
             {

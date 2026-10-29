@@ -35,8 +35,8 @@ public sealed class WeeksViewModel : ObservableObject
     public bool CanSelectWeek=>CanEdit && !IsEditing;
     public string SaveLabel=>IsSaving ? "Guardando…" : IsEditing ? "Guardar cambios" : "Agregar semana";
     public string EditorLabel=>IsEditing ? $"Editar semana {Weeks.FirstOrDefault(w=>w.Number==editingWeek)?.DisplayNumber}" : "Nueva semana";
-    public string CountLabel=>$"{Weeks.Count} de 9 semanas · Corte {cut}";
-    public string Context=>$"{service.Current.CourseName} · Corte {cut}";
+    public string CountLabel=>$"{Weeks.Count} de 9 semanas · {service.Cut(cut).Label}";
+    public string Context=>$"{service.Current.CourseName} · {service.Cut(cut).Label}";
     public bool HasWeeks=>Weeks.Count>0;
     public bool NoWeeks=>!HasWeeks;
     public bool LimitReached=>Weeks.Count>=9;

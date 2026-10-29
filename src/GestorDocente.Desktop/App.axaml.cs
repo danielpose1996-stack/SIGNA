@@ -28,7 +28,7 @@ public partial class App : Avalonia.Application
                 if(Environment.GetEnvironmentVariable("GESTOR_DOCENTE_MODE")=="demo")
                 {
                     var dataDirectory=Environment.GetEnvironmentVariable("GESTOR_DOCENTE_DEMO_DIR") ?? Path.Combine(AppContext.BaseDirectory,".demo-data");
-                    desktop.MainWindow=new MainWindow {DataContext=new MainViewModel(new WorkspaceService(new SqliteWorkspaceStore(Path.Combine(dataDirectory,"gestor-docente-demo.db"))),workbookReader:new ExcelStudentReader(),reportExporter:new XlsxReportExporter(),attendancePdfExporter:new AttendancePdfExporter(),notesPdfExporter:new NotesPdfExporter())};
+                    desktop.MainWindow=new MainWindow {DataContext=new MainViewModel(new WorkspaceService(new SqliteWorkspaceStore(Path.Combine(dataDirectory,"gestor-docente-demo.db"))),workbookReader:new ExcelStudentReader(),reportExporter:new XlsxReportExporter(),attendancePdfExporter:new AttendancePdfExporter(),notesPdfExporter:new NotesPdfExporter(),consolidatedPdfExporter:new ConsolidatedPdfExporter())};
                 }
                 else
                 {
@@ -66,7 +66,7 @@ public partial class App : Avalonia.Application
     private static MainViewModel CreateProductionViewModel(ProductionServices services)
     {
         if(Current is {} app)InterfaceTheme.Apply(app,services.Preferences.Current);
-        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),services.Catalog,new ExcelStudentReader(),new XlsxReportExporter(),services.Backup,new AttendancePdfExporter(),services.Preferences,new NotesPdfExporter(),services.Updater,services.UpdateSafety,services.BackupPreferences,services.DataReset,services.AutomaticBackups);
+        return new MainViewModel(new WorkspaceService(new EmptyWorkspaceStore()),services.Catalog,new ExcelStudentReader(),new XlsxReportExporter(),services.Backup,new AttendancePdfExporter(),services.Preferences,new NotesPdfExporter(),services.Updater,services.UpdateSafety,services.BackupPreferences,services.DataReset,services.AutomaticBackups,new ConsolidatedPdfExporter());
     }
     private static string StartupError(Exception ex)=>ex is Domain.AcademicValidationException ? ex.Message : $"No se pudo abrir el almacenamiento local ({SafeErrorCode.From(ex)}). Revisa permisos y espacio disponible. Los datos no se reemplazaron.";
     internal static string ProductionDatabasePath()

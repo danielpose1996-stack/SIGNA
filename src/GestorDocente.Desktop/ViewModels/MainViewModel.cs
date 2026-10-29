@@ -17,6 +17,11 @@ public sealed partial class MainViewModel : ObservableObject
     public IAcademicReportExporter? ReportExporter {get;}
     public IAttendancePdfExporter? AttendancePdfExporter {get;}
     public INotesPdfExporter? NotesPdfExporter {get;}
+    public IConsolidatedPdfExporter? ConsolidatedPdfExporter {get;}
+    public RelayCommand ExportConsolidatedPdfCommand{get;}
+    public RelayCommand ConfigureCutsCommand{get;}
+    public event Action? ConsolidatedPdfRequested;
+    public event Action? CutsConfigurationRequested;
     public ILocalBackupService? LocalBackup {get;}
     public AppearanceViewModel Appearance{get;}
     public UpdatesViewModel Updates{get;}
@@ -40,7 +45,18 @@ public sealed partial class MainViewModel : ObservableObject
     public HomeViewModel Home {get;}
     public DashboardViewModel Dashboard {get;}
     public ConsolidatedViewModel Consolidated {get;}=new();
-    public IReadOnlyList<CutColumn> Cuts=>Service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutColumn(c.Number,c.Weight,c.Number==SelectedCut)).ToArray();
+    public IReadOnlyList<CutColumn> Cuts=>Service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutColumn(c.Number,c.Weight,c.Number==SelectedCut){Name=c.Name}).ToArray();
+    public CutColumn? SelectedCutOption
+    {
+        get=>Cuts.FirstOrDefault(c=>c.Number==SelectedCut);
+        set
+        {
+            if(value is null || value.Number==SelectedCut)return;
+            if(FileBusy || Service.IsSaving){Message="Espera a que termine el guardado antes de cambiar de corte.";Raise(nameof(SelectedCutOption));return;}
+            _ = SelectCutAsync(value.Number);
+        }
+    }
+    public bool CanChooseCut=>!FileBusy && !Service.IsSaving;
     public string SelectedCutWeight=>$"Peso en nota final: {Service.Cut(SelectedCut).Weight:0.##} %";
     private NavigationSection section=NavigationSection.Home;
     private int selectedCut=1;
@@ -75,7 +91,7 @@ public sealed partial class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();ExportConsolidatedPdfCommand.Refresh();ConfigureCutsCommand.Refresh();Raise(nameof(CanChooseCut));CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
@@ -102,9 +118,9 @@ public sealed partial class MainViewModel : ObservableObject
     public int SelectedCut
     {
         get=>selectedCut;
-        set {_=Service.Cut(value);if(Set(ref selectedCut,value)){Rebuild();Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(Cuts));}}
+        set {_=Service.Cut(value);if(Set(ref selectedCut,value)){Rebuild();Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(Cuts));Raise(nameof(SelectedCutOption));}}
     }
-    public string CutLabel=>$"Corte {SelectedCut}";
+    public string CutLabel=>Service.Cut(SelectedCut).Label;
     public NavigationSection Section
     {
         get=>section;
@@ -116,7 +132,7 @@ public sealed partial class MainViewModel : ObservableObject
             if(value==NavigationSection.Courses && Catalog is not null && Home.Semesters.Count==0)_=Home.RefreshAsync();
             foreach(var name in new[] {nameof(IsHome),nameof(IsCourses),nameof(IsBackups),
                 nameof(IsAcademicNavigation),nameof(IsCourseContext),nameof(IsGlobalContext),
-                nameof(IsNotes),nameof(IsAttendance),nameof(IsConsolidated),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
+                nameof(IsNotes),nameof(IsAttendance),nameof(IsConsolidated),nameof(ShowCutSelector),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
         }
     }
     // La última pestaña académica se mantiene independiente de las páginas globales.
@@ -127,7 +143,7 @@ public sealed partial class MainViewModel : ObservableObject
         {
             if(value is not ("Notas" or "Asistencias" or "Nota consolidada"))throw new ArgumentException("Selecciona una pestaña académica válida.",nameof(value));
             Section=NavigationSection.Academic;
-            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));Raise(nameof(IsConsolidated));}
+            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));Raise(nameof(IsConsolidated));Raise(nameof(ShowCutSelector));}
         }
     }
     public bool IsHome=>Section==NavigationSection.Home;
@@ -139,6 +155,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsNotes=>IsCourseContext && Page=="Notas";
     public bool IsAttendance=>IsCourseContext && Page=="Asistencias";
     public bool IsConsolidated=>IsCourseContext && Page=="Nota consolidada";
+    public bool ShowCutSelector=>IsNotes || IsAttendance;
     public string PageTitle=>Section switch
     {
         NavigationSection.Home=>"Inicio", NavigationSection.Courses=>"Mis Materias",
@@ -210,7 +227,7 @@ public sealed partial class MainViewModel : ObservableObject
     public RelayCommand ConfigureCommand {get;}
     public string? ConfigurationGroupId {get;private set;}
     public RelayCommand DismissMessageCommand {get;}
-    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null,BackupPreferencesService? backupPreferences=null,ILocalDataResetService? dataReset=null,AutomaticBackupCoordinator? automaticBackups=null)
+    public MainViewModel(WorkspaceService service,CatalogService? catalog=null,IStudentWorkbookReader? workbookReader=null,IAcademicReportExporter? reportExporter=null,ILocalBackupService? localBackup=null,IAttendancePdfExporter? attendancePdfExporter=null,InterfacePreferencesService? appearance=null,INotesPdfExporter? notesPdfExporter=null,IApplicationUpdater? updater=null,IUpdateSafetyCheck? updateSafety=null,BackupPreferencesService? backupPreferences=null,ILocalDataResetService? dataReset=null,AutomaticBackupCoordinator? automaticBackups=null,IConsolidatedPdfExporter? consolidatedPdfExporter=null)
     {
         Service=service;
         searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
@@ -226,6 +243,9 @@ public sealed partial class MainViewModel : ObservableObject
         PersonalizeCommand=new(_=>AppearanceRequested?.Invoke(),_=>!FileBusy && !Service.IsSaving);
         Catalog=catalog;
         WorkbookReader=workbookReader;ReportExporter=reportExporter;LocalBackup=localBackup;AttendancePdfExporter=attendancePdfExporter;NotesPdfExporter=notesPdfExporter;
+        ConsolidatedPdfExporter=consolidatedPdfExporter;
+        ExportConsolidatedPdfCommand=new(_=>ConsolidatedPdfRequested?.Invoke(),_=>HasOpenCourse && ConsolidatedPdfExporter is not null && !FileBusy && !Service.IsSaving);
+        ConfigureCutsCommand=new(_=>CutsConfigurationRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         BackupPreferences=backupPreferences ?? new(new MemoryBackupPreferencesStore());DataReset=dataReset;
         ChooseBackupFolderCommand=new(_=>BackupFolderRequested?.Invoke(),_=>CanUseLocalBackup && !FileBusy);
         ClearLocalDataCommand=new(_=>LocalDataResetRequested?.Invoke(),_=>DataReset is not null && !FileBusy && !Service.IsSaving);
@@ -335,7 +355,7 @@ public sealed partial class MainViewModel : ObservableObject
         else if(change.Kind==WorkspaceChangeKind.GradesBatch)Consolidated.Refresh(Service.Current);
         else if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students)
         {
-            Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutWeight));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
+            Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutOption));Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
         }
         if(change.Cut==SelectedCut && change.StudentId is { } studentId && change.Kind is WorkspaceChangeKind.Grade or WorkspaceChangeKind.Attendance)
         {
@@ -396,6 +416,17 @@ public sealed partial class MainViewModel : ObservableObject
             throw new AcademicValidationException("Hay notas o asistencias pendientes de guardar. Revísalas y guárdalas antes de actualizar SIGNA.");
         var pause=AutomaticBackups?.Pause();FileBusy=true;
         return new UpdateMaintenance(()=>{FileBusy=false;pause?.Dispose();});
+    }
+    internal void EnsureAcademicEditsSaved(string action)
+    {
+        if(allGradeRows.Any(r=>r.HasPendingEdits) || allAttendanceRows.Any(r=>r.HasPendingEdits))
+            throw new AcademicValidationException($"Hay notas o asistencias pendientes de guardar. Guárdalas o corrige los campos antes de {action}.");
+    }
+    public IDisposable BeginCutConfiguration()
+    {
+        if(FileBusy || Service.IsSaving)throw new AcademicValidationException("Espera a que termine el guardado antes de configurar los cortes.");
+        EnsureAcademicEditsSaved("configurar los cortes");FileBusy=true;
+        return new UpdateMaintenance(()=>FileBusy=false);
     }
     private sealed class UpdateMaintenance(Action release):IDisposable{public void Dispose()=>release();}
     public async Task CopyCourseParametersAsync(CourseSummary course)
@@ -527,11 +558,11 @@ public sealed partial class MainViewModel : ObservableObject
         Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
         searchUpdate.Cancel();selectedCut=saved.Cut;page=saved.Page;search=saved.Search;searchInput=saved.Search;selectedStudent=null;Raise(nameof(SearchInput));
         ShowProjection(projection);
-        Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutWeight));Raise(nameof(IsConsolidated));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
+        Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutOption));Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(IsConsolidated));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
         if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
         foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);
         SaveStatus="Materia abierta · datos guardados en este equipo";
-        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();
+        ReloadCourseCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();ExportConsolidatedPdfCommand.Refresh();ConfigureCutsCommand.Refresh();Raise(nameof(CanChooseCut));
     }
     private async Task ReloadCourseAsync()
     {
@@ -566,15 +597,16 @@ public sealed partial class MainViewModel : ObservableObject
         FileBusy=true;var service=Service;var source=service.Current;var previousStatus=SaveStatus;SaveStatus="Abriendo corte…";
         try
         {
+            EnsureAcademicEditsSaved("cambiar de corte");
             FlushSearch();_=service.Cut(number);
             var projection=await Task.Run(()=>BuildProjection(service,number));
             if(Service!=service || service.Current!=source)throw new AcademicValidationException("La materia cambió mientras se abría el corte. Vuelve a seleccionarlo.");
             selectedCut=number;ShowProjection(projection);
-            foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(SelectedCutWeight),nameof(Cuts)})Raise(name);
+            foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(SelectedCutWeight),nameof(Cuts),nameof(SelectedCutOption)})Raise(name);
             Message="";
         }
         catch(Exception ex){Message=ex is AcademicValidationException ? ex.Message : $"No se pudo abrir el corte ({SafeErrorCode.From(ex)}). Se conserva el corte anterior.";}
-        finally{FileBusy=false;if(SaveStatus=="Abriendo corte…")SaveStatus=previousStatus;}
+        finally{FileBusy=false;Raise(nameof(SelectedCutOption));if(SaveStatus=="Abriendo corte…")SaveStatus=previousStatus;}
     }
     private static CourseProjection BuildProjection(WorkspaceService service,int selectedCut)
     {

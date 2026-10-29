@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.CutManagementWindow" Title="Configurar cortes académicos" Width="650" Height="610" MinWidth="560" MinHeight="430" WindowStartupLocation="CenterOwner">
+  <Grid Margin="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="16">
+    <StackPanel Spacing="8"><TextBlock Text="Cortes académicos" FontSize="23" FontWeight="SemiBold"/><TextBlock Text="Personaliza los nombres y administra los períodos de esta materia. Cada corte conserva sus notas, actividades y asistencias." Classes="muted" TextWrapping="Wrap"/></StackPanel>
+    <ScrollViewer Grid.Row="1"><ItemsControl ItemsSource="{Binding Cuts}" IsEnabled="{Binding CanEdit}"><ItemsControl.ItemTemplate><DataTemplate>
+      <Border Classes="card" Padding="12" Margin="0,0,0,10"><Grid ColumnDefinitions="32,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10">
+        <TextBlock Text="{Binding Number}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBox Grid.Column="1" Text="{Binding Name,Mode=TwoWay}" MaxLength="80" AutomationProperties.Name="Nombre del corte"/>
+        <Button Grid.Column="2" Command="{Binding DataContext.DeleteCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Number}" ToolTip.Tip="Eliminar corte y sus registros (solicita confirmación)" AutomationProperties.Name="Eliminar corte"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#A32B37"/></Button>
+        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding WeightLabel}" Classes="muted" FontSize="11" Margin="0,5,0,0"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Error}" Classes="error" FontSize="11" TextWrapping="Wrap"/>
+      </Grid></Border>
+    </DataTemplate></ItemsControl.ItemTemplate></ItemsControl></ScrollViewer>
+    <StackPanel Grid.Row="2" Spacing="8"><TextBlock Text="{Binding Hint}" Classes="muted" TextWrapping="Wrap" FontSize="12"/><TextBlock Text="{Binding Error}" Classes="error" TextWrapping="Wrap"/><WrapPanel><Button Content="Agregar corte" Command="{Binding AddCommand}" Margin="0,0,8,4"/><Button Content="Configurar porcentajes" Click="ConfigureWeights" IsEnabled="{Binding CanModify}" Margin="0,0,0,4"/></WrapPanel></StackPanel>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="Cerrar" Click="CloseEditor" IsEnabled="{Binding CanEdit}"/><Button Content="Guardar nombres" Classes="primary" Click="SaveNames" IsEnabled="{Binding CanSave}"/></StackPanel>
+  </Grid>
+</Window>

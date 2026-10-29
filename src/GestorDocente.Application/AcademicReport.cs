@@ -43,7 +43,7 @@ public static class AcademicReportProjection
             }
             rows.Add(row);
         }
-        return new(kind==AcademicReportKind.Notes ? "Notas" : "Asistencias",$"{workspace.CourseName} · Corte {number}",
+        return new(kind==AcademicReportKind.Notes ? "Notas" : "Asistencias",$"{workspace.CourseName} · {cut.Label}",
             $"Código: {workspace.CourseCode} · Período: {workspace.Period} · Escuela: {workspace.School} · Grupo: {workspace.GroupName}",
             kind==AcademicReportKind.Notes ? "Celdas vacías: pendientes y con valor 0,0 solo en el cálculo. La nota final ponderada está disponible en Nota consolidada." : "Asistencia: (P + T) / (P + T + A) × 100. J, sin clase y pendientes se excluyen del denominador.",columns,rows);
     }

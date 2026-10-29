@@ -18,7 +18,7 @@ public sealed class AttendanceGradingViewModel:ObservableObject
     private bool enabled,saving;
     private string error="";
     public IReadOnlyList<AttendanceStateGradeViewModel> StateGrades{get;}
-    public string Context=>$"{source.CourseName} · Corte {cut}";
+    public string Context=>$"{source.CourseName} · {source.Cuts.Single(c=>c.Number==cut).Label}";
     public bool Enabled{get=>enabled;set{if(Set(ref enabled,value))Raise(nameof(CanSave));}}
     public bool IsSaving{get=>saving;private set{if(Set(ref saving,value)){Raise(nameof(CanEdit));Raise(nameof(CanSave));}}}
     public bool CanEdit=>!IsSaving;

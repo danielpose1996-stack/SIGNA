@@ -25,7 +25,7 @@ public class CutDeletionTests
         {
             var table=window.FindControl<ConsolidatedView>("RetainedConsolidated")!.FindControl<DataGrid>("ConsolidatedTable")!;
             await vm.DeleteCutAsync(service.PreviewCutDeletion(removed),true);
-            Assert.Equal(expected,vm.SelectedCut);Assert.Equal(2,vm.Cuts.Count);Assert.Equal(7,table.Columns.Count);
+            Assert.Equal(expected,vm.SelectedCut);Assert.Equal(2,vm.Cuts.Count);Assert.Equal(8,table.Columns.Count);
             Assert.True(vm.Consolidated.WeightsPending);Assert.Null(vm.Consolidated.Rows[0].FinalValue);
             Assert.Equal("Configurar porcentajes",vm.Consolidated.Rows[0].Status);
             Assert.Contains("100",vm.Consolidated.CalculationNote);
@@ -68,8 +68,10 @@ public class CutDeletionTests
         var vm=new MainViewModel(service){Page="Notas"};var main=new MainWindow{DataContext=vm};main.Show();main.UpdateLayout();
         try
         {
-            var trash=main.GetVisualDescendants().OfType<Button>().Single(b=>ReferenceEquals(b.Command,vm.DeleteCutCommand));
-            Assert.False(trash.IsEffectivelyEnabled);Assert.False(vm.DeleteCutCommand.CanExecute(1));Assert.False(vm.CanDeleteCut);
+            var manager=new CutManagementWindow{DataContext=new CutManagementViewModel(service)};manager.Show(main);manager.UpdateLayout();
+            var editor=Assert.IsType<CutManagementViewModel>(manager.DataContext);
+            var trash=manager.GetVisualDescendants().OfType<Button>().Single(b=>ReferenceEquals(b.Command,editor.DeleteCommand));
+            Assert.False(trash.IsEffectivelyEnabled);Assert.False(vm.DeleteCutCommand.CanExecute(1));Assert.False(vm.CanDeleteCut);manager.Close();
             var weights=new CutWeightsViewModel(service);Assert.Single(weights.Cuts);weights.Cuts[0].Weight="100";
             Assert.True(await weights.SaveAsync());Assert.NotNull(vm.Consolidated.Rows[0].FinalValue);
             await vm.AddCutAsync();Assert.True(vm.CanDeleteCut);Assert.True(vm.DeleteCutCommand.CanExecute(1));

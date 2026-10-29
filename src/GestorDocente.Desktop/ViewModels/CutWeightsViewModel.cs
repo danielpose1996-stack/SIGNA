@@ -7,7 +7,8 @@ namespace GestorDocente.Desktop.ViewModels;
 public sealed class CutWeightDraft : ObservableObject
 {
     public int Number{get;}
-    public string Label=>$"Corte {Number}";
+    public string Name{get;init;}="";
+    public string Label=>Name.Length==0 ? $"Corte {Number}" : Name;
     private string weight;
     public string Weight{get=>weight;set=>Set(ref weight,value);}
     public decimal? Value=>decimal.TryParse(Weight.Replace(',','.'),NumberStyles.AllowDecimalPoint|NumberStyles.AllowLeadingSign,CultureInfo.InvariantCulture,out var value) ? value : null;
@@ -29,7 +30,7 @@ public sealed class CutWeightsViewModel : ObservableObject
     public string Validation=>IsValid ? "Ponderación válida." : "Los porcentajes de todos los cortes deben sumar exactamente 100 %.";
     public CutWeightsViewModel(WorkspaceService service)
     {
-        this.service=service;Cuts=service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutWeightDraft(c.Number,c.Weight)).ToArray();
+        this.service=service;Cuts=service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutWeightDraft(c.Number,c.Weight){Name=c.Name}).ToArray();
         foreach(var cut in Cuts)cut.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(CutWeightDraft.Weight)){Raise(nameof(TotalLabel));Raise(nameof(Validation));Raise(nameof(CanSave));}};
     }
     public async Task<bool> SaveAsync()

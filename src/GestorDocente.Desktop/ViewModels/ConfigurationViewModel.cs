@@ -13,7 +13,7 @@ public sealed class ConfigurationViewModel:ObservableObject
     private string error="";
     public ObservableCollection<EvaluationGroup> Groups{get;}
     public ObservableCollection<EvaluationGroupEditorViewModel> GroupEditors{get;}
-    public string Context=>$"{service.Current.CourseName} · Corte {cut}";
+    public string Context=>$"{service.Current.CourseName} · {service.Cut(cut).Label}";
     public bool GroupsEmpty=>Groups.Count==0;
     public string SelectedGroupTitle=>SelectedGroup?.Name ?? "Detalle de la actividad";
     public string MainWeightSummary=>$"Total del corte: {Groups.Sum(g=>g.Weight).ToString("0.############################",AcademicFormatting.Culture)} % de 100 %.";

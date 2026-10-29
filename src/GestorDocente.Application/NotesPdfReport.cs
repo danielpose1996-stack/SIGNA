@@ -18,7 +18,11 @@ public sealed record NotesPdfColumn(string Name,string GroupName,decimal Weight,
 }
 public sealed record NotesPdfStudent(string FullName,IReadOnlyList<decimal?> Grades,decimal? Total);
 public sealed record NotesPdfReport(string Course,string Code,string Period,string Group,int Cut,
-    IReadOnlyList<NotesPdfColumn> Columns,IReadOnlyList<NotesPdfStudent> Students);
+    IReadOnlyList<NotesPdfColumn> Columns,IReadOnlyList<NotesPdfStudent> Students)
+{
+    public string CutName{get;init;}="";
+    public string CutLabel=>CutName.Length==0 ? $"Corte {Cut}" : CutName;
+}
 
 public static class NotesPdfProjection
 {
@@ -47,6 +51,6 @@ public static class NotesPdfProjection
             }
         }
         return new(workspace.CourseName,workspace.CourseCode,workspace.Period,workspace.GroupName,cutNumber,columns,
-            workspace.Students.Select(student=>new NotesPdfStudent(student.FullName,values.Select(get=>get(student.Id)).ToArray(),index.Cut(student.Id))).ToArray());
+            workspace.Students.Select(student=>new NotesPdfStudent(student.FullName,values.Select(get=>get(student.Id)).ToArray(),index.Cut(student.Id))).ToArray()){CutName=cut.Name};
     }
 }

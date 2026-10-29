@@ -34,7 +34,7 @@ public sealed class AttendancePdfExporter : IAttendancePdfExporter
         y=Field(canvas,"Código / período",$"{report.Code}  /  {report.Period}",Left,y,regular,bold);
         var location=string.Join(" / ",new[]{report.School,report.Group}.Where(value=>!string.IsNullOrWhiteSpace(value)));
         y=Field(canvas,"Escuela / grupo",location.Length==0 ? "No especificado" : location,Left,y,regular,bold);
-        y=Field(canvas,"Corte",$"{report.Cut}",Left,y,regular,bold);
+        y=Field(canvas,"Corte",report.CutLabel,Left,y,regular,bold);
         y=Field(canvas,"Estudiante",report.Student,Left,y,regular,bold);
         y=Field(canvas,"Documento",report.Document,Left,y,regular,bold)+12;
         if(y+170>PageHeight-85)
