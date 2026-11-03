@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.4:** selector y nombres personalizables de cortes, **Nota mínima** para aprobar con 3,0, estados y tarjetas de riesgo académico y **PDF consolidado** sin documentos ni contactos. Conserva las notas, ponderaciones y asistencias; distingue un 0,0 registrado de una nota pendiente. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.4](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.4).
+**Versión 1.6.5:** nueva pestaña **Asistencia consolidada**, con ausencias A por corte y **Total de faltas**, y tarjetas de alumnos Crítico/Delicado en el **PDF de Nota consolidada**, con nombre, correo y mínima requerida. Conserva los datos, porcentajes y cálculos existentes; la tabla del PDF sigue sin contactos. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.5](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.5).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.4-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.4-linux-x64.AppImage` o `SIGNA-1.6.4-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.4-linux-x64.deb` o `SIGNA-1.6.4-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.4-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.4-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.5-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.5-linux-x64.AppImage` o `SIGNA-1.6.5-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.5-linux-x64.deb` o `SIGNA-1.6.5-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.5-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.5-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0–1.6.3 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.4. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.4 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.5. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** desde 1.6.1 se publica y valida únicamente para Ubuntu. Ya no se generan paquetes RPM ni Arch/Omarchy y no se ofrece soporte Debian. Ubuntu conserva `.deb` porque también es su formato de instalación. Las Releases históricas permanecen intactas; esta decisión no elimina datos ni instalaciones anteriores. Para compatibilidad e instalación vigentes, sigue esta guía y las instrucciones de la Release, aunque un manual de una edición anterior mencione otras distribuciones.
 
@@ -88,7 +88,9 @@ En **Notas** y **Asistencias**, el desplegable **Corte académico** permite camb
 
 **Nota consolidada** muestra la **Nota mínima** y el **Estado académico** para alcanzar 3,0. Un corte está completo para un estudiante cuando tiene evaluaciones válidas y todas sus notas registradas: un 0,0 escrito cuenta como definitivo; una celda vacía sigue pendiente. La nota mínima usa únicamente el aporte ponderado de cortes completos y calcula el promedio ponderado necesario en los pendientes. Sin cortes completos o con porcentajes sin ajustar, no muestra un cálculo. La nota final conserva su regla actual de vacíos como cero solo para calcular.
 
-Los estados son **Aprobado asegurado**, **Normal** (necesita hasta 3,0), **Delicado** (más de 3,0 hasta 4,0), **Crítico** (más de 4,0 hasta 5,0) y **No alcanzable** (requiere más de 5,0, o ya no queda peso pendiente y no alcanza 3,0). La mínima se muestra hacia arriba a dos decimales para no subestimar lo necesario. Las tarjetas muestran solo casos críticos y delicados, con los críticos primero. **Generar reporte PDF** exporta todos los estudiantes, sus nombres, notas por corte, final, mínima y estado, sin documentos, correos ni teléfonos. El correo aparece únicamente en las tarjetas de la aplicación.
+Los estados son **Aprobado asegurado**, **Normal** (necesita hasta 3,0), **Delicado** (más de 3,0 hasta 4,0), **Crítico** (más de 4,0 hasta 5,0) y **No alcanzable** (requiere más de 5,0, o ya no queda peso pendiente y no alcanza 3,0). La mínima se muestra hacia arriba a dos decimales para no subestimar lo necesario. Las tarjetas muestran solo casos críticos y delicados, con los críticos primero. **Generar reporte PDF** exporta todos los estudiantes, sus nombres, notas por corte, final, mínima y estado, sin documentos, teléfonos ni identificadores internos. La tabla no incluye contactos; una sección adicional muestra las tarjetas de alumnos críticos y delicados con su correo cuando está registrado. Los correos de otros estados no se exportan.
+
+**Asistencia consolidada** es una pestaña adicional que muestra todos los estudiantes, las ausencias (A) de cada corte y el **Total de faltas**. Cuenta solo semanas activas de clase o actividades; P, J, T, sin clase y pendientes no suman faltas. Se actualiza al guardar registros, retirar/recuperar semanas o cambiar cortes y estudiantes, sin modificar los porcentajes ni las calificaciones de asistencia.
 
 Los nombres de los cortes también se conservan al copiar parámetros y en los respaldos. El agregado de datos pasa a versión8 conservando las notas y los porcentajes internos de las subactividades de versión7. Mantén un respaldo antes de probar una versión nueva; una aplicación antigua no puede abrir agregados de una versión posterior.
 

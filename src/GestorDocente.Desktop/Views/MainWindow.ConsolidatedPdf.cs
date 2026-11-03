@@ -24,7 +24,7 @@ public partial class MainWindow
             var source=model.Service.Current;model.Message="Generando reporte de nota consolidada…";
             var bytes=await Task.Run(()=>exporter.Export(ConsolidatedPdfProjection.Build(WorkspaceService.Clone(source))));
             await Task.Run(()=>ReportFile.Save(path,bytes,overwrite));
-            model.Message=$"Reporte consolidado guardado: {file.Name}. Los estudiantes se identifican únicamente por su nombre.";
+            model.Message=$"Reporte consolidado guardado: {file.Name}. Incluye la tabla de notas y tarjetas de estudiantes en riesgo con su correo, cuando está registrado.";
         }
         catch(Exception ex){model.Message=SafeError(ex);}
         finally{model.FileBusy=false;}

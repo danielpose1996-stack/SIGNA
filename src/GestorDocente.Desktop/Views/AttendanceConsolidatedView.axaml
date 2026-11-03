@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.AttendanceConsolidatedView">
+  <Border Classes="card" Padding="0"><Grid RowDefinitions="Auto,*,Auto">
+    <WrapPanel Margin="10,8"><TextBox Width="280" Text="{Binding AttendanceConsolidated.SearchInput,Mode=TwoWay}" Watermark="Buscar estudiante o documento…" AutomationProperties.Name="Filtrar asistencia consolidada" Margin="0,0,14,0"/><TextBlock Text="Ausencias por corte académico" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="14"/></WrapPanel>
+    <Grid Grid.Row="1">
+      <DataGrid x:Name="AttendanceConsolidatedTable" ItemsSource="{Binding AttendanceConsolidated.Rows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="2" RowHeight="NaN" ColumnHeaderHeight="NaN" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+      <TextBlock IsVisible="{Binding AttendanceConsolidated.IsEmpty}" Text="No hay estudiantes que mostrar. Agrega el listado en Notas o ajusta la búsqueda." Classes="muted" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20"/>
+    </Grid>
+    <Border Grid.Row="2" Background="{DynamicResource Header}" Padding="12,8"><StackPanel Spacing="4"><TextBlock Text="{Binding AttendanceConsolidated.Summary}" FontSize="11" TextWrapping="Wrap"/><TextBlock Text="P, J, T, sin clase y registros pendientes no suman faltas. La tabla se actualiza al guardar una asistencia." Classes="muted" FontSize="11" TextWrapping="Wrap"/></StackPanel></Border>
+  </Grid></Border>
+</UserControl>

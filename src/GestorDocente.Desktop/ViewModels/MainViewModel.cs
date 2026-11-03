@@ -45,6 +45,7 @@ public sealed partial class MainViewModel : ObservableObject
     public HomeViewModel Home {get;}
     public DashboardViewModel Dashboard {get;}
     public ConsolidatedViewModel Consolidated {get;}=new();
+    public AttendanceConsolidatedViewModel AttendanceConsolidated{get;}=new();
     public IReadOnlyList<CutColumn> Cuts=>Service.Current.Cuts.OrderBy(c=>c.Number).Select(c=>new CutColumn(c.Number,c.Weight,c.Number==SelectedCut){Name=c.Name}).ToArray();
     public CutColumn? SelectedCutOption
     {
@@ -132,7 +133,7 @@ public sealed partial class MainViewModel : ObservableObject
             if(value==NavigationSection.Courses && Catalog is not null && Home.Semesters.Count==0)_=Home.RefreshAsync();
             foreach(var name in new[] {nameof(IsHome),nameof(IsCourses),nameof(IsBackups),
                 nameof(IsAcademicNavigation),nameof(IsCourseContext),nameof(IsGlobalContext),
-                nameof(IsNotes),nameof(IsAttendance),nameof(IsConsolidated),nameof(ShowCutSelector),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
+                nameof(IsNotes),nameof(IsAttendance),nameof(IsConsolidated),nameof(IsAttendanceConsolidated),nameof(ShowCutSelector),nameof(PageTitle),nameof(PageSubtitle)})Raise(name);
         }
     }
     // La última pestaña académica se mantiene independiente de las páginas globales.
@@ -141,9 +142,9 @@ public sealed partial class MainViewModel : ObservableObject
         get=>page;
         set
         {
-            if(value is not ("Notas" or "Asistencias" or "Nota consolidada"))throw new ArgumentException("Selecciona una pestaña académica válida.",nameof(value));
+            if(value is not ("Notas" or "Asistencias" or "Nota consolidada" or "Asistencia consolidada"))throw new ArgumentException("Selecciona una pestaña académica válida.",nameof(value));
             Section=NavigationSection.Academic;
-            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));Raise(nameof(IsConsolidated));Raise(nameof(ShowCutSelector));}
+            if(Set(ref page,value)){Raise(nameof(IsNotes));Raise(nameof(IsAttendance));Raise(nameof(IsConsolidated));Raise(nameof(IsAttendanceConsolidated));Raise(nameof(ShowCutSelector));}
         }
     }
     public bool IsHome=>Section==NavigationSection.Home;
@@ -155,6 +156,7 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsNotes=>IsCourseContext && Page=="Notas";
     public bool IsAttendance=>IsCourseContext && Page=="Asistencias";
     public bool IsConsolidated=>IsCourseContext && Page=="Nota consolidada";
+    public bool IsAttendanceConsolidated=>IsCourseContext && Page=="Asistencia consolidada";
     public bool ShowCutSelector=>IsNotes || IsAttendance;
     public string PageTitle=>Section switch
     {
@@ -280,7 +282,7 @@ public sealed partial class MainViewModel : ObservableObject
             else if(parameter is "Respaldos")Section=NavigationSection.Backups;
             else if(parameter is "Académico")OpenCourseCommand.Execute(null);
             else if(parameter is "Reportes" && HasOpenCourse){Page="Asistencias";DetailVisible=true;Raise(nameof(DetailHidden));}
-            else if(parameter is "Notas" or "Asistencias" or "Nota consolidada") {if(HasOpenCourse)Page=(string)parameter;}
+            else if(parameter is "Notas" or "Asistencias" or "Nota consolidada" or "Asistencia consolidada") {if(HasOpenCourse)Page=(string)parameter;}
             else Message="Esta sección pertenece a un incremento posterior. Puedes trabajar en Notas y Asistencias.";
         },_=>!FileBusy);
         CutCommand=new(parameter=> {if(int.TryParse(parameter?.ToString(),out var number))_=SelectCutAsync(number);},_=>!FileBusy && !Service.IsSaving);
@@ -296,6 +298,7 @@ public sealed partial class MainViewModel : ObservableObject
         SaveStatus=IsDemo ? "Cambios guardados solo en la demostración" : "Guardado en este equipo · sin cuenta requerida";
         Rebuild();
         Consolidated.Refresh(Service.Current);
+        AttendanceConsolidated.Refresh(Service.Current);
     }
     public async Task AddCutAsync()
     {
@@ -332,6 +335,8 @@ public sealed partial class MainViewModel : ObservableObject
     private void OnChanged(WorkspaceChange change)
     {
         SaveStatus=IsDemo ? "Cambios guardados en la demostración" : "Cambios guardados en este equipo";
+        if(change.Kind==WorkspaceChangeKind.Attendance)AttendanceConsolidated.ApplyAttendance(change);
+        else if(change.Kind is WorkspaceChangeKind.Structure or WorkspaceChangeKind.Students)AttendanceConsolidated.Refresh(Service.Current);
         if(change.Kind==WorkspaceChangeKind.AttendanceGrading)
         {
             if(change.Cut==SelectedCut)
@@ -558,6 +563,7 @@ public sealed partial class MainViewModel : ObservableObject
         Service=next;Service.ChangedDetailed+=OnChanged;Service.RefreshFailed+=OnRefreshFailed;
         searchUpdate.Cancel();selectedCut=saved.Cut;page=saved.Page;search=saved.Search;searchInput=saved.Search;selectedStudent=null;Raise(nameof(SearchInput));
         ShowProjection(projection);
+        AttendanceConsolidated.Refresh(Service.Current);Raise(nameof(IsAttendanceConsolidated));Raise(nameof(ShowCutSelector));
         Consolidated.Refresh(Service.Current);Raise(nameof(Cuts));Raise(nameof(SelectedCutOption));Raise(nameof(CutLabel));Raise(nameof(SelectedCutWeight));Raise(nameof(IsConsolidated));Raise(nameof(CanDeleteCut));Raise(nameof(DeleteCutHint));DeleteCutCommand.Refresh();
         if(saved.Student is not null)SelectedStudent=AttendanceRows.FirstOrDefault(r=>r.Student.Id==saved.Student) ?? SelectedStudent;
         foreach(var name in new[]{nameof(SelectedCut),nameof(CutLabel),nameof(Search),nameof(IsDemo),nameof(StorageLabel),nameof(CourseName),nameof(CourseInfo),nameof(StudentCount),nameof(HasOpenCourse),nameof(PageTitle),nameof(IsNotes),nameof(IsAttendance)})Raise(name);

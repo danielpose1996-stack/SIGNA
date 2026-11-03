@@ -1,5 +1,16 @@
 # Historial de cambios de SIGNA
 
+## 1.6.5 — 3 de noviembre de 2026
+
+- Nueva pestaña **Asistencia consolidada** junto a Notas, Asistencias y Nota consolidada. Muestra a los estudiantes, sus ausencias (A) en cada corte académico y el **Total de faltas**, respetando los nombres personalizados y cualquier cantidad de cortes.
+- Conteo de A solo en semanas activas de clase o actividades; P, J, T, sin clase, pendientes y semanas retiradas no suman faltas. Se actualiza automáticamente al guardar registros de cualquier corte, retirar/recuperar semanas o modificar cortes y estudiantes.
+- Proyección en memoria con actualización del alumno afectado y búsqueda agrupada sin consultas ni escrituras adicionales a SQLite. Tabla con filas alternadas, cabecera fija, nombres completos, virtualización y desplazamiento horizontal.
+- El **PDF de Nota consolidada** incluye una sección de tarjetas para alumnos Crítico y Delicado, críticos primero, con nombre completo, correo si existe y nota mínima para aprobar. Conserva el diseño de las tarjetas y pagina sin cortarlas, con contexto y numeración completos.
+- El correo se incluye únicamente en esas tarjetas de seguimiento. La tabla de calificaciones no lleva contactos y el PDF no incorpora documentos, teléfonos ni IDs internos. Si no hay casos de riesgo, no agrega una página vacía. La interfaz de exportación informa la inclusión de las tarjetas con correo.
+- Sin cambios de esquema, migraciones, ubicación de datos ni dependencias; conserva el agregado académico 8, las calificaciones, porcentajes, políticas de asistencia y respaldos. Interfaz y PDF revisados con datos ficticios, incluida escala 125 %; 514 pruebas automatizadas locales aprobadas antes de publicar.
+
+**Actualizar:** desde SIGNA 1.6.0–1.6.4 con Velopack, pulsa Buscar actualizaciones → Actualizar SIGNA. Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. En Ubuntu la actualización integrada corresponde a AppImage; los paquetes .deb se actualizan con apt. Sin certificados nuevos de firma; las pruebas manuales siguen a cargo del docente.
+
 ## 1.6.4 — 29 de octubre de 2026
 
 - Selector desplegable de cortes en Notas y Asistencias, con configuración para agregar, renombrar y eliminar cortes con confirmación. Conserva los porcentajes existentes, la numeración y los registros de cada corte; impide eliminar el último y solicita ajustar los pesos sin redistribuirlos automáticamente.
@@ -10,7 +21,7 @@
 - Nombres personalizados conservados en reportes, copia de parámetros, SQLite y respaldos. Agregado académico versión 8: migración desde versión 7 que preserva las ponderaciones internas de subactividades, notas y asistencias. No cambia tablas SQL, rutas de datos, respaldos ni archivos del actualizador.
 - Guardas para conservar ediciones pendientes al cambiar/configurar cortes o generar el consolidado. Interfaz revisada con datos ficticios en ventanas normales, pequeñas y escala 125 %; 504 pruebas automatizadas locales aprobadas antes de publicar.
 
-**Actualización:** desde SIGNA 1.6.0–1.6.3 con Velopack utiliza Buscar actualizaciones → Actualizar SIGNA. Conserva un respaldo local antes de actualizar. Las versiones anteriores no abren el agregado8; para volver atrás se necesita un respaldo anterior compatible. Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. Sin nuevos certificados de firma; las pruebas manuales siguen a cargo del docente.
+**Actualización:** desde SIGNA 1.6.0–1.6.3 con Velopack utiliza Buscar actualizaciones → Actualizar SIGNA. Conserva un respaldo local antes de actualizar. Las versiones anteriores no abren el agregado 8; para volver atrás se necesita un respaldo anterior compatible. Windows 10/11 x64, macOS 15+ Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64. Sin nuevos certificados de firma; las pruebas manuales siguen a cargo del docente.
 
 ## 1.6.3 — 26 de octubre de 2026
 

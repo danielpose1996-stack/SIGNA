@@ -36,6 +36,8 @@ public sealed class ConsolidatedPdfExporter:IConsolidatedPdfExporter
                 pages.Add(new(first,count,start,row-start,headerHeight));
             }
         }
+        var cardPages=ConsolidatedPdfRiskSection.Plan(report.RiskCards,top);
+        var totalPages=pages.Count+cardPages.Count;
         using var stream=new MemoryStream();
         using var document=SKDocument.CreatePdf(stream,new SKDocumentPdfMetadata{Title="SIGNA - Nota consolidada",Author=ProductIdentity.Name,Subject=ProductIdentity.FullName,Creator=ProductIdentity.Name})
             ?? throw new IOException("No se pudo crear el reporte consolidado.");
@@ -70,8 +72,9 @@ public sealed class ConsolidatedPdfExporter:IConsolidatedPdfExporter
             canvas.DrawText("* Corte pendiente: faltan notas o configuración. Las notas vacías aportan 0,0 a la nota final, sin modificar los datos.",Left,556,small);
             canvas.DrawText("Nota mínima: promedio ponderado requerido solo en cortes pendientes; se muestra hacia arriba a 2 decimales.",Left,569,small);
             canvas.DrawText(report.WeightsPending ? "Configura los porcentajes de los cortes para que sumen 100 %." : "— Sin cálculo: ningún corte completo, sin peso restante o sin configuración. Nombre y totales se repiten en cada sección.",Left,582,small);
-            RightText(canvas,$"{p+1} / {pages.Count}",Right,601,small);document.EndPage();
+            RightText(canvas,$"{p+1} / {totalPages}",Right,601,small);document.EndPage();
         }
+        ConsolidatedPdfRiskSection.Render(document,report,cardPages,metadata,top,pages.Count,totalPages);
         document.Close();return stream.ToArray();
     }
 }

@@ -11,14 +11,15 @@ namespace GestorDocente.Infrastructure.Tests;
 public class ConsolidatedReportTests
 {
     [Fact]
-    public void Pdf_is_paginated_and_its_contract_excludes_personal_identifiers_and_contacts()
+    public void Pdf_is_paginated_and_only_risk_cards_can_include_email()
     {
         var data=DemoWorkspaceFactory.Create();data.CourseName="Asignatura ficticia de análisis de datos";
         data.Students=Enumerable.Range(1,65).Select(i=>new Student($"id-{i}",$"DOC-PRIVADO-{i}",$"Estudiante ficticio {i:000} con apellidos extensos de demostración",$"correo-privado-{i}@example.invalid","CELULAR-PRIVADO")).ToList();
         data.Cuts=Enumerable.Range(1,7).Select(i=>new AcademicCut{Number=i,Name=i==1 ? "Primer período de investigación académica" : $"Período {i}",Weight=i==7 ? 40 : 10,
             Groups=[new(){Id="p",Name="Parcial",Weight=100}],Grades=i<3 ? data.Students.Select((s,n)=>new GradeEntry(s.Id,"p",n%6)).ToList() : []}).ToList();
         var report=ConsolidatedPdfProjection.Build(data);var json=JsonSerializer.Serialize(report);
-        foreach(var secret in new[]{"DOC-PRIVADO","correo-privado","CELULAR-PRIVADO","id-1"})Assert.DoesNotContain(secret,json);
+        foreach(var secret in new[]{"DOC-PRIVADO","CELULAR-PRIVADO","id-1"})Assert.DoesNotContain(secret,json);
+        Assert.DoesNotContain("correo-privado",JsonSerializer.Serialize(report.Students));Assert.NotEmpty(report.RiskCards);
         Assert.DoesNotContain(typeof(ConsolidatedPdfStudent).GetProperties(),p=>p.Name is "Document" or "Email" or "Phone" or "StudentId");
         var exporter=new ConsolidatedPdfExporter();var bytes=exporter.Export(report);
         Assert.StartsWith("%PDF-",Encoding.ASCII.GetString(bytes,0,5));Assert.True(Regex.Matches(Encoding.Latin1.GetString(bytes),@"/Type /Page\b").Count>=9);
