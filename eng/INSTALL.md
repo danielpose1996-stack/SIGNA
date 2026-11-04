@@ -1,6 +1,8 @@
 # Instalar SIGNA 1.6.5
 
-Soporte actual: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Descarga desde [Releases oficiales](https://github.com/danielpose1996-stack/SIGNA/releases/latest). Los instaladores incluyen .NET; no necesitas el SDK.
+Soporte actual: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon, Ubuntu 24.04 LTS y Debian 13 x64/ARM64**. Descarga desde [Releases oficiales](https://github.com/danielpose1996-stack/SIGNA/releases/latest). Los instaladores incluyen .NET; no necesitas el SDK.
+
+**Debian 13:** utiliza los instaladores adicionales `SIGNA-1.6.5-debian13-x64.deb` o `SIGNA-1.6.5-debian13-arm64.deb` y su manifiesto `SHA256SUMS-debian13.txt`, en la misma Release 1.6.5. Sigue [la guía de Debian](https://github.com/danielpose1996-stack/SIGNA/blob/main/eng/INSTALL-debian.md). Los paquetes originales de Ubuntu conservan sus nombres, hashes y dependencias; no se han reemplazado.
 
 Desde SIGNA 1.6.0 instalado con Velopack puedes utilizar **Buscar actualizaciones → Actualizar SIGNA** cuando 1.6.5 esté publicada como estable. Las ediciones hasta 1.5.0 requieren instalar una vez la edición actualizable. Crea antes un respaldo local y conserva la contraseña de las copias antiguas cifradas. Consulta [el procedimiento completo](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
 
@@ -11,6 +13,8 @@ Desde SIGNA 1.6.0 instalado con Velopack puedes utilizar **Buscar actualizacione
 | Ubuntu 24.04 LTS ARM64, actualización integrada | `SIGNA-1.6.5-linux-arm64.AppImage` |
 | Ubuntu 24.04 LTS x64, instalación con apt | `SIGNA-1.6.5-linux-x64.deb` |
 | Ubuntu 24.04 LTS ARM64, instalación con apt | `SIGNA-1.6.5-linux-arm64.deb` |
+| Debian 13 x64, instalación con apt | `SIGNA-1.6.5-debian13-x64.deb` |
+| Debian 13 ARM64, instalación con apt | `SIGNA-1.6.5-debian13-arm64.deb` |
 | macOS 15+, Intel | `SIGNA-1.6.5-osx-x64.dmg` |
 | macOS 15+, Apple Silicon | `SIGNA-1.6.5-osx-arm64.dmg` |
 
@@ -22,7 +26,7 @@ Desde SIGNA 1.6.0 instalado con Velopack puedes utilizar **Buscar actualizacione
 
 **Ubuntu con .deb:** ejecuta `sudo apt install ./SIGNA-1.6.5-linux-x64.deb` en la carpeta de descarga; cambia a ARM64 si corresponde. Apt resuelve las dependencias. Para actualizar, descarga el nuevo .deb y repite el comando; para desinstalar, `sudo apt remove signa`. Esta edición no reemplaza sus archivos mediante Velopack porque pertenecen a apt. Ubuntu también utiliza el formato .deb: su presencia no implica soporte Debian.
 
-Desde 1.6.1 se retira el soporte de las demás distribuciones Linux: no se generan RPM ni paquetes Arch/Omarchy. Las descargas históricas se conservan. Esta decisión no elimina instalaciones ni datos anteriores.
+**Debian con .deb:** ejecuta `sudo apt install ./SIGNA-1.6.5-debian13-x64.deb`; para ARM64 cambia el nombre por el correspondiente. Apt resuelve las bibliotecas de Debian. Esta edición se actualiza instalando el nuevo DEB con apt. No incluye Debian 12, RPM ni paquetes Arch/Omarchy. Las descargas históricas se conservan.
 
 ## Datos, firma e integridad
 

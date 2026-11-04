@@ -1,0 +1,66 @@
+name: Agregar instaladores Debian a una Release existente
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión existente; conservar tag, binarios y archivos publicados'
+        required: true
+        default: '1.6.5'
+permissions:
+  contents: read
+concurrency:
+  group: signa-debian-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  debian:
+    name: Debian 13 ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_RID: ${{ matrix.rid }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Descargar los binarios publicados y verificar el paquete
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          python3 -m unittest discover -s eng/tests -p 'test_*.py'
+          mkdir -p artifacts/debian/source artifacts/debian/logs
+          gh release download "v$RELEASE_VERSION" --dir artifacts/debian/source \
+            --pattern "SIGNA-$RELEASE_VERSION-$RELEASE_RID.deb" --pattern SHA256SUMS.txt
+          bash eng/repack-debian.sh "$RELEASE_VERSION" "$RELEASE_RID" | tee artifacts/debian/logs/repack.log
+      - name: Instalar y comprobar en Debian 13 de la misma arquitectura
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --mount "type=bind,source=$GITHUB_WORKSPACE,target=/work,readonly" \
+            --workdir /work --env SIGNA_EPHEMERAL_TEST=1 \
+            debian:13-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 \
+            bash eng/test-debian.sh "$RELEASE_VERSION" "$RELEASE_RID" debian-only 2>&1 | tee artifacts/debian/logs/debian.log
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: instalador-debian-${{ matrix.rid }}
+          path: artifacts/debian/release/*.deb
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: pruebas-debian-${{ matrix.rid }}
+          path: artifacts/debian/logs/*
+          if-no-files-found: ignore
+          retention-days: 14

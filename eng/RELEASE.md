@@ -43,3 +43,9 @@ Compilación local sin errores ni advertencias y **514 pruebas automatizadas apr
 Los instaladores no incluyen bases, materias ni estudiantes de prueba. Windows continúa sin firma oficial y macOS sin Apple Developer ID/notarización, conservando firma ad hoc de integridad. Licencia MIT.
 
 [Repositorio](https://github.com/danielpose1996-stack/SIGNA) · [Historial de cambios](https://github.com/danielpose1996-stack/SIGNA/blob/main/CHANGELOG.md) · [Guía de actualizaciones](https://github.com/danielpose1996-stack/SIGNA/blob/main/docs/ACTUALIZACIONES.md).
+
+### Instaladores adicionales Debian 13 — misma versión 1.6.5
+
+Se agregan **SIGNA-1.6.5-debian13-x64.deb** y **SIGNA-1.6.5-debian13-arm64.deb** para Debian 13 (Trixie), con **SHA256SUMS-debian13.txt**. Descarga el archivo de tu arquitectura e instala con `sudo apt install ./SIGNA-1.6.5-debian13-x64.deb` (cambia a `arm64` cuando corresponda). Incluyen .NET y el icono oficial. [Guía de instalación Debian](https://github.com/danielpose1996-stack/SIGNA/blob/main/eng/INSTALL-debian.md).
+
+Conservan exactamente los binarios de 1.6.5; solo se adapta la dependencia ICU del metadato del paquete a Debian. Se comprueban por arquitectura con apt, ELF, icono y arranque X11/SQLite ficticio en Debian 13. La actualización del DEB se hace instalando una nueva edición con apt. No cambia la versión, no se genera otra Release ni se reemplazan los 19 archivos originales, su manifiesto SHA256SUMS, los canales Velopack o el tag. Debian 12 queda fuera del soporte.
