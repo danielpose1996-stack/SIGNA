@@ -64,3 +64,32 @@ jobs:
           path: artifacts/debian/logs/*
           if-no-files-found: ignore
           retention-days: 14
+  publish:
+    name: Agregar DEB a la misma Release sin reemplazar archivos
+    needs: debian
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          pattern: instalador-debian-*
+          path: artifacts/debian/upload
+          merge-multiple: true
+      - name: Publicar solo los dos instaladores Debian y su manifiesto
+        run: python3 eng/publish-debian.py artifacts/debian/upload "$RELEASE_VERSION"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        if: always()
+        with:
+          name: publicacion-debian
+          path: artifacts/debian/publicacion.json
+          if-no-files-found: ignore
+          retention-days: 14
