@@ -14,6 +14,7 @@ release="$repo/artifacts/debian/release"
 source="$input/SIGNA-$version-$rid.deb"
 [[ ! -e "$stage" && ! -e "$verify" ]] || { echo 'Utiliza un checkout limpio' >&2; exit 1; }
 python3 eng/debian-package.py verify-source "$source" "$input/SHA256SUMS.txt"
+mkdir -p "$stage" "$verify/original" "$verify/debian"
 dpkg-deb --raw-extract "$source" "$stage"
 # Snapshot antes de cambiar únicamente el metadato ICU.
 cp "$stage/DEBIAN/control" "$input/control-original-$rid.txt"
