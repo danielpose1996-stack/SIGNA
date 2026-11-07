@@ -1,11 +1,8 @@
 # Historial de cambios de SIGNA
 
-## Instaladores Debian 13 para 1.6.5 — 4 de noviembre de 2026
+## Retiro de Debian — 6 de noviembre de 2026
 
-- Se agregan a la **misma Release v1.6.5** los instaladores `SIGNA-1.6.5-debian13-x64.deb` y `SIGNA-1.6.5-debian13-arm64.deb`, más `SHA256SUMS-debian13.txt`. No cambia la versión del software, el tag, los 19 archivos originales ni sus feeds/hashes.
-- Se conservan exactamente los binarios, recursos y permisos de los DEB originales. Únicamente se adapta la dependencia ICU de los nuevos paquetes a `libicu76` de Debian 13; sin cambios de SQLite, datos, reglas académicas ni actualizador.
-- Pruebas de reempaquetado y validación en contenedores oficiales Debian 13 nativos x64/ARM64: apt, instalación/desinstalación, dependencias ELF, icono, versión y arranque X11 con SQLite ficticio mediante Xvfb. Los archivos solo se publican si ambas arquitecturas aprueban.
-- Guía específica de instalación Debian y actualización instalando el nuevo DEB con apt. Debian 12 y Arch/Omarchy/RPM continúan fuera del soporte.
+- Se retiran los instaladores exclusivos de Debian 13, su manifiesto y el flujo de empaquetado dedicado. La distribución Linux disponible es Ubuntu 24.04 LTS.
 
 ## 1.6.5 — 3 de noviembre de 2026
 
