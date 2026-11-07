@@ -78,8 +78,11 @@ public sealed partial class MainViewModel : ObservableObject
     public event Action? AttendancePdfRequested;
     public event Action? NotesPdfRequested;
     public event Action<string>? GradePasteRequested;
+    public event Action<string>? GradeAssignmentRequested;
     public event Action? AttendanceGradingRequested;
     public RelayCommand PasteGradesCommand{get;}
+    public RelayCommand AssignGradeToAllCommand {get;}
+    private bool CanAssignGradeToAll => HasOpenCourse && Service.Current.Students.Count > 0 && !FileBusy && !Service.IsSaving;
     public RelayCommand ConfigureAttendanceGradingCommand{get;}
     public RelayCommand SortStudentsCommand{get;}
     private bool? nameDescending;
@@ -92,7 +95,7 @@ public sealed partial class MainViewModel : ObservableObject
     public event Action? BackupRequested;
     public event Action? RestoreRequested;
     private bool fileBusy;
-    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();ExportConsolidatedPdfCommand.Refresh();ConfigureCutsCommand.Refresh();Raise(nameof(CanChooseCut));CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
+    public bool FileBusy{get=>fileBusy;set{if(Set(ref fileBusy,value)){SortStudentsCommand.Refresh();PasteGradesCommand.Refresh();AssignGradeToAllCommand.Refresh();ConfigureAttendanceGradingCommand.Refresh();PersonalizeCommand.Refresh();UpdatesCommand.Refresh();ImportStudentsCommand.Refresh();AddStudentCommand.Refresh();DeleteStudentListCommand.Refresh();ViewStudentDetailsCommand.Refresh();ExportReportCommand.Refresh();ExportAttendancePdfCommand.Refresh();ExportNotesPdfCommand.Refresh();ExportConsolidatedPdfCommand.Refresh();ConfigureCutsCommand.Refresh();Raise(nameof(CanChooseCut));CreateBackupCommand.Refresh();RestoreBackupCommand.Refresh();ChooseBackupFolderCommand.Refresh();ClearLocalDataCommand.Refresh();NavigateCommand.Refresh();OpenCourseCommand.Refresh();CopyCourseParametersCommand.Refresh();EditCourseCommand.Refresh();DeleteCourseCommand.Refresh();DeleteSemesterCommand.Refresh();NewSemesterCommand.Refresh();NewCourseCommand.Refresh();ReloadCourseCommand.Refresh();CutCommand.Refresh();ConfigureCommand.Refresh();AddCutCommand.Refresh();ConfigureCutWeightsCommand.Refresh();DeleteCutCommand.Refresh();Raise(nameof(CanDeleteCut));}}}
     public RelayCommand ImportStudentsCommand{get;}
     public RelayCommand ExportReportCommand{get;}
     public RelayCommand ExportAttendancePdfCommand{get;}
@@ -235,6 +238,10 @@ public sealed partial class MainViewModel : ObservableObject
         searchUpdate=new(TimeSpan.FromMilliseconds(100),()=>Search=searchInput);
         SortStudentsCommand=new(_=>{FlushSearch();nameDescending=nameDescending is false;Raise(nameof(NameHeaderLabel));ApplySearchFilter();},_=>!FileBusy);
         PasteGradesCommand=new(value=>{FlushSearch();if(value is string id && GradeRows.Count>0 && !FileBusy && !Service.IsSaving)GradePasteRequested?.Invoke(id);},_=>HasOpenCourse && GradeRows.Count>0 && !FileBusy && !Service.IsSaving);
+        AssignGradeToAllCommand = new(value =>
+        {
+            if (value is string id && CanAssignGradeToAll) GradeAssignmentRequested?.Invoke(id);
+        }, _ => CanAssignGradeToAll);
         ConfigureAttendanceGradingCommand=new(_=>AttendanceGradingRequested?.Invoke(),_=>HasOpenCourse && !FileBusy && !Service.IsSaving);
         Appearance=new(appearance ?? new InterfacePreferencesService(new MemoryInterfacePreferencesStore()));
         AutomaticBackups=automaticBackups;
@@ -679,6 +686,7 @@ public sealed partial class MainViewModel : ObservableObject
         SelectedStudent=attendance.FirstOrDefault(x=>x.Student.Id==selectedId) ?? attendance.FirstOrDefault();
         Raise(nameof(HasRows));Raise(nameof(IsEmpty));Raise(nameof(EmptyTableMessage));
         PasteGradesCommand.Refresh();
+        AssignGradeToAllCommand.Refresh();
     }
     private void UpdateCourseAverage(decimal?[] totals)
     {

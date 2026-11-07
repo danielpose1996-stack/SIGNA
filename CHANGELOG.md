@@ -1,5 +1,11 @@
 # Historial de cambios de SIGNA
 
+## 1.6.6 — 6 de noviembre de 2026
+
+- Menú de acciones en el encabezado de cada actividad directa y subactividad editable de Notas. **Pegar notas** conserva el orden y el filtro de las filas visibles.
+- **Asignar nota a todos** admite valores de 0,0 a 5,0 con coma o punto decimal. Incluye todo el grupo, indica los reemplazos y requiere confirmación. Guarda el lote en una sola operación y actualiza las definitivas y la nota consolidada.
+- Distribución para Windows, macOS y Ubuntu. El empaquetado dedicado a Debian se retiró según la solicitud del docente.
+
 ## Retiro de Debian — 6 de noviembre de 2026
 
 - Se retiran los instaladores exclusivos de Debian 13, su manifiesto y el flujo de empaquetado dedicado. La distribución Linux disponible es Ubuntu 24.04 LTS.

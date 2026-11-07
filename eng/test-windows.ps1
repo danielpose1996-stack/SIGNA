@@ -1,4 +1,4 @@
-param([string]$Version='1.6.5',[string]$Installer)
+param([string]$Version='1.6.6',[string]$Installer)
 $ErrorActionPreference='Stop'
 if($env:GITHUB_ACTIONS -ne 'true'){throw 'La instalación de prueba solo se permite en el runner efímero de GitHub'}
 $repoRoot=Split-Path $PSScriptRoot -Parent

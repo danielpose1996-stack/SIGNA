@@ -1,4 +1,4 @@
-param([string]$Version='1.6.5',[string]$Dotnet='dotnet',[string]$Python='python',[string]$ArtifactRoot='artifacts/packages')
+param([string]$Version='1.6.6',[string]$Dotnet='dotnet',[string]$Python='python',[string]$ArtifactRoot='artifacts/packages')
 $ErrorActionPreference='Stop'
 if($Version -notmatch '^\d+\.\d+\.\d+$'){throw 'Usa una versión numérica mayor.menor.parche'}
 $repoRoot=Split-Path $PSScriptRoot -Parent

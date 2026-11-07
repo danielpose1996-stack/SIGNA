@@ -4,7 +4,7 @@ namespace GestorDocente.Application;
 
 public sealed record GradePasteRow(int Number,string StudentId,string FullName,string Input,decimal? Grade,string Error);
 
-/// <summary>Asignación inmutable por identidad, fijada al orden visible al abrir el modal.</summary>
+/// <summary>Lote inmutable de notas por estudiante para una columna editable.</summary>
 public sealed class GradePastePreview
 {
     internal AcademicWorkspace Source {get;}
@@ -26,9 +26,7 @@ public sealed class GradePastePreview
 
     public static GradePastePreview Build(AcademicWorkspace source,int number,string targetId,IReadOnlyList<string> orderedStudentIds,string text)
     {
-        var cut=source.Cuts.SingleOrDefault(c=>c.Number==number) ?? throw new AcademicValidationException("El corte ya no existe.");
-        var target=cut.Groups.SelectMany(g=>g.Mode==EvaluationMode.Direct ? new[]{(g.Id,g.Name)} : g.Activities.Select(a=>(a.Id,Name:$"{g.Name} · {a.Name}"))).SingleOrDefault(a=>a.Id==targetId);
-        if(target.Id is null)throw new AcademicValidationException("Selecciona una actividad o subactividad editable del corte.");
+        var (cut,targetName)=FindTarget(source,number,targetId);
         var students=source.Students.ToDictionary(s=>s.Id);
         if(orderedStudentIds.Count>5000 || orderedStudentIds.Distinct().Count()!=orderedStudentIds.Count || orderedStudentIds.Any(id=>!students.ContainsKey(id)))
             throw new AcademicValidationException("La lista de estudiantes cambió o contiene duplicados. Cierra y vuelve a abrir Pegar notas.");
@@ -52,6 +50,34 @@ public sealed class GradePastePreview
         }
         var selected=orderedStudentIds.ToHashSet();
         var replaced=cut.Grades.Count(g=>g.ActivityId==targetId && selected.Contains(g.StudentId));
-        return new(source,number,targetId,target.Name,rows,orderedStudentIds.Count,lines.Length,replaced);
+        return new(source,number,targetId,targetName,rows,orderedStudentIds.Count,lines.Length,replaced);
+    }
+
+    public static GradePastePreview BuildUniform(AcademicWorkspace source, int number, string targetId, decimal grade)
+    {
+        AcademicRules.ValidateGrade(grade);
+        var (cut, targetName) = FindTarget(source, number, targetId);
+        var input = grade.ToString(CultureInfo.InvariantCulture);
+        var rows = source.Students.Select((student, index) =>
+            new GradePasteRow(index + 1, student.Id, student.FullName, input, grade, "")).ToList();
+        var replaced = cut.Grades.Count(entry => entry.ActivityId == targetId);
+        return new(source, number, targetId, targetName, rows, rows.Count, rows.Count, replaced);
+    }
+
+    private static (AcademicCut Cut, string Name) FindTarget(AcademicWorkspace source, int number, string targetId)
+    {
+        var cut = source.Cuts.SingleOrDefault(c => c.Number == number)
+            ?? throw new AcademicValidationException("El corte ya no existe.");
+        foreach (var group in cut.Groups)
+        {
+            if (group.Mode == EvaluationMode.Direct && group.Id == targetId)
+                return (cut, group.Name);
+            if (group.Mode == EvaluationMode.Direct)
+                continue;
+            var activity = group.Activities.SingleOrDefault(item => item.Id == targetId);
+            if (activity is not null)
+                return (cut, $"{group.Name} · {activity.Name}");
+        }
+        throw new AcademicValidationException("Selecciona una actividad o subactividad editable del corte.");
     }
 }

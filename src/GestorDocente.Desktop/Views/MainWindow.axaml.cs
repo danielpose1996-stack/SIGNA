@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         if(observed is not null){observed.CutsConfigurationRequested-=OpenCutsConfiguration;observed.ConsolidatedPdfRequested-=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested-=OpenUpdates;observed.Updates.RestartRequested-=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
+        if(observed is not null)observed.GradeAssignmentRequested-=OpenGradeAssignment;
         if(observed is not null)observed.AppearanceRequested-=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested-=DeleteSemester;
         if(observed is not null)observed.StudentListDeletionRequested-=DeleteStudentList;
@@ -53,6 +54,7 @@ public partial class MainWindow : Window
         if(observed is not null){observed.CutsConfigurationRequested+=OpenCutsConfiguration;observed.ConsolidatedPdfRequested+=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}
+        if(observed is not null)observed.GradeAssignmentRequested+=OpenGradeAssignment;
         if(observed is not null)observed.AppearanceRequested+=OpenAppearance;
         if(observed is not null)observed.SemesterDeletionRequested+=DeleteSemester;
         if(observed is not null)observed.StudentListDeletionRequested+=DeleteStudentList;
@@ -211,11 +213,26 @@ public partial class MainWindow : Window
         try{await ShowAcademicDialog(new WeeksWindow{DataContext=new WeeksViewModel(observed.Service,observed.SelectedCut)});}
         catch(Exception ex){observed.Message=SafeError(ex);}
     }
-    private async void OpenGradePaste(string targetId)
+    private async void OpenGradePaste(string targetId) => await OpenGradeEntry(targetId, assignAll: false);
+    private async void OpenGradeAssignment(string targetId) => await OpenGradeEntry(targetId, assignAll: true);
+    private async Task OpenGradeEntry(string targetId, bool assignAll)
     {
         if(observed is not {} model || model.FileBusy || model.Service.IsSaving)return;
         model.FileBusy=true;
-        try{await ShowAcademicDialog(new GradePasteWindow{DataContext=new GradePasteViewModel(model,targetId)});}
+        try
+        {
+            if(assignAll)model.EnsureAcademicEditsSaved("asignar la nota");
+            var entry = new GradePasteViewModel(model, targetId, assignAll);
+            var dialog = new GradePasteWindow { DataContext = entry };
+            if (assignAll)
+            {
+                dialog.Width = 540;
+                dialog.MinWidth = 400;
+                dialog.Height = 400;
+                dialog.MinHeight = 380;
+            }
+            await ShowAcademicDialog(dialog);
+        }
         catch(Exception ex){model.Message=SafeError(ex);}
         finally{model.FileBusy=false;}
     }

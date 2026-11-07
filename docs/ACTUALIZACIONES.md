@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.6** añade **Asignar nota a todos** en el menú de las columnas editables de Notas. Puedes recibirla desde las instalaciones Velopack 1.6.0–1.6.5 mediante **Buscar actualizaciones → Actualizar SIGNA**.
+
 **1.6.5** añade Asistencia consolidada con ausencias A por corte y Total de faltas, además de las tarjetas Crítico/Delicado con nombre, correo y mínima en el PDF de Nota consolidada. El correo aparece únicamente en esas tarjetas; la tabla sigue sin contactos y el PDF no incluye documentos ni teléfonos. Se mantienen el esquema, el agregado 8, las calificaciones, los porcentajes y los respaldos. Puede recibirse desde las instalaciones Velopack 1.6.0–1.6.4.
 
 **1.6.4** incorpora cortes con nombres personalizados, nota mínima para aprobar con 3,0, estados de riesgo, tarjetas de seguimiento y PDF consolidado sin documentos ni contactos. Disponible desde las instalaciones Velopack 1.6.0–1.6.3. Al abrir una materia, el agregado académico pasa a versión 8 y conserva los promedios ponderados de versión 7, las notas y las asistencias. Genera un respaldo antes de actualizar: una aplicación anterior no abre el agregado nuevo y necesita una copia anterior para volver atrás. Las tablas SQL y las rutas de almacenamiento no cambian.

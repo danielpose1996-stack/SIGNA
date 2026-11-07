@@ -22,10 +22,24 @@ public static class TablePresentation
     }
     public static Control GradeHeader(string title,string id,ViewModels.MainViewModel model)
     {
-        var stack=new StackPanel{Spacing=2};stack.Children.Add(Header(title));
-        var button=new Button{Content="Pegar notas",Command=model.PasteGradesCommand,CommandParameter=id,FontSize=10,MinHeight=22,Padding=new(4,1),HorizontalAlignment=HorizontalAlignment.Center};
-        button.Classes.Add("quiet");ToolTip.SetTip(button,$"Pegar una lista de calificaciones en {title.Replace('\n',' ')}");
-        Avalonia.Automation.AutomationProperties.SetName(button,$"Pegar notas: {title.Replace('\n',' ')}");stack.Children.Add(button);return stack;
+        var menu = new MenuFlyout();
+        menu.Items.Add(new MenuItem { Header = "Pegar notas", Command = model.PasteGradesCommand, CommandParameter = id });
+        menu.Items.Add(new MenuItem { Header = "Asignar nota a todos", Command = model.AssignGradeToAllCommand, CommandParameter = id });
+        var button = new Button
+        {
+            Content = new VectorIcon { Kind = "settings", Width = 16, Height = 16 },
+            Flyout = menu,
+            MinHeight = 28,
+            MinWidth = 32,
+            Padding = new(6, 4),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            HorizontalContentAlignment = HorizontalAlignment.Center
+        };
+        var label = $"Acciones de notas: {title.Replace('\n', ' ')}";
+        button.Classes.Add("quiet");
+        ToolTip.SetTip(button, label);
+        Avalonia.Automation.AutomationProperties.SetName(button, label);
+        return new StackPanel { Spacing = 2, Children = { Header(title), button } };
     }
     public static DataGridTemplateColumn Text(string title,string path,double width)=>new() {
         Header=Header(title),Width=new(width),

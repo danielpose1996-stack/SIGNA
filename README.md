@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.5:** nueva pestaña **Asistencia consolidada**, con ausencias A por corte y **Total de faltas**, y tarjetas de alumnos Crítico/Delicado en el **PDF de Nota consolidada**, con nombre, correo y mínima requerida. Conserva los datos, porcentajes y cálculos existentes; la tabla del PDF sigue sin contactos. Soporte: **Windows 10/11 x64, macOS 15 o posterior Intel/Apple Silicon y Ubuntu 24.04 LTS x64/ARM64**. Consulta el [historial de cambios](CHANGELOG.md) o las [notas de SIGNA 1.6.5](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.5).
+**Versión 1.6.6.** En Notas, la rueda dentada de cada actividad o subactividad editable ofrece **Pegar notas** y **Asignar nota a todos**. La asignación abarca todo el grupo, muestra cuántas notas reemplazará y pide confirmación. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.6](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.6).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.5-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.5-linux-x64.AppImage` o `SIGNA-1.6.5-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.5-linux-x64.deb` o `SIGNA-1.6.5-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.5-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.5-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.6-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.6-linux-x64.AppImage` o `SIGNA-1.6.6-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.6-linux-x64.deb` o `SIGNA-1.6.6-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.6-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.6-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0–1.6.4 con Velopack:** utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.5. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.5 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.6. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** Ubuntu 24.04 LTS x64/ARM64, con AppImage y paquetes .deb.
 
@@ -76,7 +76,7 @@ En una materia, abre **Agregar estudiante → Varios estudiantes**. Pega un nomb
 
 La importación admite libros locales XLS, XLSX, XLSM y XLSB sin Excel instalado. Conserva la vista previa y la corrección de columnas; los libros dañados, cifrados o incompatibles se rechazan con indicaciones para guardar otra copia. No se ejecutan macros, vínculos ni fórmulas. En XLS/XLSB se usan los valores guardados y se advierte de ello antes de importar. ExcelDataReader 3.9.0 (MIT) lee los formatos binarios; el lector SpreadsheetML existente conserva sus controles para XLSX/XLSM. Los límites son 20 MiB por archivo, 80 MiB de ZIP expandido, 10000 filas por hoja, 256 columnas y 250000 celdas por libro.
 
-En Notas, pulsa **Pegar notas** en el encabezado de una actividad directa o subactividad. Pega una sola columna, con una nota por línea y coma o punto decimal. **Vista previa** muestra los nombres en el orden visible al abrir la ventana, incluyendo el filtro de búsqueda. La cantidad debe coincidir exactamente y todas las notas deben estar entre 0 y 5. Confirma el reemplazo si ya existen notas y pulsa **Guardar calificaciones**. El lote se guarda en una sola transacción; cancelar o una validación fallida no cambia datos. Los promedios calculados no admiten pegado. En Notas y Asistencias, el encabezado **Nombre completo** alterna A–Z/Z–A sin cambiar los registros almacenados.
+En Notas, abre la rueda dentada de una actividad directa o subactividad y elige **Pegar notas**. Pega una sola columna, con una nota por línea y coma o punto decimal. **Vista previa** muestra los nombres en el orden visible al abrir la ventana, incluyendo el filtro de búsqueda. La cantidad debe coincidir exactamente y todas las notas deben estar entre 0 y 5. Confirma el reemplazo si ya existen notas y pulsa **Guardar calificaciones**. El lote se guarda en una sola transacción; cancelar o una validación fallida no cambia datos. **Asignar nota a todos** aplica la misma nota al grupo completo, incluidos los estudiantes ocultos por la búsqueda. Confirma la asignación después de revisar el número de notas que se reemplazarán. El menú aparece en las columnas editables. En Notas y Asistencias, el encabezado **Nombre completo** alterna A–Z/Z–A sin cambiar los registros almacenados.
 
 **Ponderación interna de subactividades:** en **Actividades y porcentajes**, selecciona la actividad, activa **Asignar porcentajes a las subactividades** e introduce los valores en **% interno**. Deben sumar exactamente 100 %. Por ejemplo, Teoría 40 % con nota 3,0 y Práctica 60 % con nota 5,0 producen 4,2; el porcentaje principal del parcial dentro del corte se conserva. Si desactivas la opción se usa el promedio simple, conservando los porcentajes para reactivarlos. Las notas vacías aportan cero únicamente al cálculo. Los encabezados y el PDF distinguen los porcentajes internos del peso de la actividad en el corte.
 
