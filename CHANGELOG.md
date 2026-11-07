@@ -1,5 +1,12 @@
 # Historial de cambios de SIGNA
 
+## 1.6.7 — 7 de noviembre de 2026
+
+- Diseño unificado en Inicio, Materias, Notas, Asistencias, vistas consolidadas, Respaldos y diálogos de SIGNA.
+- El color elegido en **Personalizar apariencia** actualiza los degradados de la barra lateral y los encabezados, con contraste adaptado. Los cambios se previsualizan al elegir el color y se recuperan al reiniciar después de guardar.
+- Las tablas conservan espacio para el listado en ventanas de poca altura. El selector de cortes, los controles de las tablas y los estados de selección tienen un estilo común.
+- Se conservan los flujos académicos, las rutas de datos, las preferencias y los respaldos. Actualización integrada disponible para Windows, macOS y Ubuntu AppImage.
+
 ## 1.6.6 — 6 de noviembre de 2026
 
 - Menú de acciones en el encabezado de cada actividad directa y subactividad editable de Notas. **Pegar notas** conserva el orden y el filtro de las filas visibles.

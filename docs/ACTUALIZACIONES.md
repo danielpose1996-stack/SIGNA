@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.7** actualiza el diseño de las pantallas y ventanas de SIGNA. El color elegido en **Personalizar apariencia** se aplica también a los degradados de la barra lateral y los encabezados. Desde una instalación Velopack 1.6.0–1.6.6, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
+
 **1.6.6** añade **Asignar nota a todos** en el menú de las columnas editables de Notas. Puedes recibirla desde las instalaciones Velopack 1.6.0–1.6.5 mediante **Buscar actualizaciones → Actualizar SIGNA**.
 
 **1.6.5** añade Asistencia consolidada con ausencias A por corte y Total de faltas, además de las tarjetas Crítico/Delicado con nombre, correo y mínima en el PDF de Nota consolidada. El correo aparece únicamente en esas tarjetas; la tabla sigue sin contactos y el PDF no incluye documentos ni teléfonos. Se mantienen el esquema, el agregado 8, las calificaciones, los porcentajes y los respaldos. Puede recibirse desde las instalaciones Velopack 1.6.0–1.6.4.
@@ -35,7 +37,7 @@ En Ubuntu se utiliza el paquete **.deb**, que se actualiza descargando la nueva 
 
 Las distribuciones continúan sin firma oficial de Windows ni Apple Developer ID/notarización. Velopack y SHA-256 no sustituyen esos certificados. macOS conserva firma ad hoc de integridad y puede requerir autorizar la app verificada conforme al procedimiento de Apple.
 
-El instalador Windows mantiene el asistente de licencia MIT y carpeta, mientras Velopack administra actualizaciones/desinstalación. Desde una instalación Velopack 1.6.0 puedes recibir 1.6.1 por **Buscar actualizaciones → Actualizar SIGNA**, sin desinstalar manualmente. **Un commit en main no activa la actualización:** deben publicarse una Release estable superior, su feed y su paquete completo de cada canal. Las versiones de parche como 1.6.1 sirven para mejoras y correcciones compatibles; no es necesario subir la versión menor en cada cambio.
+El instalador Windows mantiene el asistente de licencia MIT y carpeta, mientras Velopack administra actualizaciones/desinstalación. Desde una instalación Velopack 1.6.0 puedes recibir una versión estable posterior mediante **Buscar actualizaciones → Actualizar SIGNA**, sin desinstalar manualmente. **Un commit en main no activa la actualización:** deben publicarse una Release estable superior, su feed y su paquete completo de cada canal. Las versiones de parche como 1.6.1 sirven para mejoras y correcciones compatibles; no es necesario subir la versión menor en cada cambio.
 
 ## Conservación de información
 
