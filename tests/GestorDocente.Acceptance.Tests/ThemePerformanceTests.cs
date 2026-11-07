@@ -94,6 +94,57 @@ public class ThemePerformanceTests
         finally{window.Close();InterfaceTheme.Apply(app,new());}
     }
 
+    [AvaloniaTheory]
+    [InlineData("#0067F5")]
+    [InlineData("#FFFFFF")]
+    [InlineData("#000000")]
+    public void Selected_sidebar_item_preserves_text_and_icon_contrast(string accent)
+    {
+        var app=Avalonia.Application.Current!;
+        InterfaceTheme.Apply(app,new(Accent:accent));
+        var label=new TextBlock{Text="Notas y Asistencias"};
+        var icon=new VectorIcon{Kind="edit",Width=18,Height=18};
+        var content=new StackPanel
+        {
+            Orientation=Avalonia.Layout.Orientation.Horizontal,
+            Children={icon,label}
+        };
+        var button=new Button{Content=content,Margin=new(20),Classes={"nav","active"}};
+        var window=new Window{Content=new Border{Classes={"sidebar"},Child=button},Width=400,Height=180};
+        window.Show();
+        window.UpdateLayout();
+        try
+        {
+            var presenter=button.GetVisualDescendants().OfType<ContentPresenter>()
+                .Single(control=>control.Name=="PART_ContentPresenter");
+            var point=button.TranslatePoint(new Point(28,18),window)!.Value;
+            Assert.Equal(Color.Parse(accent),ColorOf(presenter.Background));
+            CheckContrast();
+            window.MouseMove(point);
+            window.UpdateLayout();
+            Assert.True(button.IsPointerOver);
+            CheckContrast();
+            window.MouseDown(point,MouseButton.Left);
+            window.UpdateLayout();
+            Assert.True(button.IsPressed);
+            CheckContrast();
+            window.MouseUp(point,MouseButton.Left);
+
+            void CheckContrast()
+            {
+                var background=ColorOf(presenter.Background);
+                Assert.True(Contrast(background,ColorOf(label.Foreground))>=4.5);
+                Assert.True(Contrast(background,ColorOf(icon.Stroke))>=4.5);
+            }
+            static Color ColorOf(IBrush? brush)=>Assert.IsAssignableFrom<ISolidColorBrush>(brush).Color;
+        }
+        finally
+        {
+            window.Close();
+            InterfaceTheme.Apply(app,new());
+        }
+    }
+
     private static double Contrast(Color a,Color b)
     {
         static double L(Color c){static double C(byte b){var x=b/255d;return x<=.04045 ? x/12.92 : Math.Pow((x+.055)/1.055,2.4);}return .2126*C(c.R)+.7152*C(c.G)+.0722*C(c.B);}

@@ -37,7 +37,7 @@
           </StackPanel>
         </Border>
       </Grid>
-      <Border Classes="card" BorderBrush="#E5B9BD" Padding="22">
+      <Border Classes="card" BorderBrush="{DynamicResource DangerLine}" Padding="22">
         <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="14">
           <c:VectorIcon Kind="trash" Stroke="#B32135" Width="25" Height="25" VerticalAlignment="Top" />
           <StackPanel Grid.Column="1" Spacing="6"><TextBlock Text="Limpiar datos de este equipo" FontSize="17" FontWeight="SemiBold" /><TextBlock Text="Elimina el catálogo y las configuraciones de SIGNA para empezar de nuevo. Se solicitará confirmación. Tus archivos de respaldo y el actualizador se conservan." Classes="muted" TextWrapping="Wrap" /></StackPanel>

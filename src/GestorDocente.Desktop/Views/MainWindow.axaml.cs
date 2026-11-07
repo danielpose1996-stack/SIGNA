@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();Controls.WindowLayout.Configure(this);DataContextChanged+=(_,_)=>Attach();
+        SizeChanged+=(_,e)=>Classes.Set("short",e.NewSize.Height<760);
         Closing+=FinishBackupsBeforeClosing;
         Opened+=(_,_)=>{if(observed?.IsHome==true)_=observed.Dashboard.RefreshAsync();if(observed is {} model)_=model.Updates.CheckAsync(automatic:true);};
         Closed+=(_,_)=>{observed?.Dashboard.Suspend();observed?.Updates.Cancel();observed?.ReleaseAutomaticBackups();};

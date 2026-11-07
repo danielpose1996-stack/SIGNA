@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.CatalogEditorWindow" Title="{Binding Title}" Width="{Binding DialogWidth}" Height="{Binding DialogHeight}" MinHeight="420" MinWidth="450" WindowStartupLocation="CenterOwner">
   <Grid RowDefinitions="Auto,*,Auto" Margin="24">
-    <TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" Margin="0,0,0,18" />
+    <Border Classes="dialog-heading" Margin="0,0,0,18">
+      <TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" TextWrapping="Wrap" />
+    </Border>
     <ScrollViewer Grid.Row="1"><StackPanel Spacing="12">
       <Border IsVisible="{Binding ShowParameters}" Background="{DynamicResource Soft}" CornerRadius="7" Padding="14">
         <StackPanel Spacing="10">

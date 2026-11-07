@@ -17,18 +17,30 @@ public static class InterfaceTheme
     public static IReadOnlyDictionary<string,IBrush> Brushes(InterfacePreferences preferences)
     {
         preferences.Validate();var primary=Color.Parse(preferences.Accent);var hover=Shade(primary,.8);var pressed=Shade(primary,.65);var dark=ReadableAccent(Shade(primary,.6));
+        var accentText=ReadableAccent(primary,Color.Parse("#C0CBDC"));
         var result=new Dictionary<string,IBrush>
         {
             ["Primary"]=Brush(primary),["PrimaryHover"]=Brush(hover),["PrimaryDark"]=Brush(dark),
-            ["OnPrimary"]=Brush(OnColor(primary)),["OnPrimaryHover"]=Brush(OnColor(hover)),["AccentText"]=Brush(ReadableAccent(primary)),
+            ["OnPrimary"]=Brush(OnColor(primary)),["OnPrimaryHover"]=Brush(OnColor(hover)),["AccentText"]=Brush(accentText),
             ["PrimaryPressed"]=Brush(pressed),["OnPrimaryPressed"]=Brush(OnColor(pressed)),
             ["PrimaryDisabled"]=Brush("#E6E8EC"),["OnPrimaryDisabled"]=Brush("#4B5563"),
-            ["Ink"]=Brush("#172B45"),["Muted"]=Brush("#52657C"),["IconInk"]=Brush(ReadableAccent(primary)),["Surface"]=Brush("#FFFFFF"),
-            ["Overlay"]=Brush(Color.FromArgb(51,23,43,69))
+            ["Ink"]=Brush("#172B45"),["Muted"]=Brush("#52657C"),["IconInk"]=Brush(accentText),["Surface"]=Brush("#FFFFFF"),
+            ["SidebarInk"]=Brush("#F8FAFF"),["SidebarMuted"]=Brush("#C4D4F0"),["SidebarHover"]=Brush("#1A3D75"),
+            ["SidebarAction"]=Brush("#123263"),["SidebarLine"]=Brush("#6989B7"),["BrandNavy"]=Brush("#102954"),
+            ["SuccessSurface"]=Brush("#DDF5E5"),["SuccessInk"]=Brush("#116145"),
+            ["WarningSurface"]=Brush("#FFF5DB"),["WarningLine"]=Brush("#E9D3A0"),
+            ["DangerSurface"]=Brush("#FFF2F3"),["DangerLine"]=Brush("#E8BAC1"),["DangerInk"]=Brush("#96283A"),
+            ["Overlay"]=Brush(Color.FromArgb(65,16,41,84))
         };
-        foreach(var (key,neutral,amount) in new[]{("Canvas","#F6F7F9",.025),("Soft","#F1F3F6",.075),("Sidebar","#EFF1F4",.06),("Header","#F1F3F6",.05),("Line","#DCE1E7",.12),("InputLine","#BBC5D0",.20),("Selected","#DFE6ED",.14),("StrongSelected","#D4DFE9",.18),("InputSelection","#B3C3D3",.28),("AlternateRow","#F5F7F9",.035)})
+        foreach(var (key,neutral,amount) in new[]{("Canvas","#F5F8FE",.022),("Soft","#F2F6FD",.055),("Header","#EDF2FA",.045),
+            ("Line","#D7E2F0",.065),("InputLine","#BFCEE3",.11),("Selected","#E8EFF9",.12),("StrongSelected","#E2EBF8",.15),
+            ("InputSelection","#B3C3D3",.28),("AlternateRow","#F7F9FD",.028),("EmptyGrade","#EDF1F7",.03)})
             result[key]=Brush(Mix(Color.Parse(neutral),primary,amount));
-        result["DataGridRowSelectedBackgroundBrush"]=result["Selected"];return result;
+        result["DataGridRowSelectedBackgroundBrush"]=result["Selected"];
+        result["DataGridRowSelectedUnfocusedBackgroundBrush"]=result["Selected"];
+        result["DataGridRowSelectedHoveredBackgroundBrush"]=result["StrongSelected"];
+        result["DataGridRowSelectedHoveredUnfocusedBackgroundBrush"]=result["StrongSelected"];
+        return result;
     }
     public static void Apply(Avalonia.Application app,InterfacePreferences preferences)
     {
@@ -53,7 +65,12 @@ public static class InterfaceTheme
         return .2126*Channel(color.R)+.7152*Channel(color.G)+.0722*Channel(color.B);
     }
     private static Color OnColor(Color color)=>Luminance(color)>.179 ? Colors.Black : Colors.White;
-    private static Color ReadableAccent(Color color){while(1.05/(Luminance(color)+.05)<4.5)color=Shade(color,.9);return color;}
+    private static Color ReadableAccent(Color color,Color? background=null)
+    {
+        var backgroundLuminance=Luminance(background ?? Colors.White);
+        while((backgroundLuminance+.05)/(Luminance(color)+.05)<4.5)color=Shade(color,.9);
+        return color;
+    }
     private static IBrush Brush(string value)=>Brush(Color.Parse(value));
     private static IBrush Brush(Color color)=>new ImmutableSolidColorBrush(color);
     private static Color Mix(Color background,Color accent,double amount)=>Color.FromRgb((byte)Math.Round(background.R+(accent.R-background.R)*amount),(byte)Math.Round(background.G+(accent.G-background.G)*amount),(byte)Math.Round(background.B+(accent.B-background.B)*amount));

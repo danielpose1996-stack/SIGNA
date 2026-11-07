@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.CutManagementWindow" Title="Configurar cortes académicos" Width="650" Height="610" MinWidth="560" MinHeight="430" WindowStartupLocation="CenterOwner">
   <Grid Margin="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="16">
-    <StackPanel Spacing="8"><TextBlock Text="Cortes académicos" FontSize="23" FontWeight="SemiBold"/><TextBlock Text="Personaliza los nombres y administra los períodos de esta materia. Cada corte conserva sus notas, actividades y asistencias." Classes="muted" TextWrapping="Wrap"/></StackPanel>
+    <Border Classes="dialog-heading">
+      <StackPanel Spacing="8"><TextBlock Text="Cortes académicos" FontSize="23" FontWeight="SemiBold"/><TextBlock Text="Personaliza los nombres y administra los períodos de esta materia. Cada corte conserva sus notas, actividades y asistencias." Classes="muted" TextWrapping="Wrap"/></StackPanel>
+    </Border>
     <ScrollViewer Grid.Row="1"><ItemsControl ItemsSource="{Binding Cuts}" IsEnabled="{Binding CanEdit}"><ItemsControl.ItemTemplate><DataTemplate>
       <Border Classes="card" Padding="12" Margin="0,0,0,10"><Grid ColumnDefinitions="32,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10">
         <TextBlock Text="{Binding Number}" FontWeight="SemiBold" VerticalAlignment="Center"/>

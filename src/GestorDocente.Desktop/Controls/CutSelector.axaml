@@ -1,16 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Controls.CutSelector">
-  <Border Background="{DynamicResource Header}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="6" Padding="8,2">
+  <Border Classes="panel-bar cut-bar">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-      <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="470" HorizontalAlignment="Left" ColumnSpacing="10">
-        <TextBlock Text="Corte académico" VerticalAlignment="Center" FontSize="12"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="540" HorizontalAlignment="Left" ColumnSpacing="10">
+        <TextBlock Text="Corte académico:" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
         <ComboBox x:Name="AcademicCutDropdown" Grid.Column="1" ItemsSource="{Binding Cuts}" SelectedItem="{Binding SelectedCutOption,Mode=TwoWay}" IsEnabled="{Binding CanChooseCut}" MinWidth="170" MaxWidth="275" HorizontalAlignment="Stretch" AutomationProperties.Name="Seleccionar corte académico">
-          <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}"/></DataTemplate></ComboBox.ItemTemplate>
+          <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}"/></DataTemplate></ComboBox.ItemTemplate>
         </ComboBox>
-        <Button Grid.Column="2" Command="{Binding ConfigureCutsCommand}" ToolTip.Tip="Configurar cortes: agregar, renombrar o eliminar" AutomationProperties.Name="Configurar cortes" Width="42" Height="40" HorizontalContentAlignment="Center"><c:VectorIcon Kind="settings" Width="19" Height="19"/></Button>
+        <Button Grid.Column="2" Command="{Binding ConfigureCutsCommand}" ToolTip.Tip="Configurar cortes: agregar, renombrar o eliminar" AutomationProperties.Name="Configurar cortes" HorizontalContentAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <c:VectorIcon Kind="settings" Width="16" Height="16" />
+            <TextBlock Text="Configurar cortes" FontSize="12" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
       </Grid>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <Button Classes="quiet" Content="Actualizar" Command="{Binding ReloadCourseCommand}" ToolTip.Tip="Volver a leer la materia si otra instancia la modificó" />
-        <TextBlock Classes="muted" Text="{Binding SelectedCutWeight}" FontSize="11" VerticalAlignment="Center" MaxWidth="185" TextWrapping="Wrap" />
+        <Button Command="{Binding ReloadCourseCommand}" ToolTip.Tip="Volver a leer la materia si otra instancia la modificó">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <c:VectorIcon Kind="restore" Width="16" Height="16" />
+            <TextBlock Text="Actualizar" FontSize="12" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Border Background="{DynamicResource StrongSelected}" CornerRadius="7" Padding="10,6" VerticalAlignment="Center">
+          <TextBlock Text="{Binding SelectedCutWeight}" FontSize="11" FontWeight="SemiBold" MaxWidth="185" TextWrapping="Wrap" />
+        </Border>
     </StackPanel></Grid>
   </Border>
 </UserControl>

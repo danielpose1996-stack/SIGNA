@@ -36,7 +36,7 @@ public static class TablePresentation
             HorizontalContentAlignment = HorizontalAlignment.Center
         };
         var label = $"Acciones de notas: {title.Replace('\n', ' ')}";
-        button.Classes.Add("quiet");
+        button.Classes.Add("column-action");
         ToolTip.SetTip(button, label);
         Avalonia.Automation.AutomationProperties.SetName(button, label);
         return new StackPanel { Spacing = 2, Children = { Header(title), button } };
@@ -48,7 +48,16 @@ public static class TablePresentation
                 TextAlignment=path=="FullName" ? TextAlignment.Left : TextAlignment.Center,TextWrapping=TextWrapping.Wrap};
             text.Bind(TextBlock.TextProperty,new Binding(path));text.Bind(ToolTip.TipProperty,new Binding(path));
             if(path=="Status")text.Bind(TextBlock.ForegroundProperty,new Binding("StatusTone"));
-            return text;
+            if(path!="Completion")return text;
+
+            text.MinHeight=0;
+            text.Margin=default;
+            var badge=new Border
+            {
+                Child=text,HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center,
+                Classes={"grade-status"}
+            };
+            return badge;
         })
     };
     public static DataGridTemplateColumn Grade(string title,string path,double width,ViewModels.AppearanceViewModel appearance)=>new()

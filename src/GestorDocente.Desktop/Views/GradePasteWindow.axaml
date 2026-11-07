@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="GestorDocente.Desktop.Views.GradePasteWindow" Title="{Binding Heading, StringFormat='{}{0} — SIGNA'}" Width="840" Height="700" MinWidth="560" MinHeight="460" WindowStartupLocation="CenterOwner">
   <Grid Margin="22" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="10">
-    <StackPanel Spacing="5"><TextBlock Text="{Binding Heading}" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding Context}" Classes="muted" TextWrapping="Wrap" /><TextBlock Text="{Binding Scope}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+    <Border Classes="dialog-heading">
+      <StackPanel Spacing="5"><TextBlock Text="{Binding Heading}" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding TargetName}" FontWeight="SemiBold" TextWrapping="Wrap" /><TextBlock Text="{Binding Context}" Classes="muted" TextWrapping="Wrap" /><TextBlock Text="{Binding Scope}" Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
+    </Border>
     <TextBox Grid.Row="1" x:Name="GradeListInput" IsVisible="{Binding !AssignAll}" Text="{Binding Input,Mode=TwoWay}" AcceptsReturn="True" TextWrapping="NoWrap" Height="80" Watermark="Una nota por línea. Ejemplo: 4,5 o 4.5. Usa Ctrl+V o ⌘V para pegar." AutomationProperties.Name="Lista de calificaciones, una por estudiante" IsEnabled="{Binding CanEdit}" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" />
     <ScrollViewer Grid.Row="1" Grid.RowSpan="4" IsVisible="{Binding AssignAll}" HorizontalScrollBarVisibility="Disabled">
       <StackPanel Spacing="8">

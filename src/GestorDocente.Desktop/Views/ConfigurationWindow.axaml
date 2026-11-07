@@ -7,10 +7,12 @@
     <Style Selector="DataGrid.editors DataGridRow:selected"><Setter Property="Background" Value="{DynamicResource Selected}" /></Style>
   </Window.Styles>
   <Grid RowDefinitions="Auto,*,Auto" Margin="22" RowSpacing="16">
-    <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+    <Border Classes="dialog-heading">
+      <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
       <Border Background="{DynamicResource Soft}" CornerRadius="9" Height="44" VerticalAlignment="Top"><c:VectorIcon Kind="grid" Width="24" Height="24" Stroke="{DynamicResource AccentText}" /></Border>
       <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Actividades y porcentajes" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" TextWrapping="Wrap" /><TextBlock Text="Edita los campos directamente. Los cambios se aplican al guardar." Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
     </Grid>
+    </Border>
     <Grid Grid.Row="1" ColumnDefinitions="0.95*,1.05*" ColumnSpacing="16" IsEnabled="{Binding CanEdit}">
       <Border Classes="card" Padding="12">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">

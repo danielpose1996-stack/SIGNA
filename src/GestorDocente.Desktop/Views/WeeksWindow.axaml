@@ -6,10 +6,12 @@
     <Style Selector="Button.week-delete"><Setter Property="Padding" Value="7" /><Setter Property="Width" Value="34" /></Style>
   </Window.Styles>
   <Grid RowDefinitions="Auto,*,Auto" Margin="22" RowSpacing="16">
-    <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
+    <Border Classes="dialog-heading">
+      <Grid ColumnDefinitions="44,*" ColumnSpacing="12">
       <Border Background="{DynamicResource Soft}" CornerRadius="9" Height="44" VerticalAlignment="Top"><c:VectorIcon Kind="calendar" Width="24" Height="24" Stroke="{DynamicResource AccentText}" /></Border>
       <StackPanel Grid.Column="1" Spacing="5"><TextBlock Text="Semanas de asistencia" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Context}" Classes="muted" FontSize="12" TextWrapping="Wrap" /><TextBlock Text="Crea semanas o usa las acciones de cada fila para editar y eliminar." Classes="muted" FontSize="12" TextWrapping="Wrap" /></StackPanel>
     </Grid>
+    </Border>
     <Grid Grid.Row="1" ColumnDefinitions="1.1*,1*" ColumnSpacing="16">
       <Border Classes="card" Padding="14">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">

@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.UpdatesWindow" Title="SIGNA · Actualizaciones" Width="620" Height="500" MinWidth="460" MinHeight="380" WindowStartupLocation="CenterOwner">
   <Grid Margin="24" RowDefinitions="Auto,*,Auto">
-    <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,18"><c:VectorIcon Kind="restore" Width="28" Height="28" /><StackPanel Spacing="4"><TextBlock Text="Actualizaciones de SIGNA" FontSize="21" FontWeight="SemiBold" /><TextBlock Text="Versiones estables del repositorio oficial" Classes="muted" FontSize="12" /></StackPanel></StackPanel>
+    <Border Classes="dialog-heading" Margin="0,0,0,18">
+      <StackPanel Orientation="Horizontal" Spacing="12"><c:VectorIcon Kind="restore" Width="28" Height="28" /><StackPanel Spacing="4"><TextBlock Text="Actualizaciones de SIGNA" FontSize="21" FontWeight="SemiBold" /><TextBlock Text="Versiones estables del repositorio oficial" Classes="muted" FontSize="12" /></StackPanel></StackPanel>
+    </Border>
     <ScrollViewer Grid.Row="1"><StackPanel Spacing="16">
       <Border Classes="card" Background="{DynamicResource Soft}"><Grid ColumnDefinitions="*,*">
         <StackPanel Spacing="5"><TextBlock Text="Versión actual" Classes="muted" FontSize="12" /><TextBlock Text="{Binding CurrentVersion}" FontSize="22" FontWeight="SemiBold" /></StackPanel>

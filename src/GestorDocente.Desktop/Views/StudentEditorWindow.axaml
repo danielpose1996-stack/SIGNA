@@ -4,7 +4,9 @@
     <Style Selector="Button.registration-mode.selected"><Setter Property="Background" Value="{DynamicResource Surface}" /><Setter Property="Foreground" Value="{DynamicResource AccentText}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
   </Window.Styles>
   <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto,Auto" RowSpacing="14">
-    <StackPanel Spacing="6"><TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Explanation}" Classes="muted" TextWrapping="Wrap" /></StackPanel>
+    <Border Classes="dialog-heading">
+      <StackPanel Spacing="6"><TextBlock Text="{Binding Title}" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="{Binding Explanation}" Classes="muted" TextWrapping="Wrap" /></StackPanel>
+    </Border>
     <Border Grid.Row="1" IsVisible="{Binding CanUseBulk}" Background="{DynamicResource Header}" CornerRadius="8" Padding="4">
       <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
         <Button x:Name="IndividualStudentMode" Classes="registration-mode" Classes.selected="{Binding IsIndividual}" Content="Individual" Command="{Binding ShowIndividualCommand}" />

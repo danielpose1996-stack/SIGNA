@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:vm="using:GestorDocente.Desktop.ViewModels" xmlns:s="using:GestorDocente.Desktop.Styles" x:Class="GestorDocente.Desktop.Views.AppearanceWindow" x:DataType="vm:AppearanceViewModel" x:CompileBindings="True" Title="Personalizar apariencia" Width="600" Height="830" MinWidth="470" MinHeight="500" WindowStartupLocation="CenterOwner">
   <Grid Margin="24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="14">
-    <StackPanel Spacing="6"><TextBlock Text="Personalizar apariencia" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="El color cambia en tiempo real. Guarda para conservar tu elección al volver a abrir SIGNA." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+    <Border Classes="dialog-heading">
+      <StackPanel Spacing="6"><TextBlock Text="Personalizar apariencia" FontSize="23" FontWeight="SemiBold" /><TextBlock Text="El color cambia en tiempo real. Guarda para conservar tu elección al volver a abrir SIGNA." Classes="muted" TextWrapping="Wrap" /></StackPanel>
+    </Border>
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"><StackPanel Spacing="10" IsEnabled="{Binding CanEdit}">
       <TextBlock Text="{Binding Warning}" Classes="error" IsVisible="{Binding Warning,Converter={StaticResource HasText}}" />
       <TextBlock Text="Nombre del docente" FontWeight="SemiBold" /><TextBox x:Name="TeacherNameTextBox" Text="{Binding TeacherName,Mode=TwoWay}" MaxLength="120" Watermark="Escribe tu nombre (opcional)" AutomationProperties.Name="Nombre del docente" />

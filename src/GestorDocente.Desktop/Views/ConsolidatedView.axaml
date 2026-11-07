@@ -14,13 +14,13 @@
         <Border Padding="12,8">
           <ScrollViewer MaxHeight="166" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Focusable="True" AutomationProperties.Name="Estudiantes en riesgo: críticos primero; desplaza para ver todos"><ItemsControl x:Name="RiskCards" ItemsSource="{Binding Consolidated.RiskStudents}">
             <ItemsControl.ItemsPanel><ItemsPanelTemplate><VirtualizingStackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate><DataTemplate><Border Width="286" CornerRadius="6" BorderBrush="{DynamicResource Line}" BorderThickness="1" Background="{DynamicResource Header}" Padding="12" Margin="0,0,10,8">
+            <ItemsControl.ItemTemplate><DataTemplate><Border Width="286" Classes="panel-bar" Padding="12" Margin="0,0,10,8">
               <StackPanel Spacing="5"><TextBlock Text="{Binding Status}" Foreground="{Binding StatusTone}" FontWeight="SemiBold" FontSize="11"/><TextBlock Text="{Binding FullName}" ToolTip.Tip="{Binding FullName}" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding Email}" ToolTip.Tip="{Binding Email}" Classes="muted" FontSize="11" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding MinimumLabel}" FontSize="12" TextWrapping="Wrap"/></StackPanel>
             </Border></DataTemplate></ItemsControl.ItemTemplate>
           </ItemsControl></ScrollViewer>
         </Border>
       </Expander>
-      <Border Grid.Row="3" Background="{DynamicResource Header}" Padding="12,8" ToolTip.Tip="{Binding Consolidated.CalculationNote}"><StackPanel Spacing="4"><TextBlock x:Name="WeightsSummary" Text="{Binding Consolidated.WeightsLabel}" ToolTip.Tip="{Binding Consolidated.WeightsLabel}" FontSize="11" TextWrapping="Wrap" /><TextBlock x:Name="CalculationDescription" Text="{Binding Consolidated.CalculationNote}" Classes="muted" FontSize="11" TextWrapping="Wrap" /><TextBlock x:Name="CompactCalculationDescription" Text="Aprobación: 3,0 · Nota mínima: promedio ponderado en cortes pendientes. Consulta la ayuda al pasar el cursor." Classes="muted" FontSize="11" TextWrapping="Wrap" IsVisible="False"/></StackPanel></Border>
+      <Border Grid.Row="3" Classes="panel-bar" Margin="8" Padding="10,7" ToolTip.Tip="{Binding Consolidated.CalculationNote}"><StackPanel Spacing="4"><TextBlock x:Name="WeightsSummary" Text="{Binding Consolidated.WeightsLabel}" ToolTip.Tip="{Binding Consolidated.WeightsLabel}" FontSize="11" TextWrapping="Wrap" /><TextBlock x:Name="CalculationDescription" Text="{Binding Consolidated.CalculationNote}" Classes="muted" FontSize="11" TextWrapping="Wrap" /><TextBlock x:Name="CompactCalculationDescription" Text="Aprobación: 3,0 · Nota mínima: promedio ponderado en cortes pendientes. Consulta la ayuda al pasar el cursor." Classes="muted" FontSize="11" TextWrapping="Wrap" IsVisible="False"/></StackPanel></Border>
     </Grid>
   </Border>
 </UserControl>

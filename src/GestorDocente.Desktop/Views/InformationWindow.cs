@@ -12,7 +12,11 @@ public sealed class InformationWindow : Window
         var close=new Button {Content="Cerrar",HorizontalAlignment=HorizontalAlignment.Right,Margin=new(0,14,0,0)};
         close.Click+=(_,_)=>Close();
         var grid=new Grid {Margin=new(24),RowDefinitions=new("Auto,*,Auto")};
-        grid.Children.Add(new TextBlock {Text=title,FontSize=21,FontWeight=FontWeight.SemiBold,Margin=new(0,0,0,18)});
+        grid.Children.Add(new Border
+        {
+            Classes={"dialog-heading"},Margin=new(0,0,0,18),
+            Child=new TextBlock {Text=title,FontSize=21,FontWeight=FontWeight.SemiBold,TextWrapping=TextWrapping.Wrap}
+        });
         var scroll=new ScrollViewer {Content=new SelectableTextBlock {Text=text,TextWrapping=TextWrapping.Wrap,FontSize=13}};Grid.SetRow(scroll,1);grid.Children.Add(scroll);
         Grid.SetRow(close,2);grid.Children.Add(close);Content=grid;
     }
@@ -34,9 +38,17 @@ public sealed class ConfirmWindow : Window
         if(scrollable)
         {
             var grid=new Grid{Margin=new(24),RowDefinitions=new("*,Auto"),RowSpacing=18};
-            grid.Children.Add(new ScrollViewer{Content=message,VerticalScrollBarVisibility=Avalonia.Controls.Primitives.ScrollBarVisibility.Auto});
+            grid.Children.Add(new Border
+            {
+                Classes={destructive ? "warning" : "panel-bar"},Padding=new(10),
+                Child=new ScrollViewer{Content=message,VerticalScrollBarVisibility=Avalonia.Controls.Primitives.ScrollBarVisibility.Auto}
+            });
             Grid.SetRow(buttons,1);grid.Children.Add(buttons);Content=grid;
         }
-        else Content=new StackPanel {Margin=new(24),Spacing=25,Children={message,buttons}};
+        else Content=new StackPanel
+        {
+            Margin=new(24),Spacing=16,
+            Children={new Border {Classes={destructive ? "warning" : "panel-bar"},Padding=new(10),Child=message},buttons}
+        };
     }
 }

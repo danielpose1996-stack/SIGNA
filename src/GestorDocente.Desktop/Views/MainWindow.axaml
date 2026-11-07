@@ -1,29 +1,48 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:v="using:GestorDocente.Desktop.Views" xmlns:identity="clr-namespace:GestorDocente.Application;assembly=GestorDocente.Application" x:Class="GestorDocente.Desktop.Views.MainWindow" Title="{x:Static identity:ProductIdentity.WindowTitle}" Width="1580" Height="960" MinWidth="1100" MinHeight="700" WindowStartupLocation="CenterScreen">
+  <Window.Styles>
+    <Style Selector="Grid#CourseHeader">
+      <Setter Property="Margin" Value="18,8,18,2" />
+      <Setter Property="MinHeight" Value="76" />
+    </Style>
+    <Style Selector="Window.short Grid#CourseHeader">
+      <Setter Property="Margin" Value="18,3,18,0" />
+      <Setter Property="MinHeight" Value="53" />
+    </Style>
+    <Style Selector="Window.short Viewbox.course-decoration"><Setter Property="MaxHeight" Value="51" /></Style>
+    <Style Selector="StackPanel.course-title"><Setter Property="Margin" Value="16,10" /></Style>
+    <Style Selector="Window.short StackPanel.course-title"><Setter Property="Margin" Value="16,5" /></Style>
+    <Style Selector="Window.short Border.cut-bar"><Setter Property="Padding" Value="8,0" /></Style>
+    <Style Selector="Window.short Border.table-footer"><Setter Property="Margin" Value="5,2" /></Style>
+  </Window.Styles>
   <Grid RowDefinitions="Auto,*">
     <Border Background="{DynamicResource Soft}" Padding="18,10" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" IsVisible="{Binding Updates.ShowNotification}">
       <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock Text="{Binding Updates.Notification}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Actualizar SIGNA" Classes="primary" Command="{Binding UpdatesCommand}" Margin="12,0,8,0" /><Button Grid.Column="2" Content="Más tarde" Classes="quiet" Command="{Binding Updates.DismissCommand}" /></Grid>
     </Border>
     <Grid Grid.Row="1" ColumnDefinitions="236,*" IsEnabled="{Binding CanInteractWithWorkspace}">
-      <Border Background="{DynamicResource Sidebar}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
-        <Grid RowDefinitions="Auto,*,Auto" Margin="14,28,14,20">
-          <StackPanel Margin="18,0,0,28" Spacing="3">
-            <TextBlock Text="{x:Static identity:ProductIdentity.Name}" FontSize="26" FontWeight="Bold" />
-            <TextBlock Text="{x:Static identity:ProductIdentity.FullName}" FontSize="12" TextWrapping="Wrap" MaxWidth="176" />
+      <Border Classes="sidebar" Background="{StaticResource SidebarBackground}">
+        <Grid RowDefinitions="Auto,*,Auto" Margin="12,27,12,14">
+          <StackPanel Margin="14,0,8,26" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <c:VectorIcon Kind="graduation" Width="33" Height="33" VerticalAlignment="Center" />
+              <TextBlock Text="{x:Static identity:ProductIdentity.Name}" FontSize="28" FontWeight="Bold" />
+            </StackPanel>
+            <TextBlock Text="{x:Static identity:ProductIdentity.FullName}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
           </StackPanel>
-          <StackPanel Grid.Row="1" Spacing="3">
-            <Button x:Name="HomeNavigation" Classes="nav" Classes.active="{Binding IsHome}" Command="{Binding NavigateCommand}" CommandParameter="Inicio"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="home" Width="23" Height="23" /><TextBlock Text="Inicio" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button x:Name="CoursesNavigation" Classes="nav" Classes.active="{Binding IsCourses}" Command="{Binding NavigateCommand}" CommandParameter="Materias"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="book" Width="23" Height="23" /><TextBlock Text="Mis Materias" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button x:Name="AcademicNavigation" Classes="nav" Classes.active="{Binding IsAcademicNavigation}" Command="{Binding NavigateCommand}" CommandParameter="Académico" IsEnabled="{Binding HasOpenCourse}"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="edit" Width="23" Height="23" /><TextBlock Text="Notas y Asistencias" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button x:Name="BackupsNavigation" Classes="nav" Classes.active="{Binding IsBackups}" Command="{Binding NavigateCommand}" CommandParameter="Respaldos"><StackPanel Orientation="Horizontal" Spacing="18"><c:VectorIcon Kind="backup" Width="23" Height="23" /><TextBlock Text="Respaldos" VerticalAlignment="Center" /></StackPanel></Button>
+          <StackPanel Grid.Row="1" Spacing="4">
+            <Button x:Name="HomeNavigation" Classes="nav" Classes.active="{Binding IsHome}" Command="{Binding NavigateCommand}" CommandParameter="Inicio"><StackPanel Orientation="Horizontal" Spacing="14"><c:VectorIcon Kind="home" Width="23" Height="23" /><TextBlock Text="Inicio" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button x:Name="CoursesNavigation" Classes="nav" Classes.active="{Binding IsCourses}" Command="{Binding NavigateCommand}" CommandParameter="Materias"><StackPanel Orientation="Horizontal" Spacing="14"><c:VectorIcon Kind="book" Width="23" Height="23" /><TextBlock Text="Mis Materias" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button x:Name="AcademicNavigation" Classes="nav" Classes.active="{Binding IsAcademicNavigation}" Command="{Binding NavigateCommand}" CommandParameter="Académico" IsEnabled="{Binding HasOpenCourse}"><StackPanel Orientation="Horizontal" Spacing="14"><c:VectorIcon Kind="edit" Width="23" Height="23" /><TextBlock Text="Notas y Asistencias" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button x:Name="BackupsNavigation" Classes="nav" Classes.active="{Binding IsBackups}" Command="{Binding NavigateCommand}" CommandParameter="Respaldos"><StackPanel Orientation="Horizontal" Spacing="14"><c:VectorIcon Kind="backup" Width="23" Height="23" /><TextBlock Text="Respaldos" VerticalAlignment="Center" /></StackPanel></Button>
           </StackPanel>
           <StackPanel Grid.Row="2" Spacing="8">
             <Button x:Name="CheckUpdatesButton" Classes="updateAction" Command="{Binding UpdatesCommand}" ToolTip.Tip="Comprobar si hay una nueva versión de SIGNA" AutomationProperties.Name="Buscar actualizaciones de SIGNA">
               <Grid ColumnDefinitions="30,*">
-                <Border Background="{DynamicResource Soft}" CornerRadius="6" Width="30" Height="30"><c:VectorIcon Kind="restore" Stroke="{DynamicResource AccentText}" Width="19" Height="19" /></Border>
+                <c:VectorIcon Kind="restore" Width="21" Height="21" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="Buscar actualizaciones" Margin="10,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap" />
               </Grid>
             </Button>
-            <Button x:Name="ProfileAppearanceButton" Classes="quiet" Command="{Binding PersonalizeCommand}" Padding="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" ToolTip.Tip="Personalizar nombre, colores e icono del perfil" AutomationProperties.Name="Personalizar apariencia"><Grid ColumnDefinitions="44,*"><Border Width="42" Height="42" CornerRadius="21" Background="{DynamicResource PrimaryDark}"><c:VectorIcon x:Name="ProfileAvatarIcon" Kind="{Binding Appearance.CurrentAvatarKind}" Stroke="White" Width="22" Height="22" /></Border><StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock x:Name="TeacherProfileName" Text="{Binding Appearance.CurrentTeacherName}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" /><TextBlock Text="Personalizar apariencia" Classes="muted" FontSize="11" /></StackPanel></Grid></Button>
+            <Border Height="1" Background="{DynamicResource SidebarLine}" Opacity=".5" />
+            <Button x:Name="ProfileAppearanceButton" Classes="quiet profile" Command="{Binding PersonalizeCommand}" Padding="8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" ToolTip.Tip="Personalizar nombre, colores e icono del perfil" AutomationProperties.Name="Personalizar apariencia"><Grid ColumnDefinitions="44,*,12"><Border Width="42" Height="42" CornerRadius="21" Background="{DynamicResource SidebarHover}"><c:VectorIcon x:Name="ProfileAvatarIcon" Kind="{Binding Appearance.CurrentAvatarKind}" Stroke="White" Width="22" Height="22" /></Border><StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock x:Name="TeacherProfileName" Text="{Binding Appearance.CurrentTeacherName}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" /><TextBlock Text="Personalizar apariencia" Classes="muted" FontSize="11" /></StackPanel><c:VectorIcon Grid.Column="2" Kind="chevron" Width="12" Height="12" VerticalAlignment="Center" /></Grid></Button>
             <TextBlock Text="Apariencia predeterminada: revisar" Classes="error" FontSize="11" TextWrapping="Wrap" ToolTip.Tip="{Binding Appearance.Warning}" IsVisible="{Binding Appearance.Warning,Converter={StaticResource HasText}}" />
           </StackPanel>
         </Grid>
@@ -35,12 +54,37 @@
             <TextBlock Grid.Column="1" Text="Guardado en este equipo" Classes="muted" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding IsGlobalContext}" />
           </Grid>
         </Border>
-        <StackPanel Grid.Row="1" Margin="24,24,24,18" Spacing="7" IsVisible="{Binding IsGlobalContext}"><TextBlock Text="{Binding PageTitle}" FontSize="27" FontWeight="Bold" /><TextBlock Text="{Binding PageSubtitle}" Classes="muted" TextWrapping="Wrap" /></StackPanel>
-        <Grid x:Name="CourseHeader" Grid.Row="1" ColumnDefinitions="44,*" Margin="18,8,18,8" IsVisible="{Binding IsCourseContext}">
-          <Border Background="{DynamicResource PrimaryDark}" Width="40" Height="40" CornerRadius="7"><c:VectorIcon Kind="monitor" Stroke="White" Width="31" Height="31" /></Border>
-          <StackPanel Grid.Column="1" Margin="18,0,10,0" VerticalAlignment="Center" Spacing="3"><TextBlock Text="{Binding CourseName}" FontSize="21" FontWeight="Bold" TextWrapping="Wrap" /><WrapPanel Orientation="Horizontal"><TextBlock Text="{Binding CourseInfo}" Classes="muted" FontSize="12" TextWrapping="Wrap" MaxWidth="700" Margin="0,0,12,0" /><Border Background="#DAF6E8" CornerRadius="4" Padding="10,3"><TextBlock Text="En curso" Foreground="#06714A" FontSize="12" /></Border></WrapPanel></StackPanel>
+        <Border Grid.Row="1" Classes="dialog-heading" Margin="18,10,18,10" IsVisible="{Binding IsGlobalContext}">
+          <StackPanel Spacing="5">
+            <TextBlock Text="{Binding PageTitle}" FontSize="27" FontWeight="Bold" />
+            <TextBlock Text="{Binding PageSubtitle}" Classes="muted" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+        <Grid x:Name="CourseHeader" Grid.Row="1" ColumnDefinitions="Auto,*" IsVisible="{Binding IsCourseContext}">
+          <Border Grid.ColumnSpan="2" Classes="dialog-heading" IsHitTestVisible="False" />
+          <Viewbox Classes="course-decoration" Grid.ColumnSpan="2" Width="285" Stretch="Fill" HorizontalAlignment="Right" Margin="0,1,1,1" IsHitTestVisible="False">
+            <Canvas Width="300" Height="80">
+              <Path Fill="#BFD7FB" Opacity=".48" Data="M 0,80 C 146,75 205,12 278,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
+              <Path Fill="#A4C4F8" Opacity=".35" Data="M 188,80 C 228,47 264,11 289,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
+            </Canvas>
+          </Viewbox>
+          <Border Background="{DynamicResource BrandNavy}" Width="46" Height="46" CornerRadius="9" Margin="16,0,0,0" VerticalAlignment="Center">
+            <c:VectorIcon Kind="monitor" Stroke="White" Width="30" Height="30" />
+          </Border>
+          <StackPanel Grid.Column="1" Classes="course-title" VerticalAlignment="Center" Spacing="4">
+            <TextBlock Text="{Binding CourseName}" FontSize="23" FontWeight="Bold" TextWrapping="Wrap" />
+            <WrapPanel Orientation="Horizontal">
+              <TextBlock Text="{Binding CourseInfo}" Classes="muted" FontSize="12" TextWrapping="Wrap" MaxWidth="680" Margin="0,3,12,2" />
+              <Border Background="{DynamicResource SuccessSurface}" CornerRadius="12" Padding="8,3">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Ellipse Fill="{DynamicResource SuccessInk}" Width="6" Height="6" VerticalAlignment="Center" />
+                  <TextBlock Text="En curso" Foreground="{DynamicResource SuccessInk}" FontSize="11" FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+            </WrapPanel>
+          </StackPanel>
         </Grid>
-        <Border x:Name="CourseTabs" Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="7" Background="White" Margin="18,0" IsVisible="{Binding IsCourseContext}">
+        <Border x:Name="CourseTabs" Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Background="Transparent" Margin="18,0" IsVisible="{Binding IsCourseContext}">
           <WrapPanel Orientation="Horizontal">
             <Button Classes="tab" Classes.active="{Binding IsNotes}" Command="{Binding NavigateCommand}" CommandParameter="Notas"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="grid" Width="21" Height="21" /><TextBlock Text="Notas" /></StackPanel></Button>
             <Button Classes="tab" Classes.active="{Binding IsAttendance}" Command="{Binding NavigateCommand}" CommandParameter="Asistencias"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="users" Width="21" Height="21" /><TextBlock Text="Asistencias" /></StackPanel></Button>
@@ -49,7 +93,7 @@
           </WrapPanel>
         </Border>
         <c:CutSelector Grid.Row="3" Margin="18,6,18,0" IsVisible="{Binding ShowCutSelector}" />
-        <Grid Grid.Row="4" IsVisible="{Binding IsCourseContext}"><Border Background="#FFF8E6" CornerRadius="5" Padding="10" Margin="18,8,18,0" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border></Grid>
+        <Grid Grid.Row="4" IsVisible="{Binding IsCourseContext}"><Border Classes="warning" Padding="10" Margin="18,8,18,0" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border></Grid>
         <Grid Grid.Row="5" Margin="18,6,18,6" IsVisible="{Binding IsCourseContext}"><v:NotesView x:Name="RetainedNotes" IsVisible="{Binding IsNotes}" /><v:AttendanceView x:Name="RetainedAttendance" IsVisible="{Binding IsAttendance}" /><v:ConsolidatedView x:Name="RetainedConsolidated" IsVisible="{Binding IsConsolidated}" /><v:AttendanceConsolidatedView x:Name="RetainedAttendanceConsolidated" IsVisible="{Binding IsAttendanceConsolidated}" /></Grid>
         <v:DashboardView Grid.Row="2" Grid.RowSpan="4" IsVisible="{Binding IsHome}" />
         <v:HomeView Grid.Row="2" Grid.RowSpan="4" IsVisible="{Binding IsCourses}" />
