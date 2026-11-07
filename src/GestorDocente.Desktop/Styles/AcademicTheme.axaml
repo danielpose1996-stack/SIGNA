@@ -1,14 +1,4 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls">
-  <Styles.Resources>
-    <LinearGradientBrush x:Key="SidebarBackground" StartPoint="0%,0%" EndPoint="65%,100%">
-      <GradientStop Color="#0D234B" Offset="0" />
-      <GradientStop Color="#12346C" Offset="1" />
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="AcademicBanner" StartPoint="0%,20%" EndPoint="100%,100%">
-      <GradientStop Color="#F3F7FF" Offset="0" />
-      <GradientStop Color="#D9E7FC" Offset="1" />
-    </LinearGradientBrush>
-  </Styles.Resources>
   <Style Selector="Window"><Setter Property="Icon" Value="{DynamicResource SignaWindowIcon}" /><Setter Property="Background" Value="{DynamicResource Canvas}" /><Setter Property="FontFamily" Value="Segoe UI, Inter, Arial" /><Setter Property="FontSize" Value="14" /><Setter Property="Foreground" Value="{DynamicResource Ink}" /></Style>
   <Style Selector="TextBlock"><Setter Property="Foreground" Value="{DynamicResource Ink}" /></Style>
   <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource Muted}" /></Style>
@@ -125,7 +115,7 @@
   <Style Selector="c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource IconInk}" /></Style>
   <Style Selector="Border.sidebar TextBlock"><Setter Property="Foreground" Value="{DynamicResource SidebarInk}" /></Style>
   <Style Selector="Border.sidebar TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource SidebarMuted}" /></Style>
-  <Style Selector="Border.sidebar TextBlock.error"><Setter Property="Foreground" Value="#FFBBC3" /></Style>
+  <Style Selector="Border.sidebar TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource SidebarWarningInk}" /></Style>
   <Style Selector="Border.sidebar c|VectorIcon"><Setter Property="Stroke" Value="{DynamicResource SidebarInk}" /></Style>
   <Style Selector="Border.sidebar Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource SidebarHover}" />
@@ -171,12 +161,16 @@
     <Setter Property="BorderThickness" Value="1" />
   </Style>
   <Style Selector="Border.dialog-heading">
-    <Setter Property="Background" Value="{StaticResource AcademicBanner}" />
+    <Setter Property="Background" Value="{DynamicResource AcademicBanner}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="9" />
     <Setter Property="Padding" Value="14,10" />
   </Style>
+  <Style Selector="Border.dialog-heading TextBlock.muted, TextBlock.banner-muted">
+    <Setter Property="Foreground" Value="{DynamicResource BannerMuted}" />
+  </Style>
+  <Style Selector="Window.dialog-backdrop"><Setter Property="Background" Value="{DynamicResource AcademicBanner}" /></Style>
   <Style Selector="Border.panel-bar">
     <Setter Property="Background" Value="{DynamicResource Soft}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Line}" />

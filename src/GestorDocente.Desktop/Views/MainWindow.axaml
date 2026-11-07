@@ -19,7 +19,7 @@
       <Grid ColumnDefinitions="*,Auto,Auto"><TextBlock Text="{Binding Updates.Notification}" FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center" /><Button Grid.Column="1" Content="Actualizar SIGNA" Classes="primary" Command="{Binding UpdatesCommand}" Margin="12,0,8,0" /><Button Grid.Column="2" Content="Más tarde" Classes="quiet" Command="{Binding Updates.DismissCommand}" /></Grid>
     </Border>
     <Grid Grid.Row="1" ColumnDefinitions="236,*" IsEnabled="{Binding CanInteractWithWorkspace}">
-      <Border Classes="sidebar" Background="{StaticResource SidebarBackground}">
+      <Border Classes="sidebar" Background="{DynamicResource SidebarBackground}">
         <Grid RowDefinitions="Auto,*,Auto" Margin="12,27,12,14">
           <StackPanel Margin="14,0,8,26" Spacing="8">
             <StackPanel Orientation="Horizontal" Spacing="12">
@@ -64,17 +64,17 @@
           <Border Grid.ColumnSpan="2" Classes="dialog-heading" IsHitTestVisible="False" />
           <Viewbox Classes="course-decoration" Grid.ColumnSpan="2" Width="285" Stretch="Fill" HorizontalAlignment="Right" Margin="0,1,1,1" IsHitTestVisible="False">
             <Canvas Width="300" Height="80">
-              <Path Fill="#BFD7FB" Opacity=".48" Data="M 0,80 C 146,75 205,12 278,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
-              <Path Fill="#A4C4F8" Opacity=".35" Data="M 188,80 C 228,47 264,11 289,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
+              <Path Fill="{DynamicResource BannerWave}" Opacity=".48" Data="M 0,80 C 146,75 205,12 278,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
+              <Path Fill="{DynamicResource BannerWaveEdge}" Opacity=".35" Data="M 188,80 C 228,47 264,11 289,0 L 291,0 Q 300,0 300,9 L 300,71 Q 300,80 291,80 Z" />
             </Canvas>
           </Viewbox>
-          <Border Background="{DynamicResource BrandNavy}" Width="46" Height="46" CornerRadius="9" Margin="16,0,0,0" VerticalAlignment="Center">
+          <Border Background="{DynamicResource CourseIconSurface}" Width="46" Height="46" CornerRadius="9" Margin="16,0,0,0" VerticalAlignment="Center">
             <c:VectorIcon Kind="monitor" Stroke="White" Width="30" Height="30" />
           </Border>
           <StackPanel Grid.Column="1" Classes="course-title" VerticalAlignment="Center" Spacing="4">
             <TextBlock Text="{Binding CourseName}" FontSize="23" FontWeight="Bold" TextWrapping="Wrap" />
             <WrapPanel Orientation="Horizontal">
-              <TextBlock Text="{Binding CourseInfo}" Classes="muted" FontSize="12" TextWrapping="Wrap" MaxWidth="680" Margin="0,3,12,2" />
+              <TextBlock Text="{Binding CourseInfo}" Classes="banner-muted" FontSize="12" TextWrapping="Wrap" MaxWidth="680" Margin="0,3,12,2" />
               <Border Background="{DynamicResource SuccessSurface}" CornerRadius="12" Padding="8,3">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                   <Ellipse Fill="{DynamicResource SuccessInk}" Width="6" Height="6" VerticalAlignment="Center" />

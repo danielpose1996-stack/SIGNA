@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Media.Immutable;
@@ -16,7 +17,15 @@ public static class InterfaceTheme
     public static IReadOnlyList<AvatarOption> Avatars{get;}=[new(ProfileAvatar.Monitor,"Predeterminado","monitor"),new(ProfileAvatar.Person,"Docente","person"),new(ProfileAvatar.Book,"Libro","book"),new(ProfileAvatar.Graduation,"Académico","graduation")];
     public static IReadOnlyDictionary<string,IBrush> Brushes(InterfacePreferences preferences)
     {
-        preferences.Validate();var primary=Color.Parse(preferences.Accent);var hover=Shade(primary,.8);var pressed=Shade(primary,.65);var dark=ReadableAccent(Shade(primary,.6));
+        preferences.Validate();
+        return CreateBrushes(Color.Parse(preferences.Accent));
+    }
+
+    private static Dictionary<string,IBrush> CreateBrushes(Color primary)
+    {
+        var hover=Shade(primary,.8);
+        var pressed=Shade(primary,.65);
+        var dark=ReadableAccent(Shade(primary,.6));
         var accentText=ReadableAccent(primary,Color.Parse("#C0CBDC"));
         var result=new Dictionary<string,IBrush>
         {
@@ -25,8 +34,12 @@ public static class InterfaceTheme
             ["PrimaryPressed"]=Brush(pressed),["OnPrimaryPressed"]=Brush(OnColor(pressed)),
             ["PrimaryDisabled"]=Brush("#E6E8EC"),["OnPrimaryDisabled"]=Brush("#4B5563"),
             ["Ink"]=Brush("#172B45"),["Muted"]=Brush("#52657C"),["IconInk"]=Brush(accentText),["Surface"]=Brush("#FFFFFF"),
-            ["SidebarInk"]=Brush("#F8FAFF"),["SidebarMuted"]=Brush("#C4D4F0"),["SidebarHover"]=Brush("#1A3D75"),
-            ["SidebarAction"]=Brush("#123263"),["SidebarLine"]=Brush("#6989B7"),["BrandNavy"]=Brush("#102954"),
+            ["SidebarInk"]=Brush("#F8FAFF"),["SidebarMuted"]=Brush("#DFE7F4"),["SidebarWarningInk"]=Brush("#FFDEE3"),
+            ["SidebarBackground"]=Gradient(Tint(13,.25),Tint(32,.285),RelativePoint.TopLeft,new(.65,1,RelativeUnit.Relative)),
+            ["SidebarHover"]=Brush(Tint(36,.27)),["SidebarAction"]=Brush(Tint(29,.27)),["SidebarLine"]=Brush(Tint(166,.16)),
+            ["CourseIconSurface"]=Brush(Tint(22,.27)),
+            ["AcademicBanner"]=Gradient(Tint(255,.045),Tint(239,.11),new(0,.2,RelativeUnit.Relative),RelativePoint.BottomRight),
+            ["BannerMuted"]=Brush("#394A61"),["BannerWave"]=Brush(Tint(241,.20)),["BannerWaveEdge"]=Brush(Tint(238,.30)),
             ["SuccessSurface"]=Brush("#DDF5E5"),["SuccessInk"]=Brush("#116145"),
             ["WarningSurface"]=Brush("#FFF5DB"),["WarningLine"]=Brush("#E9D3A0"),
             ["DangerSurface"]=Brush("#FFF2F3"),["DangerLine"]=Brush("#E8BAC1"),["DangerInk"]=Brush("#96283A"),
@@ -41,10 +54,18 @@ public static class InterfaceTheme
         result["DataGridRowSelectedHoveredBackgroundBrush"]=result["StrongSelected"];
         result["DataGridRowSelectedHoveredUnfocusedBackgroundBrush"]=result["StrongSelected"];
         return result;
+
+        Color Tint(byte neutral,double amount)=>Mix(Color.FromRgb(neutral,neutral,neutral),primary,amount);
     }
+
     public static void Apply(Avalonia.Application app,InterfacePreferences preferences)
     {
-        var changed=Brushes(preferences).Where(item=>app.Resources[item.Key] is not ISolidColorBrush old || old.Color!=((ISolidColorBrush)item.Value).Color)
+        preferences.Validate();
+        var primary=Color.Parse(preferences.Accent);
+        if(app.Resources["Primary"] is ISolidColorBrush current && current.Color==primary)
+            return;
+
+        var changed=CreateBrushes(primary).Where(item=>!SameBrush(app.Resources[item.Key],item.Value))
             .Select(item=>new KeyValuePair<object,object?>(item.Key,item.Value)).ToArray();
         if(changed.Length>0)
         {
@@ -54,10 +75,24 @@ public static class InterfaceTheme
         if(app.Styles.OfType<FluentTheme>().FirstOrDefault() is {} fluent)
         {
             if(!fluent.Palettes.TryGetValue(ThemeVariant.Light,out var palette))fluent.Palettes[ThemeVariant.Light]=palette=new();
-            var accent=ReadableAccent(Color.Parse(preferences.Accent));
+            var accent=ReadableAccent(primary);
             if(palette.Accent!=accent)palette.Accent=accent;
         }
     }
+
+    private static bool SameBrush(object? current,IBrush next)=> (current,next) switch
+    {
+        (ISolidColorBrush before,ISolidColorBrush after)=>before.Color==after.Color,
+        (ImmutableLinearGradientBrush before,ImmutableLinearGradientBrush after)=>
+            before.StartPoint.Equals(after.StartPoint) && before.EndPoint.Equals(after.EndPoint) &&
+            before.GradientStops.Count==2 &&
+            before.GradientStops[0].Color==after.GradientStops[0].Color &&
+            before.GradientStops[1].Color==after.GradientStops[1].Color,
+        _=>false
+    };
+
+    private static ImmutableLinearGradientBrush Gradient(Color start,Color end,RelativePoint startPoint,RelativePoint endPoint)=>
+        new([new(0,start),new(1,end)],startPoint:startPoint,endPoint:endPoint);
     private static Color Shade(Color color,double factor)=>Color.FromRgb((byte)Math.Round(color.R*factor),(byte)Math.Round(color.G*factor),(byte)Math.Round(color.B*factor));
     private static double Luminance(Color color)
     {

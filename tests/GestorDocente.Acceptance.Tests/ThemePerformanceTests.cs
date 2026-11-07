@@ -13,6 +13,7 @@ using GestorDocente.Application;
 using GestorDocente.Desktop.Controls;
 using GestorDocente.Desktop.Styles;
 using GestorDocente.Desktop.ViewModels;
+using GestorDocente.Desktop.Views;
 using GestorDocente.Domain;
 using Xunit;
 
@@ -58,9 +59,113 @@ public class ThemePerformanceTests
         var app=Avalonia.Application.Current!;InterfaceTheme.Apply(app,new());
         var theme=app.Styles.OfType<FluentTheme>().Single();var palette=theme.Palettes[ThemeVariant.Light];
         var ink=app.Resources["Ink"];var primary=app.Resources["Primary"];
+        var sidebar=app.Resources["SidebarBackground"];var banner=app.Resources["AcademicBanner"];
         InterfaceTheme.Apply(app,new());Assert.Same(primary,app.Resources["Primary"]);
+        Assert.Same(sidebar,app.Resources["SidebarBackground"]);Assert.Same(banner,app.Resources["AcademicBanner"]);
         InterfaceTheme.Apply(app,new(Accent:"#FFFACD"));Assert.Same(ink,app.Resources["Ink"]);Assert.Same(palette,theme.Palettes[ThemeVariant.Light]);
+        Assert.NotSame(sidebar,app.Resources["SidebarBackground"]);Assert.NotSame(banner,app.Resources["AcademicBanner"]);
         InterfaceTheme.Apply(app,new());
+    }
+
+    [AvaloniaFact]
+    public async Task Preview_updates_open_windows_and_gradients_follow_cancel_and_saved_preferences()
+    {
+        var app=Avalonia.Application.Current!;
+        InterfaceTheme.Apply(app,new());
+        var store=new Store();
+        var appearance=new AppearanceViewModel(new InterfacePreferencesService(store));
+        var workspace=new WorkspaceService(new DemoStore());
+        var main=new MainWindow{DataContext=new MainViewModel(workspace){Page="Notas"}};
+        var configuration=new ConfigurationWindow{DataContext=new ConfigurationViewModel(workspace,1)};
+        var confirmation=new ConfirmWindow("¿Eliminar actividad?",destructive:true);
+        main.Show();
+        configuration.Show();
+        confirmation.Show();
+        try
+        {
+            var sidebar=main.GetVisualDescendants().OfType<Border>().Single(b=>b.Classes.Contains("sidebar"));
+            var heading=FindHeading(main);
+            var dialogHeading=FindHeading(configuration);
+            var originalSidebar=Stops(sidebar.Background);
+            var originalBanner=Stops(heading.Background);
+
+            appearance.HexInput="#F54400";
+            var previewSidebar=Stops(sidebar.Background);
+            var previewBanner=Stops(heading.Background);
+            Assert.NotEqual(originalSidebar,previewSidebar);
+            Assert.NotEqual(originalBanner,previewBanner);
+            Assert.Equal(previewBanner,Stops(dialogHeading.Background));
+            Assert.Equal(previewBanner,Stops(confirmation.Background));
+            Assert.Equal(0,store.Saves);
+
+            appearance.CancelPreview();
+            Assert.Equal(originalSidebar,Stops(sidebar.Background));
+            Assert.Equal(originalBanner,Stops(heading.Background));
+            Assert.Equal(originalBanner,Stops(dialogHeading.Background));
+
+            appearance.HexInput="#F54401";
+            var savedSidebar=Stops(sidebar.Background);
+            var savedBanner=Stops(heading.Background);
+            Assert.True(await appearance.SaveAsync());
+            Assert.Equal(1,store.Saves);
+            InterfaceTheme.Apply(app,new());
+            InterfaceTheme.Apply(app,new InterfacePreferencesService(store).Current);
+            Assert.Equal(savedSidebar,Stops(sidebar.Background));
+            Assert.Equal(savedBanner,Stops(dialogHeading.Background));
+        }
+        finally
+        {
+            confirmation.Close();
+            configuration.Close();
+            main.Close();
+            InterfaceTheme.Apply(app,new());
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("#0067F5")]
+    [InlineData("#F54400")]
+    [InlineData("#FFFFFF")]
+    [InlineData("#000000")]
+    [InlineData("#FFFF00")]
+    public void Gradients_keep_distinct_stops_and_legible_foreground(string accent)
+    {
+        var brushes=InterfaceTheme.Brushes(new(Accent:accent));
+        var (sidebarStart,sidebarEnd)=Stops(brushes["SidebarBackground"]);
+        var (bannerStart,bannerEnd)=Stops(brushes["AcademicBanner"]);
+        Assert.NotEqual(sidebarStart,sidebarEnd);
+        Assert.NotEqual(bannerStart,bannerEnd);
+
+        Color Solid(string key)=>Assert.IsAssignableFrom<ISolidColorBrush>(brushes[key]).Color;
+        foreach(var background in new[]{sidebarStart,sidebarEnd,Solid("SidebarHover"),Solid("SidebarAction")})
+        {
+            Assert.True(Contrast(background,Solid("SidebarInk"))>=4.5);
+            Assert.True(Contrast(background,Solid("SidebarMuted"))>=4.5);
+            Assert.True(Contrast(background,Solid("SidebarWarningInk"))>=4.5);
+        }
+        var underWave=Blend(bannerEnd,Solid("BannerWave"),.48);
+        var underBothWaves=Blend(underWave,Solid("BannerWaveEdge"),.35);
+        foreach(var background in new[]{bannerStart,bannerEnd,underWave,underBothWaves})
+        {
+            Assert.True(Contrast(background,Solid("Ink"))>=4.5);
+            Assert.True(Contrast(background,Solid("BannerMuted"))>=4.5);
+        }
+    }
+
+    private static Border FindHeading(Window window)=>window.GetVisualDescendants().OfType<Border>()
+        .Single(b=>b.Classes.Contains("dialog-heading") && b.IsEffectivelyVisible);
+
+    private static (Color Start,Color End) Stops(IBrush? brush)
+    {
+        var stops=Assert.IsAssignableFrom<ILinearGradientBrush>(brush).GradientStops;
+        Assert.Equal(2,stops.Count);
+        return (stops[0].Color,stops[1].Color);
+    }
+
+    private static Color Blend(Color background,Color overlay,double opacity)
+    {
+        byte Mix(byte a,byte b)=>(byte)Math.Round(a+(b-a)*opacity);
+        return Color.FromRgb(Mix(background.R,overlay.R),Mix(background.G,overlay.G),Mix(background.B,overlay.B));
     }
 
     [AvaloniaTheory]
@@ -153,7 +258,14 @@ public class ThemePerformanceTests
     private sealed class Store:IInterfacePreferencesStore
     {
         public int Saves;
-        public InterfacePreferences Load()=>new();
-        public void Save(InterfacePreferences preferences)=>Saves++;
+        private InterfacePreferences current=new();
+        public InterfacePreferences Load()=>current;
+        public void Save(InterfacePreferences preferences){current=preferences;Saves++;}
+    }
+
+    private sealed class DemoStore:IWorkspaceStore
+    {
+        public AcademicWorkspace? Load()=>DemoWorkspaceFactory.Create();
+        public void Save(AcademicWorkspace workspace)=>throw new InvalidOperationException("La prueba solo cambia la apariencia.");
     }
 }

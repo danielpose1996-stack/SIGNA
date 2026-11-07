@@ -26,6 +26,7 @@ public sealed class ConfirmWindow : Window
     public ConfirmWindow(string text,string action="Eliminar del borrador",bool scrollable=false,bool destructive=false)
     {
         Title="Confirmar cambio";Width=460;Height=220;CanResize=false;WindowStartupLocation=WindowStartupLocation.CenterOwner;
+        Classes.Add("dialog-backdrop");
         var cancel=new Button {Content="Cancelar"};cancel.Click+=(_,_)=>Close(false);
         var confirm=new Button {Content=action};confirm.Classes.Add(destructive ? "danger" : "primary");confirm.Click+=(_,_)=>Close(true);
         if(destructive)
