@@ -7,6 +7,12 @@ public interface INotesPdfExporter
     byte[] Export(NotesPdfReport report);
 }
 
+public enum NotesPdfFormat
+{
+    Detailed,
+    Simplified
+}
+
 // Deliberate privacy boundary: no Student entity, internal IDs or contact fields.
 public sealed record NotesPdfColumn(string Name,string GroupName,decimal Weight,int ShareCount=0,bool IsAverage=false,decimal? InternalWeight=null,bool IsWeighted=false)
 {
@@ -20,19 +26,21 @@ public sealed record NotesPdfStudent(string FullName,IReadOnlyList<decimal?> Gra
 public sealed record NotesPdfReport(string Course,string Code,string Period,string Group,int Cut,
     IReadOnlyList<NotesPdfColumn> Columns,IReadOnlyList<NotesPdfStudent> Students)
 {
+    public NotesPdfFormat Format{get;init;}
     public string CutName{get;init;}="";
     public string CutLabel=>CutName.Length==0 ? $"Corte {Cut}" : CutName;
 }
 
 public static class NotesPdfProjection
 {
-    public static NotesPdfReport Build(AcademicWorkspace workspace,int cutNumber)
+    public static NotesPdfReport Build(AcademicWorkspace workspace,int cutNumber,NotesPdfFormat format=NotesPdfFormat.Detailed)
     {
         var cut=workspace.Cuts.SingleOrDefault(c=>c.Number==cutNumber)
             ?? throw new AcademicValidationException("Selecciona un corte válido para el reporte de notas.");
         var index=new AcademicCutReadIndex(cut);
         List<NotesPdfColumn> columns=[];List<Func<string,decimal?>> values=[];
-        foreach(var group in cut.Groups)
+        var groups=format==NotesPdfFormat.Simplified ? Enumerable.Empty<EvaluationGroup>() : cut.Groups;
+        foreach(var group in groups)
         {
             if(group.Mode==EvaluationMode.Direct)
             {
@@ -51,6 +59,7 @@ public static class NotesPdfProjection
             }
         }
         return new(workspace.CourseName,workspace.CourseCode,workspace.Period,workspace.GroupName,cutNumber,columns,
-            workspace.Students.Select(student=>new NotesPdfStudent(student.FullName,values.Select(get=>get(student.Id)).ToArray(),index.Cut(student.Id))).ToArray()){CutName=cut.Name};
+            workspace.Students.Select(student=>new NotesPdfStudent(student.FullName,values.Select(get=>get(student.Id)).ToArray(),index.Cut(student.Id))).ToArray())
+            {CutName=cut.Name,Format=format};
     }
 }

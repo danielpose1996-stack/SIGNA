@@ -428,7 +428,7 @@ public partial class MainWindow : Window
         catch(Exception ex){model.Message=SafeError(ex);}
         finally{model.FileBusy=false;}
     }
-    private async void ExportNotesPdf()
+    private async void ExportNotesPdf(NotesPdfFormat format)
     {
         if(observed is not {} model || model.NotesPdfExporter is not {} exporter || model.FileBusy)return;
         if(model.Service.IsSaving){model.Message="Espera a que termine de guardarse la nota y vuelve a generar el reporte.";return;}
@@ -437,7 +437,10 @@ public partial class MainWindow : Window
         {
             var cut=model.SelectedCut;var course=model.Service.Current;
             var code=new string(course.CourseCode.Select(c=>Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
-            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title="Guardar reporte de notas del corte",SuggestedFileName=$"notas-{code}-corte-{cut}.pdf",DefaultExtension="pdf",FileTypeChoices=[PdfType]});
+            var simplified=format==NotesPdfFormat.Simplified;
+            var title=simplified ? "Guardar reporte simplificado de notas" : "Guardar reporte detallado de notas";
+            var suffix=simplified ? "-simplificado" : "";
+            using var file=await StorageProvider.SaveFilePickerAsync(new(){Title=title,SuggestedFileName=$"notas-{code}-corte-{cut}{suffix}.pdf",DefaultExtension="pdf",FileTypeChoices=[PdfType]});
             if(file is null)return;
             var path=file.TryGetLocalPath() ?? throw new AcademicValidationException("Selecciona una carpeta local para el PDF.");
             if(!path.EndsWith(".pdf",StringComparison.OrdinalIgnoreCase))throw new AcademicValidationException("El reporte debe guardarse con extensión .pdf.");
@@ -446,7 +449,7 @@ public partial class MainWindow : Window
             if(model.Service.IsSaving)throw new AcademicValidationException("Espera a que termine de guardarse la nota y vuelve a generar el reporte.");
             model.Message="Generando reporte PDF de notas…";
             var source=model.Service.Current;
-            var bytes=await Task.Run(()=>exporter.Export(NotesPdfProjection.Build(WorkspaceService.Clone(source),cut)));
+            var bytes=await Task.Run(()=>exporter.Export(NotesPdfProjection.Build(WorkspaceService.Clone(source),cut,format)));
             await Task.Run(()=>ReportFile.Save(path,bytes,overwrite));
             model.Message=$"Reporte PDF guardado: {file.Name}. Incluye todos los estudiantes del corte {cut}, identificados solo por nombre.";
         }

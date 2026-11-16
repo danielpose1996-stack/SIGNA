@@ -68,14 +68,34 @@ public class ColorSelectionTests
     public void Notes_pdf_action_uses_entire_roster_and_current_cut_despite_a_search_filter()
     {
         var service=new WorkspaceService(new Store());var vm=new MainViewModel(service,notesPdfExporter:new GestorDocente.Infrastructure.NotesPdfExporter());
-        vm.Search="Ana";vm.SelectedCut=2;NotesPdfReport? requested=null;vm.NotesPdfRequested+=()=>requested=NotesPdfProjection.Build(service.Current,vm.SelectedCut);
+        vm.Search="Ana";vm.SelectedCut=2;
+        var reports=new List<NotesPdfReport>();
+        vm.NotesPdfRequested+=format=>reports.Add(NotesPdfProjection.Build(service.Current,vm.SelectedCut,format));
         var notes=new NotesView{DataContext=vm};var window=new Window{Content=notes,Width=1300,Height=700};window.Show();window.UpdateLayout();
         try
         {
-            var button=notes.FindControl<Button>("NotesPdfButton")!;Assert.True(button.IsEnabled);button.Command!.Execute(null);
-            Assert.NotNull(requested);Assert.Equal(2,requested.Cut);Assert.Equal(10,requested.Students.Count);Assert.Single(vm.GradeRows);
-            vm.FileBusy=true;Assert.False(button.Command.CanExecute(null));vm.FileBusy=false;
+            var button=notes.FindControl<Button>("NotesPdfButton")!;
+            Assert.True(button.IsEnabled);
+            var menu=Assert.IsType<MenuFlyout>(button.Flyout);
+            var options=menu.Items.Cast<MenuItem>().ToArray();
+            Assert.Equal(new[]{"Reporte simplificado","Reporte detallado"},options.Select(o=>o.Header));
+            menu.ShowAt(button);
+            window.UpdateLayout();
+            foreach(var option in options)
+            {
+                Assert.True(option.Command!.CanExecute(option.CommandParameter));
+                option.Command.Execute(option.CommandParameter);
+            }
+            Assert.Equal(new[]{NotesPdfFormat.Simplified,NotesPdfFormat.Detailed},reports.Select(r=>r.Format));
+            Assert.All(reports,r=>{Assert.Equal(2,r.Cut);Assert.Equal(10,r.Students.Count);});
+            Assert.Single(vm.GradeRows);
             Capture(window,"notas-boton-pdf.png");
+            menu.Hide();
+            vm.FileBusy=true;
+            Assert.False(button.IsEnabled);
+            Assert.All(options,option=>Assert.False(vm.ExportNotesPdfCommand.CanExecute(option.CommandParameter)));
+            vm.FileBusy=false;
+            Assert.True(button.IsEnabled);
         }
         finally{window.Close();}
     }

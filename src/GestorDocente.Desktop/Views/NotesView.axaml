@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.NotesView">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" xmlns:reports="clr-namespace:GestorDocente.Application;assembly=GestorDocente.Application" x:Class="GestorDocente.Desktop.Views.NotesView">
   <UserControl.Styles>
     <Style Selector="Button.student-add"><Setter Property="MinHeight" Value="36" /><Setter Property="CornerRadius" Value="6" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Padding" Value="11,6" /></Style>
     <Style Selector="Button.student-action"><Setter Property="MinHeight" Value="36" /><Setter Property="CornerRadius" Value="6" /><Setter Property="FontSize" Value="12" /><Setter Property="Padding" Value="9,6" /><Setter Property="Background" Value="{DynamicResource Surface}" /><Setter Property="BorderBrush" Value="{DynamicResource InputLine}" /></Style>
@@ -43,11 +43,20 @@
       </DataTemplate></ItemsControl.ItemTemplate>
     </ItemsControl>
     </ScrollViewer>
-    <Button x:Name="NotesPdfButton" Grid.Column="1" Classes="primary" Command="{Binding ExportNotesPdfCommand}" MinHeight="39" VerticalAlignment="Center" AutomationProperties.Name="Generar reporte PDF" ToolTip.Tip="Exporta todos los estudiantes del corte seleccionado, identificados únicamente por nombre.">
+    <Button x:Name="NotesPdfButton" Grid.Column="1" Classes="primary" IsEnabled="{Binding CanExportNotesPdf}" MinHeight="39" VerticalAlignment="Center" AutomationProperties.Name="Generar reporte PDF" ToolTip.Tip="Elige el formato del reporte de notas para todo el corte seleccionado.">
       <StackPanel Orientation="Horizontal" Spacing="8">
         <c:VectorIcon Kind="document" Width="17" Height="17" />
         <TextBlock Text="Generar reporte PDF" VerticalAlignment="Center" />
+        <c:VectorIcon Kind="chevron" Width="12" Height="12" VerticalAlignment="Center">
+          <c:VectorIcon.RenderTransform><RotateTransform Angle="90" /></c:VectorIcon.RenderTransform>
+        </c:VectorIcon>
       </StackPanel>
+      <Button.Flyout>
+        <MenuFlyout Placement="BottomEdgeAlignedRight">
+          <MenuItem Header="Reporte simplificado" Command="{Binding ExportNotesPdfCommand}" CommandParameter="{x:Static reports:NotesPdfFormat.Simplified}" />
+          <MenuItem Header="Reporte detallado" Command="{Binding ExportNotesPdfCommand}" CommandParameter="{x:Static reports:NotesPdfFormat.Detailed}" />
+        </MenuFlyout>
+      </Button.Flyout>
     </Button>
     </Grid>
     <Border Grid.Row="2" Classes="card" Padding="0">

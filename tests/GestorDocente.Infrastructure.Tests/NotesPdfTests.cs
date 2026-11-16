@@ -26,6 +26,31 @@ public class NotesPdfTests
         finally{Directory.Delete(directory,true);}
     }
     [Fact]
+    public void Simplified_report_paginates_only_by_student_rows_and_supports_empty_reports()
+    {
+        var data=DemoWorkspaceFactory.Create();
+        data.Students=Enumerable.Range(1,35)
+            .Select(i=>new GestorDocente.Domain.Student($"s{i}",$"NO-EXPORTAR-{i:000}",$"Estudiante ficticio {i:000} con nombres y apellidos extensos"))
+            .ToList();
+        data.Cuts[0].Name="Primer período";
+        data.Cuts[0].Grades=[new("s1","t1",4.75m)];
+        var report=NotesPdfProjection.Build(data,1,NotesPdfFormat.Simplified);
+        var exporter=new NotesPdfExporter();
+        var bytes=exporter.Export(report);
+        var empty=exporter.Export(report with{Students=[]});
+
+        Assert.StartsWith("%PDF-",Encoding.ASCII.GetString(bytes,0,5));
+        Assert.Equal(3,Regex.Matches(Encoding.Latin1.GetString(bytes),@"/Type /Page\b").Count);
+        Assert.Single(Regex.Matches(Encoding.Latin1.GetString(empty),@"/Type /Page\b"));
+        if(Environment.GetEnvironmentVariable("SIGNA_NOTES_PDF_PREVIEW") is {} folder)
+        {
+            Directory.CreateDirectory(folder);
+            File.WriteAllBytes(Path.Combine(folder,"notas-simplificado.pdf"),bytes);
+            File.WriteAllBytes(Path.Combine(folder,"notas-simplificado-sin-estudiantes.pdf"),empty);
+        }
+    }
+
+    [Fact]
     public void Current_cut_and_empty_report_export_without_contact_data_in_the_contract()
     {
         var data=DemoWorkspaceFactory.Create();data.Students[0]=data.Students[0] with{Document="DOC-NO-COMPARTIR",Email="privado@example.test",Phone="3001234567"};
