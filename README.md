@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.7.** SIGNA estrena un diseño común para sus pantallas y diálogos. En **Personalizar apariencia**, el color elegido se aplica en tiempo real a los degradados de la barra lateral y de los encabezados. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.7](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.7).
+**Versión 1.6.8.** En **Notas → Generar reporte PDF**, elige el reporte simplificado con nombres y definitivas o el detallado con las calificaciones por actividad. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.8](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.8).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.7-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.7-linux-x64.AppImage` o `SIGNA-1.6.7-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.7-linux-x64.deb` o `SIGNA-1.6.7-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.7-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.7-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.8-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.8-linux-x64.AppImage` o `SIGNA-1.6.8-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.8-linux-x64.deb` o `SIGNA-1.6.8-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.8-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.8-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0–1.6.6 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.7. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.7 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.8. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** Ubuntu 24.04 LTS x64/ARM64, con AppImage y paquetes .deb.
 
@@ -210,7 +210,7 @@ En **Nota consolidada** consulta todos los cortes y la nota final acumulada. Los
 
 La papelera junto a cada corte permite **Eliminar corte** con confirmación: elimina permanentemente sus actividades, subactividades, notas y asistencias. Siempre debe quedar al menos un corte. Los restantes se renumeran y conservan sus porcentajes; se abre la revisión de ponderaciones. Si el total no es 100 %, puedes seguir registrando notas y asistencias, pero la nota final queda pendiente hasta ajustar los porcentajes.
 
-En **Notas → Generar reporte PDF** puedes elegir dónde guardar todas las calificaciones del corte seleccionado, incluso si la tabla tiene un filtro. El reporte identifica a cada estudiante únicamente por su nombre: no incluye documentos, correos ni teléfonos. Muestra actividades, subactividades, porcentajes y definitiva; mantiene vacías las celdas pendientes y usa cero solo para calcular. Si hay muchas columnas, las divide en secciones con nombre y definitiva repetidos.
+En **Notas → Generar reporte PDF**, elige **Reporte simplificado** para compartir el nombre completo y la definitiva del corte de cada estudiante, o **Reporte detallado** para incluir las notas de actividades y subactividades, pesos, promedios y definitiva. Ambos abarcan el grupo completo del corte activo y excluyen documentos, correos y teléfonos. En el detallado, las celdas pendientes se muestran vacías y cuentan como cero en el cálculo. Si hay muchas columnas, el PDF las divide en secciones con el nombre y la definitiva repetidos.
 
 Las asistencias admiten hasta nueve semanas por corte, de clase o actividades, con fecha opcional y estados P/A/J/T. P y T cuentan como asistencia; A como inasistencia; J, sin clase y pendientes se excluyen del denominador. El PDF individual permite elegir dónde guardarlo e incluye las fechas asignadas, registros y resumen del estudiante.
 

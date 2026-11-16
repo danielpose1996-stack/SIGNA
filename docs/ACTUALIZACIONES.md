@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.8** incorpora dos formatos de PDF en Notas. El simplificado muestra el nombre y la definitiva del corte. El detallado incluye las calificaciones por actividad y subactividad. Desde una instalación Velopack 1.6.0–1.6.7, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
+
 **1.6.7** actualiza el diseño de las pantallas y ventanas de SIGNA. El color elegido en **Personalizar apariencia** se aplica también a los degradados de la barra lateral y los encabezados. Desde una instalación Velopack 1.6.0–1.6.6, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
 
 **1.6.6** añade **Asignar nota a todos** en el menú de las columnas editables de Notas. Puedes recibirla desde las instalaciones Velopack 1.6.0–1.6.5 mediante **Buscar actualizaciones → Actualizar SIGNA**.

@@ -1,5 +1,10 @@
 # Historial de cambios de SIGNA
 
+## 1.6.8 — 16 de noviembre de 2026
+
+- El menú **Generar reporte PDF** de Notas permite elegir el reporte simplificado, con nombre completo y definitiva del corte, o el detallado, con actividades, subactividades y porcentajes.
+- Ambos formatos incluyen a todo el grupo del corte seleccionado y comparten las mismas definitivas. Los estudiantes se identifican por nombre completo.
+
 ## 1.6.7 — 7 de noviembre de 2026
 
 - Diseño unificado en Inicio, Materias, Notas, Asistencias, vistas consolidadas, Respaldos y diálogos de SIGNA.
