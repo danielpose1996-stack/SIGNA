@@ -6,7 +6,7 @@
   <Border x:Name="CutBar" Classes="panel-bar cut-bar">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
       <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="540" HorizontalAlignment="Left" ColumnSpacing="10">
-        <TextBlock Text="Corte académico:" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
+        <TextBlock Classes="action-label" Text="Corte académico:" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
         <ComboBox x:Name="AcademicCutDropdown" Grid.Column="1" ItemsSource="{Binding Cuts}" SelectedItem="{Binding SelectedCutOption,Mode=TwoWay}" IsEnabled="{Binding CanChooseCut}" MinWidth="170" MaxWidth="275" HorizontalAlignment="Stretch" AutomationProperties.Name="Seleccionar corte académico">
           <ComboBox.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="lock" Width="14" Height="14" IsVisible="{Binding IsLocked}" /><TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}"/></StackPanel></DataTemplate></ComboBox.ItemTemplate>
         </ComboBox>
