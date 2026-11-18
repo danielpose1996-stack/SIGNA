@@ -28,11 +28,11 @@ public class CourseParameterUiTests
         editor.PasteParametersCommand.Execute(null);
         Assert.True(editor.HasPastedParameters);Assert.Equal(3,editor.ParameterPreview.Count);
         Assert.Contains("Talleres",editor.ParameterPreview[0].Activities);
-        Assert.Equal("Materia destino",editor.Name);Assert.Equal("NEW",editor.Code);Assert.Equal("B",editor.Group);
+        Assert.Equal("MATERIA DESTINO",editor.Name);Assert.Equal("NEW",editor.Code);Assert.Equal("B",editor.Group);
         Assert.Empty(fixture.Catalog.Courses(fixture.Destination.Id));
         Assert.True(await editor.SaveAsync());
         var saved=fixture.Catalog.Open(editor.SavedCourseId).Current;
-        Assert.Equal("Materia destino",saved.CourseName);Assert.Equal("Talleres",saved.Cuts[0].Groups[0].Name);Assert.Empty(saved.Students);
+        Assert.Equal("MATERIA DESTINO",saved.CourseName);Assert.Equal("Talleres",saved.Cuts[0].Groups[0].Name);Assert.Empty(saved.Students);
         Assert.Single(fixture.Catalog.Open(source.Id).Current.Students);
     }
 

@@ -6,11 +6,14 @@ public sealed class CutNameDraft:ObservableObject
 {
     public int Number{get;}
     public decimal Weight{get;}
+    public bool IsLocked{get;}
+    public string LockLabel=>IsLocked ? "Desbloquear" : "Bloquear";
+    public string LockIcon=>IsLocked ? "lock" : "unlock";
     private string name;
     public string Name{get=>name;set{if(Set(ref name,value)){Raise(nameof(Error));}}}
     public string Error=>string.IsNullOrWhiteSpace(Name) || Name.Length>80 || Name.Any(char.IsControl) ? "Escribe un nombre de 1 a 80 caracteres, sin saltos de línea." : "";
     public string WeightLabel=>$"{Weight:0.##} % de la nota final";
-    public CutNameDraft(AcademicCut cut){Number=cut.Number;Weight=cut.Weight;name=cut.Label;}
+    public CutNameDraft(AcademicCut cut){Number=cut.Number;Weight=cut.Weight;name=cut.Label;IsLocked=cut.IsLocked;}
 }
 
 public sealed class CutManagementViewModel:ObservableObject
@@ -30,13 +33,16 @@ public sealed class CutManagementViewModel:ObservableObject
     public bool CanSave=>!IsBusy && HasChanges && Cuts.All(c=>c.Error.Length==0);
     public string Hint=>HasChanges ? "Guarda los nombres antes de agregar, eliminar o configurar porcentajes." : $"{Cuts.Count} cortes · Total: {Cuts.Sum(c=>c.Weight):0.##} %. Agregar un corte no redistribuye los porcentajes.";
     public event Action<CutDeletionPreview>? DeleteRequested;
+    public event Action<int>? LockRequested;
+    public RelayCommand LockCommand{get;}
     public RelayCommand AddCommand{get;}
     public RelayCommand DeleteCommand{get;}
     public CutManagementViewModel(WorkspaceService service)
     {
         this.service=service;source=service.Current;
         AddCommand=new(_=>_ = AddAsync(),_=>CanModify);
-        DeleteCommand=new(value=>RequestDelete(value),value=>CanDelete && value is int n && Cuts.Any(c=>c.Number==n));
+        DeleteCommand=new(value=>RequestDelete(value),value=>CanDelete && value is int n && Cuts.Any(c=>c.Number==n && !c.IsLocked));
+        LockCommand=new(value=>{if(value is int number)LockRequested?.Invoke(number);},_=>CanModify);
         Refresh();
     }
     private void Refresh()
@@ -47,7 +53,7 @@ public sealed class CutManagementViewModel:ObservableObject
         Notify();
     }
     private void DraftChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs e){if(e.PropertyName==nameof(CutNameDraft.Name))Notify();}
-    private void Notify(){foreach(var p in new[]{nameof(CanEdit),nameof(CanModify),nameof(CanDelete),nameof(CanSave),nameof(HasChanges),nameof(Hint)})Raise(p);AddCommand.Refresh();DeleteCommand.Refresh();}
+    private void Notify(){foreach(var p in new[]{nameof(CanEdit),nameof(CanModify),nameof(CanDelete),nameof(CanSave),nameof(HasChanges),nameof(Hint)})Raise(p);AddCommand.Refresh();DeleteCommand.Refresh();LockCommand.Refresh();}
     public void ReportError(Exception ex)=>Error=ex is AcademicValidationException or AcademicRefreshException ? ex.Message : $"No se completó la operación ({SafeErrorCode.From(ex)}). Revisa los datos y vuelve a intentarlo.";
     private void RequestDelete(object? value)
     {
@@ -74,4 +80,12 @@ public sealed class CutManagementViewModel:ObservableObject
         catch(Exception ex){ReportError(ex);return false;}finally{IsBusy=false;}
     }
     public void RefreshWeights()=>Refresh();
+    public async Task ToggleLockAsync(int number,AcademicWorkspace expectedSource)
+    {
+        if(!CanModify)return;
+        IsBusy=true;Error="";
+        try{await service.SetCutLockedAsync(number,!expectedSource.Cuts.Single(c=>c.Number==number).IsLocked,expectedSource);Refresh();}
+        catch(Exception ex){ReportError(ex);}
+        finally{IsBusy=false;}
+    }
 }

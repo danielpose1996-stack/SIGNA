@@ -30,6 +30,7 @@ public static class WorkspaceIntegrity
             foreach(var cut in root.GetProperty("Cuts").EnumerateArray())
             {
                 if(cut.ValueKind!=JsonValueKind.Object)Invalid();
+                if(version>=9 && (!cut.TryGetProperty("IsLocked",out var locked) || locked.ValueKind is not (JsonValueKind.True or JsonValueKind.False)))Invalid();
                 if(version>=8 && (!cut.TryGetProperty("Name",out var name) || name.ValueKind!=JsonValueKind.String))Invalid();
                 foreach(var key in new[]{"Groups","Grades","Weeks","Attendance","RemovedActivities","RemovedGroups","RemovedWeeks"})
                     if(!HasArray(cut,key))Invalid();

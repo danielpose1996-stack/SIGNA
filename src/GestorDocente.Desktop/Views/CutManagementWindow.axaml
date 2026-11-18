@@ -4,10 +4,13 @@
       <StackPanel Spacing="8"><TextBlock Text="Cortes académicos" FontSize="23" FontWeight="SemiBold"/><TextBlock Text="Personaliza los nombres y administra los períodos de esta materia. Cada corte conserva sus notas, actividades y asistencias." Classes="muted" TextWrapping="Wrap"/></StackPanel>
     </Border>
     <ScrollViewer Grid.Row="1"><ItemsControl ItemsSource="{Binding Cuts}" IsEnabled="{Binding CanEdit}"><ItemsControl.ItemTemplate><DataTemplate>
-      <Border Classes="card" Padding="12" Margin="0,0,0,10"><Grid ColumnDefinitions="32,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10">
+      <Border Classes="card" Padding="12" Margin="0,0,0,10"><Grid ColumnDefinitions="32,*,Auto,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10">
         <TextBlock Text="{Binding Number}" FontWeight="SemiBold" VerticalAlignment="Center"/>
         <TextBox Grid.Column="1" Text="{Binding Name,Mode=TwoWay}" MaxLength="80" AutomationProperties.Name="Nombre del corte"/>
-        <Button Grid.Column="2" Command="{Binding DataContext.DeleteCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Number}" ToolTip.Tip="Eliminar corte y sus registros (solicita confirmación)" AutomationProperties.Name="Eliminar corte"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#A32B37"/></Button>
+        <Button Grid.Column="2" Command="{Binding DataContext.LockCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Number}" ToolTip.Tip="{Binding LockLabel}" AutomationProperties.Name="{Binding LockLabel}">
+          <StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="{Binding LockIcon}" Width="16" Height="16" /><TextBlock Text="{Binding LockLabel}" FontSize="12" /></StackPanel>
+        </Button>
+        <Button Grid.Column="3" Command="{Binding DataContext.DeleteCommand,RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Number}" ToolTip.Tip="Eliminar corte y sus registros (solicita confirmación)" AutomationProperties.Name="Eliminar corte"><c:VectorIcon Kind="trash" Width="17" Height="17" Stroke="#A32B37"/></Button>
         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding WeightLabel}" Classes="muted" FontSize="11" Margin="0,5,0,0"/>
         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Error}" Classes="error" FontSize="11" TextWrapping="Wrap"/>
       </Grid></Border>

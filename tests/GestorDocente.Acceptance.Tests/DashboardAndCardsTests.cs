@@ -116,10 +116,10 @@ public class DashboardAndCardsTests
             var opened=catalog.Open(original.Id);opened.ImportStudents([new("F-01","Estudiante ficticio")]);
             var vm=new MainViewModel(opened,catalog);
             var editor=new CatalogEditorViewModel(catalog,first,false,catalog.Courses(first.Id).Single());
-            Assert.Equal("ANT",editor.Code);Assert.Equal("Nombre anterior",editor.Name);
+            Assert.Equal("ANT",editor.Code);Assert.Equal("NOMBRE ANTERIOR",editor.Name);
             Assert.Equal("G1",editor.Group);Assert.True(editor.IsEditingCourse);
             var dialog=new CatalogEditorWindow{DataContext=editor};dialog.Show();dialog.UpdateLayout();
-            Assert.Contains(dialog.GetVisualDescendants().OfType<TextBox>(),box=>box.Text=="Nombre anterior");
+            Assert.Contains(dialog.GetVisualDescendants().OfType<TextBox>(),box=>box.Text=="NOMBRE ANTERIOR");
             if(Environment.GetEnvironmentVariable("AULA_MATERIAS_EDITOR_PREVIEW") is {Length:>0} editorPreview)
                 dialog.CaptureRenderedFrame()?.Save(editorPreview);
             dialog.Close();
@@ -127,7 +127,7 @@ public class DashboardAndCardsTests
             editor.SelectedSemester=second;editor.Code="NUE";editor.Name="Nombre nuevo";editor.School="Escuela B";
             Assert.True(await editor.SaveAsync());
             await vm.RefreshEditedCourseAsync(editor.SavedCourseId,editor.SavedSemesterId);
-            Assert.Equal("Nombre nuevo",vm.CourseName);Assert.Equal("2026-2",vm.Service.Current.Period);
+            Assert.Equal("NOMBRE NUEVO",vm.CourseName);Assert.Equal("2026-2",vm.Service.Current.Period);
             Assert.Equal("NUE",vm.Service.Current.CourseCode);
             Assert.Single(vm.Service.Current.Students);
             Assert.Equal(second.Id,vm.Home.SelectedSemester?.Id);

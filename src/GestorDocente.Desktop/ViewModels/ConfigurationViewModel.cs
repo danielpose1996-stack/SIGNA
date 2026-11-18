@@ -85,7 +85,7 @@ public sealed class ConfigurationViewModel:ObservableObject
     private bool isSaving;
     private string errorDetails="";
     public bool IsSaving{get=>isSaving;private set{if(Set(ref isSaving,value)){Raise(nameof(CanEdit));Raise(nameof(SaveLabel));}}}
-    public bool CanEdit=>!IsSaving;
+    public bool CanEdit=>!IsSaving && !service.Cut(cut).IsLocked;
     public string SaveLabel=>IsSaving ? "Guardando…" : "Guardar cambios";
     public string ErrorDetails{get=>errorDetails;private set=>Set(ref errorDetails,value);}
     public string Error{get=>error;private set=>Set(ref error,value);}

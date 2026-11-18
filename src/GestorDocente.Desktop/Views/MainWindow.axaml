@@ -47,11 +47,22 @@
           </StackPanel>
         </Grid>
       </Border>
-      <Grid Grid.Column="1" RowDefinitions="38,Auto,Auto,Auto,Auto,*,26">
-        <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Background="{DynamicResource Canvas}" Padding="22,0">
+      <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,26">
+        <Border x:Name="WorkspaceBreadcrumb" Height="38" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Background="{DynamicResource Canvas}" Padding="22,0">
           <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"><c:VectorIcon Kind="book" Width="18" Height="18" /><TextBlock Text="Mis Materias" Classes="muted" FontSize="12" IsVisible="{Binding IsCourseContext}" /><c:VectorIcon Kind="chevron" Width="12" Height="12" IsVisible="{Binding IsCourseContext}" /><TextBlock Text="{Binding PageTitle}" FontSize="12" /></StackPanel>
+            <StackPanel x:Name="BreadcrumbTrail" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" IsVisible="{Binding ShowWorkspaceBreadcrumb}"><c:VectorIcon Kind="book" Width="18" Height="18" /><TextBlock Text="Mis Materias" Classes="muted" FontSize="12" IsVisible="{Binding IsCourseContext}" /><c:VectorIcon Kind="chevron" Width="12" Height="12" IsVisible="{Binding IsCourseContext}" /><TextBlock Text="{Binding PageTitle}" FontSize="12" /></StackPanel>
             <TextBlock Grid.Column="1" Text="Guardado en este equipo" Classes="muted" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding IsGlobalContext}" />
+            <Button Grid.Column="1" IsVisible="{Binding IsCourseContext}" Command="{Binding ToggleCourseOptionsCommand}"
+                    VerticalAlignment="Center" Padding="9,4" MinHeight="30" Width="140" AutomationProperties.Name="{Binding CourseOptionsToggleLabel}"
+                    ToolTip.Tip="Mostrar u ocultar el encabezado y las opciones de la materia">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Panel Width="14" Height="14">
+                  <c:VectorIcon Kind="chevron" Stroke="{DynamicResource AccentText}" RenderTransform="rotate(-90deg)" IsVisible="{Binding !CourseOptionsCollapsed}" />
+                  <c:VectorIcon Kind="chevron" Stroke="{DynamicResource AccentText}" RenderTransform="rotate(90deg)" IsVisible="{Binding CourseOptionsCollapsed}" />
+                </Panel>
+                <TextBlock Text="{Binding CourseOptionsToggleLabel}" FontSize="12" />
+              </StackPanel>
+            </Button>
           </Grid>
         </Border>
         <Border Grid.Row="1" Classes="dialog-heading" Margin="18,10,18,10" IsVisible="{Binding IsGlobalContext}">
@@ -60,7 +71,7 @@
             <TextBlock Text="{Binding PageSubtitle}" Classes="muted" TextWrapping="Wrap" />
           </StackPanel>
         </Border>
-        <Grid x:Name="CourseHeader" Grid.Row="1" ColumnDefinitions="Auto,*" IsVisible="{Binding IsCourseContext}">
+        <Grid x:Name="CourseHeader" Grid.Row="1" ColumnDefinitions="Auto,*" IsVisible="{Binding ShowCourseOptions}">
           <Border Grid.ColumnSpan="2" Classes="dialog-heading" IsHitTestVisible="False" />
           <Viewbox Classes="course-decoration" Grid.ColumnSpan="2" Width="285" Stretch="Fill" HorizontalAlignment="Right" Margin="0,1,1,1" IsHitTestVisible="False">
             <Canvas Width="300" Height="80">
@@ -84,7 +95,7 @@
             </WrapPanel>
           </StackPanel>
         </Grid>
-        <Border x:Name="CourseTabs" Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Background="Transparent" Margin="18,0" IsVisible="{Binding IsCourseContext}">
+        <Border x:Name="CourseTabs" Grid.Row="2" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Background="Transparent" Margin="18,0" IsVisible="{Binding ShowCourseOptions}">
           <WrapPanel Orientation="Horizontal">
             <Button Classes="tab" Classes.active="{Binding IsNotes}" Command="{Binding NavigateCommand}" CommandParameter="Notas"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="grid" Width="21" Height="21" /><TextBlock Text="Notas" /></StackPanel></Button>
             <Button Classes="tab" Classes.active="{Binding IsAttendance}" Command="{Binding NavigateCommand}" CommandParameter="Asistencias"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="users" Width="21" Height="21" /><TextBlock Text="Asistencias" /></StackPanel></Button>
@@ -92,7 +103,7 @@
             <Button Classes="tab" Classes.active="{Binding IsAttendanceConsolidated}" Command="{Binding NavigateCommand}" CommandParameter="Asistencia consolidada"><StackPanel Orientation="Horizontal" Spacing="10"><c:VectorIcon Kind="calendar" Width="21" Height="21" /><TextBlock Text="Asistencia consolidada" /></StackPanel></Button>
           </WrapPanel>
         </Border>
-        <c:CutSelector Grid.Row="3" Margin="18,6,18,0" IsVisible="{Binding ShowCutSelector}" />
+        <c:CutSelector x:Name="CourseCutSelector" Grid.Row="3" Margin="18,6,18,0" IsVisible="{Binding ShowCutSelector}" />
         <Grid Grid.Row="4" IsVisible="{Binding IsCourseContext}"><Border Classes="warning" Padding="10" Margin="18,8,18,0" IsVisible="{Binding Message,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Message}" TextWrapping="Wrap" /><Button Grid.Column="1" Classes="quiet" Content="Cerrar" Command="{Binding DismissMessageCommand}" /></Grid></Border></Grid>
         <Grid Grid.Row="5" Margin="18,6,18,6" IsVisible="{Binding IsCourseContext}"><v:NotesView x:Name="RetainedNotes" IsVisible="{Binding IsNotes}" /><v:AttendanceView x:Name="RetainedAttendance" IsVisible="{Binding IsAttendance}" /><v:ConsolidatedView x:Name="RetainedConsolidated" IsVisible="{Binding IsConsolidated}" /><v:AttendanceConsolidatedView x:Name="RetainedAttendanceConsolidated" IsVisible="{Binding IsAttendanceConsolidated}" /></Grid>
         <v:DashboardView Grid.Row="2" Grid.RowSpan="4" IsVisible="{Binding IsHome}" />

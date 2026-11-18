@@ -4,7 +4,7 @@ namespace GestorDocente.Domain;
 
 public sealed class AcademicWorkspace
 {
-    public const int CurrentSchemaVersion=8;
+    public const int CurrentSchemaVersion=9;
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public bool CutWeightsPending { get; set; }
     public bool IsDemo { get; set; } = true;
@@ -21,6 +21,7 @@ public sealed class AcademicWorkspace
 public sealed record Student(string Id, string Document, string FullName,string Email="",string Phone="");
 public sealed class AcademicCut
 {
+    public bool IsLocked { get; set; }
     public int Number { get; set; }
     public string Name { get; set; } = "";
     [JsonIgnore] public string Label=>string.IsNullOrWhiteSpace(Name) ? $"Corte {Number}" : Name;

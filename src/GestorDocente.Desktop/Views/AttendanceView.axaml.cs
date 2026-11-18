@@ -37,7 +37,12 @@ public partial class AttendanceView : UserControl
             })});
         }
         AttendanceTable.Columns.Add(Text("P + T / evaluables","Total",120));AttendanceTable.Columns.Add(Text("% asistencia","Percentage",105));AttendanceTable.Columns.Add(Text("Estado","Status",110));
-        if(observed.AttendanceGradingEnabled)AttendanceTable.Columns.Add(Text("Nota de asistencia","AttendanceGrade",120));
+        if(observed.AttendanceGradingEnabled)
+        {
+            var grade=Text("Nota de asistencia","AttendanceGrade",120);
+            grade.Header=TablePresentation.GradeHeader("Nota de asistencia",null,observed);
+            AttendanceTable.Columns.Add(grade);
+        }
         columnLayout=new(AttendanceTable,observed.Service.Current.Students);
     }
     private static DataGridTemplateColumn Text(string title,string path,double width)=>TablePresentation.Text(title,path,width);

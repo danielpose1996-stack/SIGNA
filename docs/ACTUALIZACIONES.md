@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.9** incorpora la sección superior contraíble, materias en mayúsculas, candados persistentes por corte y copia de columnas de notas al portapapeles. Desde una instalación Velopack 1.6.0–1.6.8, utiliza **Buscar actualizaciones → Actualizar SIGNA**. La normalización histórica genera una copia SQLite preventiva antes de actualizar los metadatos. Los candados se guardan en el agregado académico 9. Genera un respaldo antes de actualizar y consérvalo si necesitas volver a una aplicación anterior, que requiere una copia del formato previo.
+
 **1.6.8** incorpora dos formatos de PDF en Notas. El simplificado muestra el nombre y la definitiva del corte. El detallado incluye las calificaciones por actividad y subactividad. Desde una instalación Velopack 1.6.0–1.6.7, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
 
 **1.6.7** actualiza el diseño de las pantallas y ventanas de SIGNA. El color elegido en **Personalizar apariencia** se aplica también a los degradados de la barra lateral y los encabezados. Desde una instalación Velopack 1.6.0–1.6.6, utiliza **Buscar actualizaciones → Actualizar SIGNA**.

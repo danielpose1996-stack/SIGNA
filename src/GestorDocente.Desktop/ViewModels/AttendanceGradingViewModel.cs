@@ -21,7 +21,7 @@ public sealed class AttendanceGradingViewModel:ObservableObject
     public string Context=>$"{source.CourseName} · {source.Cuts.Single(c=>c.Number==cut).Label}";
     public bool Enabled{get=>enabled;set{if(Set(ref enabled,value))Raise(nameof(CanSave));}}
     public bool IsSaving{get=>saving;private set{if(Set(ref saving,value)){Raise(nameof(CanEdit));Raise(nameof(CanSave));}}}
-    public bool CanEdit=>!IsSaving;
+    public bool CanEdit=>!IsSaving && !service.Cut(cut).IsLocked;
     public bool CanSave=>CanEdit && (!Enabled || StateGrades.All(s=>s.Value is not null));
     public string Error{get=>error;private set=>Set(ref error,value);}
     public AttendanceGradingViewModel(WorkspaceService service,int cut)

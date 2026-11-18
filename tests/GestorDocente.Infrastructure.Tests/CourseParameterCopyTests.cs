@@ -22,8 +22,8 @@ public class CourseParameterCopyTests
         var data=reopened.Open(first.Id).Current;
         Assert.NotEqual(source.Id,data.CourseId);Assert.Equal(first.Id,data.CourseId);Assert.False(data.IsDemo);
         Assert.Equal(destination.Id,data.SemesterId);Assert.Equal("2027-2",data.Period);
-        Assert.Equal("NEW-1",data.CourseCode);Assert.Equal("Materia nueva",data.CourseName);
-        Assert.Equal("Escuela B",data.School);Assert.Equal("B",data.GroupName);Assert.Empty(data.Students);
+        Assert.Equal("NEW-1",data.CourseCode);Assert.Equal("MATERIA NUEVA",data.CourseName);
+        Assert.Equal("ESCUELA B",data.School);Assert.Equal("B",data.GroupName);Assert.Empty(data.Students);
         Assert.Equal(4,data.Cuts.Count);Assert.Equal(4,reopened.Courses(destination.Id).First(c=>c.Id==first.Id).CutCount);
         Assert.All(data.Cuts,c=>{Assert.Empty(c.Grades);Assert.Empty(c.Attendance);Assert.Empty(c.Weeks);Assert.Empty(c.RemovedGroups);Assert.Empty(c.RemovedActivities);Assert.Empty(c.RemovedWeeks);});
         Assert.Equal(new[]{25m,25m,25m,25m},data.Cuts.Select(c=>c.Weight));

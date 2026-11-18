@@ -71,9 +71,11 @@ public class BulkGradesAndSortingTests
         {
             Assert.IsType<GestorDocente.Desktop.Controls.VectorIcon>(button.Content);
             var items = Assert.IsType<MenuFlyout>(button.Flyout).Items.Cast<MenuItem>().ToArray();
-            Assert.Equal(new[] { "Pegar notas", "Asignar nota a todos" }, items.Select(item => item.Header as string));
+            Assert.Equal(new[] { "Pegar notas", "Asignar nota a todos", "Copiar notas" }, items.Select(item => item.Header as string));
             Assert.Same(vm.PasteGradesCommand, items[0].Command);
             Assert.Same(vm.AssignGradeToAllCommand, items[1].Command);
+            Assert.Same(vm.CopyGradesCommand, items[2].Command);
+            Assert.Equal(items[0].CommandParameter,items[2].CommandParameter);
             Assert.Equal(items[0].CommandParameter, items[1].CommandParameter);
             return Assert.IsType<string>(items[1].CommandParameter);
         }).Order());
@@ -172,11 +174,11 @@ public class BulkGradesAndSortingTests
         var draft=vm.GradeRows[0].Cells["t1"];draft.Input="4,99";
         Assert.False(vm.AttendanceGradingEnabled);var editor=new AttendanceGradingViewModel(service,1);Assert.False(editor.CanSave);
         var values=new[]{"5","0","4","1"};for(var i=0;i<4;i++)editor.StateGrades[i].Input=values[i];Assert.True(editor.CanSave);Assert.True(await editor.SaveAsync());
-        Assert.True(vm.AttendanceGradingEnabled);Assert.Contains(table.Columns,c=>c.Header is TextBlock{Text:"Nota de asistencia"});
+        Assert.True(vm.AttendanceGradingEnabled);Assert.Contains(table.Columns,c=>c.Header is StackPanel header && header.Children.OfType<TextBlock>().Any(t=>t.Text=="Nota de asistencia"));
         Assert.Same(draft,vm.GradeRows[0].Cells["t1"]);Assert.Equal("4,99",draft.Input);
         Assert.Equal(original,vm.GroupAttendancePercentage);Assert.Equal(notes,JsonSerializer.Serialize(service.Current.Cuts.Select(c=>c.Grades)));
         await service.SetAttendanceAsync(1,"s1",1,AttendanceState.Absent);Assert.Equal(10m/3,vm.AttendanceRows.Single(r=>r.Student.Id=="s1").AttendanceGradeValue);
-        await service.ConfigureAttendanceGradingAsync(1,new(false,5,0,4,1));Assert.False(vm.AttendanceGradingEnabled);Assert.DoesNotContain(table.Columns,c=>c.Header is TextBlock{Text:"Nota de asistencia"});
+        await service.ConfigureAttendanceGradingAsync(1,new(false,5,0,4,1));Assert.False(vm.AttendanceGradingEnabled);Assert.DoesNotContain(table.Columns,c=>c.Header is StackPanel header && header.Children.OfType<TextBlock>().Any(t=>t.Text=="Nota de asistencia"));
         Assert.Equal(4m,service.Cut(1).AttendanceGrading!.Justified);vm.SelectedCut=2;Assert.False(vm.AttendanceGradingEnabled);
     }
     private sealed class Store:IWorkspaceStore

@@ -16,10 +16,12 @@ public sealed class CatalogEditorViewModel(CatalogService catalog,AcademicSemest
     public int Year{get;set;}=DateTime.Now.Year;
     public int Term{get;set;}=1;
     public IReadOnlyList<int> Terms{get;}=[1,2];
-    public string Code{get;set;}=editing?.Code ?? "";
-    public string Name{get;set;}=editing?.Name ?? "";
-    public string School{get;set;}=editing?.School ?? "";
-    public string Group{get;set;}=editing?.Group ?? "";
+    private string code=CourseText.Upper(editing?.Code),name=CourseText.Upper(editing?.Name),
+        school=CourseText.Upper(editing?.School),group=CourseText.Upper(editing?.Group);
+    public string Code{get=>code;set{Set(ref code,CourseText.Upper(value));if(value!=code)Raise();}}
+    public string Name{get=>name;set{Set(ref name,CourseText.Upper(value));if(value!=name)Raise();}}
+    public string School{get=>school;set{Set(ref school,CourseText.Upper(value));if(value!=school)Raise();}}
+    public string Group{get=>group;set{Set(ref group,CourseText.Upper(value));if(value!=group)Raise();}}
     public IReadOnlyList<AcademicSemester> Semesters=>catalog.Semesters;
     public AcademicSemester? SelectedSemester{get;set;}=editing is null ? semester : catalog.Semesters.FirstOrDefault(s=>s.Id==editing?.SemesterId);
     public string SavedSemesterId{get;private set;}="";

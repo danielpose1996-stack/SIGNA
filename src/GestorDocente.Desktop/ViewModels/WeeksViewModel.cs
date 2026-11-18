@@ -18,7 +18,7 @@ public sealed class WeeksViewModel : ObservableObject
     public string Error {get=>error;private set=>Set(ref error,value);}
     public void ReportUiError(Exception ex)=>Error=$"No se pudo completar la acción ({SafeErrorCode.From(ex)}). Reintenta.";
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))NotifyActions();}}
-    public bool CanEdit=>!IsSaving;
+    public bool CanEdit=>!IsSaving && !service.Cut(cut).IsLocked;
     public IReadOnlyList<WeekKindOption> Kinds {get;}=[new("Semana de clase",WeekKind.Class),new("Semana de actividades",WeekKind.Activities)];
     public WeekKindOption SelectedKind {get=>selectedKind;set=>Set(ref selectedKind,value);}
     private DateTime? selectedDate;
@@ -27,7 +27,7 @@ public sealed class WeeksViewModel : ObservableObject
     private DateOnly? WeekDate=>SelectedDate is {} date ? DateOnly.FromDateTime(date) : null;
     public AttendanceWeek? SelectedWeek {get=>selectedWeek;set{if(Set(ref selectedWeek,value))Raise(nameof(CanManage));}}
     public ObservableCollection<AttendanceWeek> Weeks {get;}=[];
-    public bool CanAdd=>Weeks.Count<9 && !IsSaving;
+    public bool CanAdd=>Weeks.Count<9 && CanEdit;
     public bool IsEditing=>editingWeek is not null;
     public bool IsCreating=>!IsEditing;
     public bool CanSave=>CanEdit && (IsEditing || Weeks.Count<9);
@@ -87,7 +87,7 @@ public sealed class RecoveryViewModel : ObservableObject
     public string Error {get=>error;private set=>Set(ref error,value);}
     public void ReportError(string message)=>Error=message;
     public bool IsSaving{get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
-    public bool CanEdit=>!IsSaving;
+    public bool CanEdit=>!IsSaving && !service.Cut(cut).IsLocked;
     public ObservableCollection<RecoveryItem> Items {get;}=[];
     public RecoveryItem? Selected {get;set;}
     public bool IsEmpty=>Items.Count==0;

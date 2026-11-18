@@ -27,7 +27,7 @@ public sealed class GradePasteViewModel:ObservableObject
     public string Error{get=>error;private set=>Set(ref error,value);}
     public bool IsSaving{get=>saving;private set{if(Set(ref saving,value))Refresh();}}
     public bool HasSaved{get=>hasSaved;private set{if(Set(ref hasSaved,value))Refresh();}}
-    public bool CanEdit=>!IsSaving && !HasSaved;
+    public bool CanEdit=>!IsSaving && !HasSaved && !service.Cut(cut).IsLocked;
     public bool CanPreview=>!AssignAll && CanEdit && studentIds.Length>0;
     public bool HasPreview=>preview is not null;
     public bool RequiresReplacement=>preview?.ReplacedCount>0;

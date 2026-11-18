@@ -1,23 +1,33 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Controls.CutSelector">
-  <Border Classes="panel-bar cut-bar">
+  <UserControl.Styles>
+    <Style Selector="Border.cut-bar.compact TextBlock.lock-label"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Border.cut-bar.narrow TextBlock.action-label"><Setter Property="IsVisible" Value="False" /></Style>
+  </UserControl.Styles>
+  <Border x:Name="CutBar" Classes="panel-bar cut-bar">
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
       <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="540" HorizontalAlignment="Left" ColumnSpacing="10">
         <TextBlock Text="Corte académico:" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
         <ComboBox x:Name="AcademicCutDropdown" Grid.Column="1" ItemsSource="{Binding Cuts}" SelectedItem="{Binding SelectedCutOption,Mode=TwoWay}" IsEnabled="{Binding CanChooseCut}" MinWidth="170" MaxWidth="275" HorizontalAlignment="Stretch" AutomationProperties.Name="Seleccionar corte académico">
-          <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}"/></DataTemplate></ComboBox.ItemTemplate>
+          <ComboBox.ItemTemplate><DataTemplate><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="lock" Width="14" Height="14" IsVisible="{Binding IsLocked}" /><TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}"/></StackPanel></DataTemplate></ComboBox.ItemTemplate>
         </ComboBox>
         <Button Grid.Column="2" Command="{Binding ConfigureCutsCommand}" ToolTip.Tip="Configurar cortes: agregar, renombrar o eliminar" AutomationProperties.Name="Configurar cortes" HorizontalContentAlignment="Center">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <c:VectorIcon Kind="settings" Width="16" Height="16" />
-            <TextBlock Text="Configurar cortes" FontSize="12" VerticalAlignment="Center" />
+            <TextBlock Classes="action-label" Text="Configurar cortes" FontSize="12" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
       </Grid>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button x:Name="CutLockButton" Command="{Binding ToggleCutLockCommand}" ToolTip.Tip="{Binding CutLockHint}" AutomationProperties.Name="{Binding CutLockHint}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <c:VectorIcon Kind="{Binding CutLockIcon}" Width="16" Height="16" />
+            <TextBlock Classes="lock-label" Text="{Binding CutLockLabel}" FontSize="12" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
         <Button Command="{Binding ReloadCourseCommand}" ToolTip.Tip="Volver a leer la materia si otra instancia la modificó">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <c:VectorIcon Kind="restore" Width="16" Height="16" />
-            <TextBlock Text="Actualizar" FontSize="12" VerticalAlignment="Center" />
+            <TextBlock Classes="action-label" Text="Actualizar" FontSize="12" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
         <Border Background="{DynamicResource StrongSelected}" CornerRadius="7" Padding="10,6" VerticalAlignment="Center">

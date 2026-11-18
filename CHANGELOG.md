@@ -1,5 +1,15 @@
 # Historial de cambios de SIGNA
 
+## 1.6.9 — 18 de noviembre de 2026
+
+- **Más espacio para los estudiantes.** Contraer y expandir la sección superior de Notas y Asistencias desde un único botón fijo en la esquina superior derecha. La tabla ocupa el espacio liberado y la elección se conserva durante la navegación de la sesión.
+- **Materias en mayúsculas.** Código, nombre, escuela y grupo se convierten a mayúsculas al crear o editar. Las materias anteriores se normalizan al iniciar el catálogo, con una copia SQLite preventiva verificada y una actualización transaccional que conserva identidades y registros académicos.
+- **Candado por corte.** Bloquear o desbloquear con confirmación desde el selector o Configurar cortes. Un corte cerrado protege notas, actividades, subactividades, semanas, asistencias y su valoración. Los datos continúan disponibles para consulta, PDF y copia. El estado se conserva al reiniciar y restaurar respaldos.
+- **Copiar notas al portapapeles.** La rueda dentada de las actividades y subactividades ofrece Copiar notas. También está disponible en Nota de asistencia cuando se habilita. Copia únicamente los valores numéricos, uno por línea y en el orden y filtro visibles, para pegar con Ctrl+V en Word, Bloc de notas o una hoja de cálculo. Las celdas pendientes dejan líneas vacías y los ceros explícitos se copian como 0,00.
+- **Distribución de controles.** La barra de cortes se adapta a ventanas estrechas y escala al 125 %, conservando acceso al candado y las acciones mediante iconos con ayuda.
+
+La actualización utiliza el agregado académico 9 para conservar los candados. Al abrir formatos anteriores, los cortes comienzan desbloqueados. Genera un respaldo local antes de actualizar y conserva esa copia si necesitas volver a una edición anterior. Las rutas de datos y las tablas SQL continúan siendo las existentes.
+
 ## 1.6.8 — 16 de noviembre de 2026
 
 - El menú **Generar reporte PDF** de Notas permite elegir el reporte simplificado, con nombre completo y definitiva del corte, o el detallado, con actividades, subactividades y porcentajes.

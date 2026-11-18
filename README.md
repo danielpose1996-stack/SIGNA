@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Versión 1.6.8.** En **Notas → Generar reporte PDF**, elige el reporte simplificado con nombres y definitivas o el detallado con las calificaciones por actividad. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.8](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.8).
+**Versión 1.6.9.** Contrae la sección superior para ver más estudiantes, protege cada corte con su candado y utiliza **Copiar notas** para pegar una columna de calificaciones en otras aplicaciones. Las materias se normalizan automáticamente a mayúsculas. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.9](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.9).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.8-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.8-linux-x64.AppImage` o `SIGNA-1.6.8-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.8-linux-x64.deb` o `SIGNA-1.6.8-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.8-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.8-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.9-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.9-linux-x64.AppImage` o `SIGNA-1.6.9-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.9-linux-x64.deb` o `SIGNA-1.6.9-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.9-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.9-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0–1.6.7 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.8. Un commit en GitHub no basta: la actualización requiere los paquetes y feeds de la Release. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.8 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.9. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** Ubuntu 24.04 LTS x64/ARM64, con AppImage y paquetes .deb.
 
@@ -50,11 +50,11 @@ Consulta primero [Descargar e instalar](#descargar-e-instalar) si solo necesitas
 | Módulo | Funciones actuales |
 | --- | --- |
 | **Inicio** | Consultar métricas de rendimiento por materia y corte: promedio, mínimo, máximo y registros completos o pendientes. |
-| **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas y abrir una materia. Copiar parámetros para reutilizar evaluaciones, porcentajes y nota de asistencia habilitada en una materia nueva de cualquier semestre, sin estudiantes ni registros. Eliminar materias y semestres con confirmación. |
+| **Mis Materias** | Crear períodos académicos, crear y editar asignaturas, consultar tarjetas y abrir una materia. Código, nombre, escuela y grupo se normalizan a mayúsculas. Copiar parámetros para reutilizar evaluaciones, porcentajes y nota de asistencia habilitada en una materia nueva de cualquier semestre, sin estudiantes ni registros. Eliminar materias y semestres con confirmación. |
 | **Estudiantes dentro de una materia** | Importar el listado desde `.xls`, `.xlsx`, `.xlsm` o `.xlsb`, añadir estudiantes individualmente o pegar listas completas con revisión previa, y consultar, editar o eliminar su información. En el registro manual solo el nombre es obligatorio; documento y contactos son opcionales. Celular oculto inicialmente en detalles y revisión masiva. |
-| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple o ponderado opcional, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Pegar una columna de notas con vista previa, ordenar nombres A–Z/Z–A y generar un PDF de toda la lista, identificada solo por nombre. |
+| **Notas** | Crear actividades con nombre libre y porcentaje, usar nota directa o subactividades con promedio simple o ponderado opcional, registrar notas de 0,0 a 5,0 y calcular el resultado del corte. Pegar una columna de notas con vista previa, copiar sus números al portapapeles en el orden visible, ordenar nombres A–Z/Z–A y generar un PDF de toda la lista, identificada solo por nombre. Contraer opciones para ver más estudiantes y proteger las escrituras de un corte con candado persistente. |
 | **Nota consolidada** | Consultar los resultados de todos los cortes y la nota final ponderada; configurar porcentajes cuya suma sea 100 %. |
-| **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Orden visual por nombre, nota opcional de asistencia por corte, numeración visible consecutiva y PDF individual. |
+| **Asistencias** | Crear y editar semanas de clase o actividades con fecha opcional, registrar P/A/J/T, marcar presente a todos opcionalmente y consultar porcentajes, clasificación y gráfico del grupo. Orden visual por nombre, nota opcional de asistencia por corte con copia al portapapeles, numeración visible consecutiva y PDF individual. Comparte el candado del corte y la sección superior contraíble. |
 | **Respaldos** | Generar copias nuevas sin contraseña en una carpeta recordada; restaurar con verificación y copia preventiva. Limpiar datos operativos con confirmación, conservando todos los respaldos y el actualizador. Las copias antiguas cifradas siguen siendo restaurables con su contraseña. |
 | **Apariencia** | Elegir un color con lienzo HSV y código HEX sincronizados, configurar nombre e icono del docente y activar o desactivar fondos de rendimiento en las definitivas. Conservar las preferencias para próximos inicios y respaldos. |
 

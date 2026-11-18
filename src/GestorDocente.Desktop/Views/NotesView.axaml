@@ -6,6 +6,7 @@
     <Style Selector="Grid.student-search"><Setter Property="Width" Value="230" /></Style>
     <Style Selector="Border.student-actions.compact Grid.student-search"><Setter Property="Width" Value="190" /></Style>
     <Style Selector="Border.student-actions.tight Grid.student-search"><Setter Property="Width" Value="140" /></Style>
+    <Style Selector="Border.student-actions.collapsed Grid.student-search"><Setter Property="Width" Value="230" /></Style>
     <Style Selector="TextBlock.compact-action-label"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="TextBlock.import-short-label"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="TextBlock.student-add-short"><Setter Property="IsVisible" Value="False" /></Style>
@@ -17,8 +18,8 @@
     <Style Selector="Border.student-actions.tight TextBlock.student-add-label"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="Border.student-actions.tight TextBlock.student-add-short"><Setter Property="IsVisible" Value="True" /></Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,9,*">
-    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+  <Grid RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,9" IsVisible="{Binding !CourseOptionsCollapsed}">
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
     <ItemsControl ItemsSource="{Binding Groups}">
       <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
@@ -59,15 +60,15 @@
       </Button.Flyout>
     </Button>
     </Grid>
-    <Border Grid.Row="2" Classes="card" Padding="0">
+    <Border Grid.Row="1" Classes="card" Padding="0">
       <Grid RowDefinitions="Auto,*,Auto">
-        <Border x:Name="StudentActionsBar" Classes="student-actions" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,8" CornerRadius="10,10,0,0">
+        <Border x:Name="StudentActionsBar" Classes="student-actions" Classes.collapsed="{Binding CourseOptionsCollapsed}" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,0,1" Padding="10,8" CornerRadius="10,10,0,0">
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
             <Grid Classes="student-search">
               <TextBox Text="{Binding SearchInput,Mode=TwoWay}" Watermark="Buscar estudiante…" Padding="30,6,8,6" MinHeight="36" FontSize="12" CornerRadius="6" AutomationProperties.Name="Filtrar tabla de notas" ToolTip.Tip="Buscar por nombre o documento dentro de esta materia" />
               <c:VectorIcon Kind="search" Width="15" Height="15" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Stroke="{DynamicResource Muted}" IsHitTestVisible="False" />
             </Grid>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" IsVisible="{Binding !CourseOptionsCollapsed}">
               <Button x:Name="DeleteStudentListButton" Classes="danger" Command="{Binding DeleteStudentListCommand}" AutomationProperties.Name="Eliminar lista de estudiantes" ToolTip.Tip="Eliminar todos los estudiantes y sus notas/asistencias de esta materia, con confirmación"><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="trash" Width="16" Height="16" /><TextBlock Text="Eliminar lista" FontSize="12" /></StackPanel></Button>
               <Button x:Name="AddStudentButton" Classes="primary student-add" Command="{Binding AddStudentCommand}" AutomationProperties.Name="Agregar estudiante" ToolTip.Tip="Registrar manualmente un estudiante en esta materia"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="plus" Width="16" Height="16" /><TextBlock Classes="student-add-label" Text="Agregar estudiante" FontSize="12" /><TextBlock Classes="student-add-short" Text="Agregar" FontSize="12" /></StackPanel></Button>
               <Button x:Name="ImportStudentsButton" Classes="student-action" Command="{Binding ImportStudentsCommand}" AutomationProperties.Name="Importar Excel" ToolTip.Tip="Importar el listado de estudiantes desde un archivo Excel"><StackPanel Orientation="Horizontal" Spacing="7"><c:VectorIcon Kind="document" Width="16" Height="16" Stroke="{DynamicResource AccentText}" /><TextBlock Classes="import-action-label" Text="Importar Excel" FontSize="12" /><TextBlock Classes="import-short-label" Text="Excel" FontSize="12" /></StackPanel></Button>

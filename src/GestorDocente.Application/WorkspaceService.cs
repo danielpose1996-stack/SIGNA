@@ -6,7 +6,7 @@ namespace GestorDocente.Application;
 public enum WorkspaceChangeKind { Structure, Grade, Attendance, Students, GradesBatch, AttendanceGrading }
 public sealed record WorkspaceChange(WorkspaceChangeKind Kind,int Cut=0,string? StudentId=null,string? ActivityId=null,int? Week=null,decimal? Grade=null,AttendanceState? Attendance=null,int? RemovedCut=null);
 
-public sealed class WorkspaceService
+public sealed partial class WorkspaceService
 {
     private readonly IWorkspaceStore store;
     private bool configurationSaving;
@@ -47,7 +47,7 @@ public sealed class WorkspaceService
     }
     public CutDeletionPreview PreviewCutDeletion(int number)
     {
-        EnsureWritable();return new(Current,Cut(number));
+        EnsureWritable();EnsureCutEditable(number);return new(Current,Cut(number));
     }
     public Task DeleteCutAsync(CutDeletionPreview preview,bool confirmed=false)
     {
@@ -57,6 +57,7 @@ public sealed class WorkspaceService
         if(Current.Cuts.Count<=1)throw new AcademicValidationException("No puedes eliminar el último corte de una materia.");
         return ChangeWorkspaceAsync(next=>
         {
+            EnsureCutEditable(preview.Number);
             var cut=next.Cuts.SingleOrDefault(c=>c.Number==preview.Number)
                 ?? throw new AcademicValidationException("El corte ya no existe. Actualiza la materia.");
             next.Cuts.Remove(cut);
@@ -93,7 +94,7 @@ public sealed class WorkspaceService
     private void Change(int number,Action<AcademicCut> action,WorkspaceChange change)
     {
         EnsureWritable();
-        _=Cut(number);
+        EnsureCutEditable(number);
         var copy=Clone(Current); action(copy.Cuts.Single(x=>x.Number==number));
         WorkspaceIntegrity.Validate(copy);
         store.Save(copy); Current=copy; Publish(change);
@@ -209,6 +210,7 @@ public sealed class WorkspaceService
         if(Current.Students.Count==0)throw new AcademicValidationException("Esta materia ya no tiene estudiantes para eliminar.");
         return ChangeWorkspaceAsync(next=>
         {
+            EnsureStudentRecordsEditable(next.Students.Select(s=>s.Id).ToHashSet());
             next.Students.Clear();
             foreach(var cut in next.Cuts){cut.Grades.Clear();cut.Attendance.Clear();}
         },new(WorkspaceChangeKind.Students));
@@ -220,6 +222,7 @@ public sealed class WorkspaceService
             throw new AcademicValidationException("La materia cambió después de la confirmación. Revisa de nuevo el estudiante que deseas eliminar.");
         return ChangeWorkspaceAsync(next=>
         {
+            EnsureStudentRecordsEditable([preview.Student.Id]);
             if(next.Students.RemoveAll(s=>s.Id==preview.Student.Id)!=1)
                 throw new AcademicValidationException("El estudiante ya no pertenece a esta materia.");
             foreach(var cut in next.Cuts)
@@ -242,6 +245,7 @@ public sealed class WorkspaceService
     }
     public void SetGrade(int number,string studentId,string activityId,decimal? value)
     {
+        EnsureCutEditable(number);
         StudentExists(studentId);
         if(!Cut(number).Groups.Any(g=>g.Mode==EvaluationMode.Direct ? g.Id==activityId : g.Activities.Any(a=>a.Id==activityId)))
             throw new AcademicValidationException("La actividad o subactividad no está activa en este corte.");
@@ -276,9 +280,9 @@ public sealed class WorkspaceService
         policy.Validate();
         return ChangeAsync(number,cut=>cut.AttendanceGrading=policy,new(WorkspaceChangeKind.AttendanceGrading,number));
     }
-    private async Task ChangeAsync(int number,Action<AcademicCut> action,WorkspaceChange change,Func<AcademicCut,bool>? unchanged=null)
+    private async Task ChangeAsync(int number,Action<AcademicCut> action,WorkspaceChange change,Func<AcademicCut,bool>? unchanged=null,bool changingLock=false)
     {
-        EnsureWritable();_=Cut(number);var source=Current;configurationSaving=true;
+        EnsureWritable();if(!changingLock)EnsureCutEditable(number);_=Cut(number);var source=Current;configurationSaving=true;
         try
         {
             var result=await Task.Run(()=>
@@ -295,13 +299,13 @@ public sealed class WorkspaceService
     }
     public void ConfigureGroups(int number,List<EvaluationGroup> groups)
     {
-        EnsureWritable();
+        EnsureWritable();EnsureCutEditable(number);
         var copy=PrepareGroups(Current,number,groups);
         WorkspaceIntegrity.Validate(copy);store.Save(copy);Current=copy;Publish(new(WorkspaceChangeKind.Structure,number));
     }
     public async Task ConfigureGroupsAsync(int number,List<EvaluationGroup> groups)
     {
-        EnsureWritable();
+        EnsureWritable();EnsureCutEditable(number);
         var source=Current;var configuration=Clone(groups);
         configurationSaving=true;
         try
@@ -412,6 +416,7 @@ public sealed class WorkspaceService
     },new(WorkspaceChangeKind.Structure,number));
     public void SetAttendance(int number,string studentId,int week,AttendanceState? state)
     {
+        EnsureCutEditable(number);
         StudentExists(studentId);
         if(!Cut(number).Weeks.Any(x=>x.Number==week)) throw new AcademicValidationException("La semana no existe en este corte.");
         if(state is not null && (!Enum.IsDefined(state.Value) || state==AttendanceState.NoClass)) throw new AcademicValidationException("Selecciona P, A, J o T; para períodos sin clase, omite la semana.");

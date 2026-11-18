@@ -6,8 +6,9 @@ namespace GestorDocente.Desktop.ViewModels;
 public sealed record CutColumn(int Number,decimal Weight,bool IsSelected=false)
 {
     public string Name{get;init;}="";
+    public bool IsLocked{get;init;}
     public string Label=>string.IsNullOrWhiteSpace(Name) ? $"Corte {Number}" : Name;
-    public string Header=>$"{Label}\n{Weight:0.##} %";
+    public string Header=>$"{Label}\n{Weight:0.##} %"+(IsLocked ? " · Bloqueado" : "");
 }
 public sealed record ConsolidatedStudentRow(int Number,Student Student,IReadOnlyDictionary<int,string> CutGrades,decimal? FinalValue,bool Pending)
 {

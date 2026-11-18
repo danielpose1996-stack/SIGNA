@@ -42,6 +42,7 @@ public partial class MainWindow : Window
     }
     private void Attach()
     {
+        if(observed is not null){observed.CutLockRequested-=ToggleCutLock;observed.GradeCopyRequested-=CopyGradesToClipboard;}
         if(observed is not null){observed.CutsConfigurationRequested-=OpenCutsConfiguration;observed.ConsolidatedPdfRequested-=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested-=OpenUpdates;observed.Updates.RestartRequested-=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested-=OpenGradePaste;observed.AttendanceGradingRequested-=OpenAttendanceGrading;}
@@ -52,6 +53,7 @@ public partial class MainWindow : Window
         if(observed is not null) {observed.PropertyChanged-=OnModelPropertyChanged;observed.ConfigurationRequested-=OpenConfiguration;observed.CutWeightsRequested-=OpenCutWeights;observed.CutDeletionRequested-=DeleteCut;observed.CatalogEditorRequested-=OpenCatalog;observed.CourseEditionRequested-=EditCourse;observed.CourseDeletionRequested-=DeleteCourse;observed.WeekEditorRequested-=OpenWeeks;observed.RecoveryRequested-=OpenRecovery;observed.ImportRequested-=OpenImport;observed.StudentEditorRequested-=AddStudent;observed.StudentDetailsRequested-=ViewStudentDetails;observed.ExportRequested-=ExportReport;observed.AttendancePdfRequested-=ExportAttendancePdf;observed.NotesPdfRequested-=ExportNotesPdf;observed.BackupRequested-=CreateBackup;observed.RestoreRequested-=RestoreBackup;observed.BackupFolderRequested-=ChooseBackupFolder;observed.LocalDataResetRequested-=ClearLocalData;}
         if(observed is {} previous){_ = previous.StopAutomaticBackupsAsync(false);previous.ReleaseAutomaticBackups();}
         observed=DataContext as MainViewModel;
+        if(observed is not null){observed.CutLockRequested+=ToggleCutLock;observed.GradeCopyRequested+=CopyGradesToClipboard;}
         if(observed is not null){observed.CutsConfigurationRequested+=OpenCutsConfiguration;observed.ConsolidatedPdfRequested+=ExportConsolidatedPdf;}
         if(observed is not null){observed.UpdatesRequested+=OpenUpdates;observed.Updates.RestartRequested+=RestartAfterUpdate;}
         if(observed is not null){observed.GradePasteRequested+=OpenGradePaste;observed.AttendanceGradingRequested+=OpenAttendanceGrading;}

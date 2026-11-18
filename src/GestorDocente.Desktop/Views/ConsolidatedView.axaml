@@ -3,8 +3,8 @@
     <Grid RowDefinitions="Auto,*,Auto,Auto">
       <WrapPanel Margin="10,6" Orientation="Horizontal">
         <TextBox Width="260" Watermark="Buscar estudiante o documento…" Text="{Binding Consolidated.SearchInput,Mode=TwoWay}" Margin="0,0,12,4" AutomationProperties.Name="Filtrar nota consolidada" />
-        <Button Content="Configurar porcentajes" Command="{Binding ConfigureCutWeightsCommand}" Margin="0,0,8,4" />
-        <Button Content="Generar reporte PDF" Classes="primary" Command="{Binding ExportConsolidatedPdfCommand}" ToolTip.Tip="Incluye la tabla de notas y tarjetas de estudiantes en riesgo con su correo electrónico." Margin="0,0,8,4" />
+        <Button Content="Configurar porcentajes" Command="{Binding ConfigureCutWeightsCommand}" Margin="0,0,8,4" IsVisible="{Binding !CourseOptionsCollapsed}" />
+        <Button Content="Generar reporte PDF" Classes="primary" Command="{Binding ExportConsolidatedPdfCommand}" ToolTip.Tip="Incluye la tabla de notas y tarjetas de estudiantes en riesgo con su correo electrónico." Margin="0,0,8,4" IsVisible="{Binding !CourseOptionsCollapsed}" />
       </WrapPanel>
       <Grid Grid.Row="1">
         <DataGrid x:Name="ConsolidatedTable" ItemsSource="{Binding Consolidated.Rows}" AutoGenerateColumns="False" IsReadOnly="True" FrozenColumnCount="3" RowHeight="NaN" ColumnHeaderHeight="NaN" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />

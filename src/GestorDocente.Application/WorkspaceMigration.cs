@@ -14,6 +14,7 @@ public static class WorkspaceMigration
         if(source.SchemaVersion==1)WorkspaceIntegrity.ValidateLegacyShape(source);
         else WorkspaceIntegrity.Validate(source);
         var next=WorkspaceService.Clone(source);
+        if(source.SchemaVersion<9)foreach(var cut in next.Cuts)cut.IsLocked=false;
         // Earlier versions always used a simple average. Do not revive legacy rubric weights.
         if(source.SchemaVersion<7)foreach(var cut in next.Cuts)
         {

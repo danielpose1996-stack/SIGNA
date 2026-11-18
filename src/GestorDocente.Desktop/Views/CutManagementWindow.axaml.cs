@@ -10,11 +10,25 @@ public partial class CutManagementWindow:Window
     public CutManagementWindow()
     {
         InitializeComponent();
-        DataContextChanged+=(_,_)=>{if(model is not null)model.DeleteRequested-=Delete;model=DataContext as CutManagementViewModel;if(model is not null)model.DeleteRequested+=Delete;};
+        DataContextChanged+=(_,_)=>{if(model is not null){model.DeleteRequested-=Delete;model.LockRequested-=ToggleLock;}model=DataContext as CutManagementViewModel;if(model is not null){model.DeleteRequested+=Delete;model.LockRequested+=ToggleLock;}};
         Closing+=(_,e)=>{if(model?.IsBusy==true)e.Cancel=true;};
-        Closed+=(_,_)=>{if(model is not null)model.DeleteRequested-=Delete;};
+        Closed+=(_,_)=>{if(model is not null){model.DeleteRequested-=Delete;model.LockRequested-=ToggleLock;}};
     }
     private void CloseEditor(object? sender,RoutedEventArgs e)=>Close();
+    private async void ToggleLock(int number)
+    {
+        if(model?.CanModify!=true)return;
+        try
+        {
+            var source=model.Service.Current;var cut=model.Service.Cut(number);
+            var action=cut.IsLocked ? "Desbloquear" : "Bloquear";
+            var text=cut.IsLocked ? $"¿Desbloquear «{cut.Label}» para corregir sus notas y asistencias?" :
+                $"¿Bloquear «{cut.Label}» para proteger sus notas, actividades y asistencias? Podrás consultar los datos, generar reportes y desbloquearlo posteriormente.";
+            if(await new ConfirmWindow(text,action+" corte"){Width=550,Height=280}.ShowDialog<bool>(this))
+                await model.ToggleLockAsync(number,source);
+        }
+        catch(Exception ex){model.ReportError(ex);}
+    }
     private async void SaveNames(object? sender,RoutedEventArgs e){if(model is not null)await model.SaveAsync();}
     private async void ConfigureWeights(object? sender,RoutedEventArgs e)
     {

@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 
 namespace GestorDocente.Infrastructure;
 
-public sealed class SqliteCatalogStore : ICatalogStore
+public sealed partial class SqliteCatalogStore : ICatalogStore
 {
     private readonly string connectionString;
     private readonly ISavedChangesObserver? changes;
@@ -35,6 +35,7 @@ public sealed class SqliteCatalogStore : ICatalogStore
             create.ExecuteNonQuery();transaction.Commit();
         }
         if(newFile && !OperatingSystem.IsWindows())File.SetUnixFileMode(fullPath,UnixFileMode.UserRead|UnixFileMode.UserWrite);
+        NormalizeCourseMetadata(db,fullPath);
     }
     private SqliteConnection Open(){var db=new SqliteConnection(connectionString);db.Open();return db;}
     public IReadOnlyList<AcademicSemester> Semesters()

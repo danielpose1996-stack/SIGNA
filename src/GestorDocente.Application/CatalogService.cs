@@ -47,7 +47,7 @@ public sealed class CatalogService(ICatalogStore store)
         var semester=Semesters.SingleOrDefault(s=>s.Id==semesterId) ?? throw new AcademicValidationException("Crea o selecciona primero un semestre.");
         foreach(var (value,label) in new[]{(code,"código"),(name,"nombre de asignatura"),(school,"escuela")})
             if(string.IsNullOrWhiteSpace(value))throw new AcademicValidationException($"El {label} es obligatorio.");
-        code=code.Trim();name=name.Trim();school=school.Trim();group=group.Trim();
+        code=CourseText.Upper(code.Trim());name=CourseText.Upper(name.Trim());school=CourseText.Upper(school.Trim());group=CourseText.Upper(group.Trim());
         if(Courses(semesterId).Any(c=>string.Equals(c.Code,code,StringComparison.OrdinalIgnoreCase) && string.Equals(c.Group,group,StringComparison.OrdinalIgnoreCase)))
             throw new AcademicValidationException("Ya existe este código y grupo en el semestre. Para otra sección, indica un grupo diferente.");
         var course=new CourseRecord(Guid.NewGuid().ToString("N"),semesterId,code,name,school,group);
@@ -79,7 +79,7 @@ public sealed class CatalogService(ICatalogStore store)
         if(!Semesters.Any(s=>s.Id==semesterId))throw new AcademicValidationException("Selecciona un semestre existente.");
         foreach(var (value,label) in new[]{(code,"código"),(name,"nombre de asignatura"),(school,"escuela")})
             if(string.IsNullOrWhiteSpace(value))throw new AcademicValidationException($"El {label} es obligatorio.");
-        code=code.Trim();name=name.Trim();school=school.Trim();group=group.Trim();
+        code=CourseText.Upper(code.Trim());name=CourseText.Upper(name.Trim());school=CourseText.Upper(school.Trim());group=CourseText.Upper(group.Trim());
         if(Courses(semesterId).Any(c=>c.Id!=original.Id &&
             string.Equals(c.Code,code,StringComparison.OrdinalIgnoreCase) &&
             string.Equals(c.Group,group,StringComparison.OrdinalIgnoreCase)))

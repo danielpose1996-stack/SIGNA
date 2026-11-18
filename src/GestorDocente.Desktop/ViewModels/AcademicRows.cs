@@ -19,10 +19,10 @@ public sealed class GradeCellViewModel : ObservableObject
     private string input,error="";
     private decimal? originalValue;
     private bool isSaving;
-    public string Input {get=>input;set=>Set(ref input,value);}
+    public string Input {get=>input;set{if(CanEdit)Set(ref input,value);}}
     public string Error {get=>error;private set=>Set(ref error,value);}
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
-    public bool CanEdit=>!IsSaving;
+    public bool CanEdit=>!IsSaving && !service.Cut(cut).IsLocked;
     public bool HasPendingInput=>Input!=(originalValue?.ToString("0.00",AcademicFormatting.Culture) ?? "") &&
         (string.IsNullOrWhiteSpace(Input) ? originalValue is not null :
         !AcademicFormatting.TryDecimal(Input,out var value) || value is <0 or >5 || value!=originalValue);
@@ -112,16 +112,17 @@ public sealed class AttendanceCellViewModel : ObservableObject
     {
         get=>selected;
         set {
-            if(value is null || IsSaving || value.State==selected.State && Error.Length==0)return;
+            if(value is null || !CanEdit || value.State==selected.State && Error.Length==0)return;
             selected=value;Raise();Raise(nameof(Tone));
             _=SaveSelectionAsync(value);
         }
     }
     public string Error {get=>error;private set=>Set(ref error,value);}
     public bool IsSaving {get=>isSaving;private set{if(Set(ref isSaving,value))Raise(nameof(CanEdit));}}
-    public bool CanEdit=>!IsSaving;
+    private readonly Func<bool>? canEdit;
+    public bool CanEdit=>!IsSaving && (canEdit?.Invoke() ?? true);
     public string Tone=>Selected.State switch {AttendanceState.Present=>"#E9FBF1",AttendanceState.Absent=>"#FFF0F0",AttendanceState.Justified=>"#FFF8E6",AttendanceState.Late=>"#F6EEFF",_=>"#F0F4F9"};
-    public AttendanceCellViewModel(AttendanceState? state,Func<AttendanceState?,Task> save) {this.save=save;selected=Options.FirstOrDefault(x=>x.State==state) ?? Options[0];}
+    public AttendanceCellViewModel(AttendanceState? state,Func<AttendanceState?,Task> save,Func<bool>? canEdit=null) {this.save=save;this.canEdit=canEdit;selected=Options.FirstOrDefault(x=>x.State==state) ?? Options[0];}
     private async Task SaveSelectionAsync(AttendanceOption option)
     {
         IsSaving=true;Error="";
@@ -157,7 +158,7 @@ public sealed class AttendanceRowViewModel
     {
         Student=student;Number=number;
         var data=service.Cut(cut);index ??=new AcademicCutReadIndex(data);
-        cells=new(()=>data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state))));
+        cells=new(()=>data.Weeks.ToDictionary(x=>x.Number,x=>new AttendanceCellViewModel(index.Attendance(student.Id,x.Number),state=>service.SetAttendanceAsync(cut,student.Id,x.Number,state),()=>!service.Cut(cut).IsLocked)));
         AttendanceGradeValue=index.AttendanceGrade(student.Id);
         Summary=AttendanceSummary.From(data.Weeks.Select(w=>index.Attendance(student.Id,w.Number)));
         weeklyDetails=new(()=>new ObservableCollection<WeeklyDetail>(data.DisplayWeeks.Select(w=> {

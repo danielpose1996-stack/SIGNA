@@ -24,7 +24,7 @@ public class CatalogTests
             var updated=catalog.UpdateCourse(original,second.Id,"MAT-2","Materia editada","Escuela B","G2");
             Assert.Equal(original.Id,updated.Id);
             Assert.Empty(catalog.Courses(first.Id));
-            Assert.Equal("Materia editada",Assert.Single(catalog.Courses(second.Id)).Name);
+            Assert.Equal("MATERIA EDITADA",Assert.Single(catalog.Courses(second.Id)).Name);
             var reopened=catalog.Open(original.Id).Current;
             Assert.Equal("2026-2",reopened.Period);Assert.Equal("MAT-2",reopened.CourseCode);
             Assert.Equal(student,reopened.Students.Single());
@@ -68,7 +68,7 @@ public class CatalogTests
             }
             Assert.Throws<Microsoft.Data.Sqlite.SqliteException>(()=>catalog.UpdateCourse(original,term.Id,"NEW","Materia nueva","Otra escuela","B"));
             Assert.Equal("SAFE",Assert.Single(catalog.Courses(term.Id)).Code);
-            Assert.Equal("Materia original",catalog.Open(original.Id).Current.CourseName);
+            Assert.Equal("MATERIA ORIGINAL",catalog.Open(original.Id).Current.CourseName);
         });
     }
     [Fact]

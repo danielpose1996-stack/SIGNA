@@ -20,11 +20,15 @@ public static class TablePresentation
         button.Classes.Add("quiet");ToolTip.SetTip(button,"Ordenar por nombre: alternar A–Z / Z–A. Solo cambia el orden visual.");
         Avalonia.Automation.AutomationProperties.SetName(button,"Ordenar estudiantes por nombre completo");return button;
     }
-    public static Control GradeHeader(string title,string id,ViewModels.MainViewModel model)
+    public static Control GradeHeader(string title,string? id,ViewModels.MainViewModel model)
     {
         var menu = new MenuFlyout();
-        menu.Items.Add(new MenuItem { Header = "Pegar notas", Command = model.PasteGradesCommand, CommandParameter = id });
-        menu.Items.Add(new MenuItem { Header = "Asignar nota a todos", Command = model.AssignGradeToAllCommand, CommandParameter = id });
+        if(id is not null)
+        {
+            menu.Items.Add(new MenuItem { Header = "Pegar notas", Command = model.PasteGradesCommand, CommandParameter = id });
+            menu.Items.Add(new MenuItem { Header = "Asignar nota a todos", Command = model.AssignGradeToAllCommand, CommandParameter = id });
+        }
+        menu.Items.Add(new MenuItem { Header = "Copiar notas", Command = model.CopyGradesCommand, CommandParameter = id });
         var button = new Button
         {
             Content = new VectorIcon { Kind = "settings", Width = 16, Height = 16 },
