@@ -45,7 +45,7 @@ public sealed class ConsolidatedViewModel : ObservableObject
     public string RiskSummary=>$"Atención académica · {RiskStudents.Count} estudiantes";
     public bool IsEmpty=>Rows.Count==0;
     public bool WeightsPending{get;private set;}
-    public string CalculationNote=>WeightsPending ? $"Nota final pendiente: los porcentajes suman {Cuts.Sum(c=>c.Weight):0.##} %. Usa Configurar porcentajes para completar el 100 %." : "Aprobación: 3,0 · Un corte se completa al registrar todas sus notas (incluido 0,0). Nota mínima: promedio ponderado requerido en los cortes pendientes, redondeado hacia arriba a 2 decimales. La nota final conserva los vacíos como 0,0 solo en el cálculo.";
+    public string CalculationNote=>WeightsPending ? $"Nota final pendiente: los porcentajes suman {Cuts.Sum(c=>c.Weight):0.##} %. Usa Configurar porcentajes para completar el 100 %." : "Aprobación: 3,00 en la nota final mostrada a dos decimales, cuando todos los cortes estén completos. Un corte se completa al registrar todas sus notas (incluido 0,0). Nota mínima: promedio ponderado requerido en los cortes pendientes, redondeado hacia arriba a 2 decimales. Los vacíos aportan 0,0 solo en el cálculo.";
     public string WeightsLabel=>string.Join(" · ",Cuts.Select(c=>$"{c.Label}: {c.Weight:0.##} %"));
     public void Refresh(AcademicWorkspace workspace)
     {

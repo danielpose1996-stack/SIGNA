@@ -1,5 +1,11 @@
 # Historial de cambios de SIGNA
 
+## 1.6.10 — 19 de noviembre de 2026 · Parche de corrección
+
+- **Aprobación coherente con la nota final.** Al completar todos los cortes, la clasificación utiliza la definitiva mostrada a dos decimales. Un resultado exacto de 2,998, mostrado como 3,00, aparece como **Aprobado**. Los resultados finales muestran **Aprobado** o **Reprobado**; los estados de proyección se mantienen cuando hay cortes pendientes.
+- **Colores y PDF consistentes.** El color de fondo corresponde a la nota visible, y el reporte de Nota consolidada utiliza el mismo estado académico que la tabla.
+- Se conservan las calificaciones originales, los porcentajes, la precisión de los cálculos intermedios y las reglas de proyección de la nota mínima. Este parche mantiene el agregado académico 9 y las ubicaciones de datos y respaldos.
+
 ## 1.6.9 — 18 de noviembre de 2026
 
 - **Más espacio para los estudiantes.** Contraer y expandir la sección superior de Notas y Asistencias desde un único botón fijo en la esquina superior derecha. La tabla ocupa el espacio liberado y la elección se conserva durante la navegación de la sesión.

@@ -4,6 +4,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using GestorDocente.Desktop.ViewModels;
+using GestorDocente.Domain;
 
 namespace GestorDocente.Desktop.Controls;
 
@@ -22,7 +23,7 @@ public sealed class ResultGrade:Border
         if(change.Property==ValueProperty || change.Property==ColorizeProperty)Refresh();
     }
     private void Refresh(){if(text is null)return;text.Text=AcademicFormatting.Grade(Value);ToolTip.SetTip(this,text.Text);Background=new ImmutableSolidColorBrush(ColorFor(Value,Colorize));}
-    public static Color ColorFor(decimal? value,bool enabled)=>!enabled || value is null ? Colors.Transparent : Color.Parse(value switch
+    public static Color ColorFor(decimal? value,bool enabled)=>!enabled || value is null ? Colors.Transparent : Color.Parse(AcademicRules.RoundGradeForDisplay(value.Value) switch
     {
         <3m=>"#FDEBEC",<4m=>"#FFF3D8",<4.6m=>"#E5F5EB",_=>"#E5F0FF"
     });

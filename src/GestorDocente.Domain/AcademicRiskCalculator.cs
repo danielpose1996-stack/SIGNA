@@ -4,8 +4,11 @@ public enum AcademicRisk { NoCompletedCuts, WeightsPending, Assured, Normal, Del
 public sealed record CutProgress(decimal? Grade,decimal Weight,bool Completed);
 public sealed record AcademicRiskResult(decimal? Minimum,AcademicRisk Risk)
 {
+    public bool IsFinal {get;init;}
     public string Label=>Risk switch
     {
+        AcademicRisk.Assured when IsFinal=>"Aprobado",
+        AcademicRisk.Unreachable when IsFinal=>"Reprobado",
         AcademicRisk.Assured=>"Aprobado asegurado", AcademicRisk.Normal=>"Normal",
         AcademicRisk.Delicate=>"Delicado", AcademicRisk.Critical=>"Crítico",
         AcademicRisk.Unreachable=>"No alcanzable", AcademicRisk.WeightsPending=>"Configurar porcentajes",
@@ -30,6 +33,11 @@ public static class AcademicRiskCalculator
         AcademicRules.ValidateCutWeights(items.Select(c=>c.Weight));
         if(!items.Any(c=>c.Completed))return new(null,AcademicRisk.NoCompletedCuts);
         var earned=items.Where(c=>c.Completed).Sum(c=>c.Grade!.Value*c.Weight/100m);
+        if(items.All(c=>c.Completed))
+        {
+            var approved=AcademicRules.RoundGradeForDisplay(earned)>=3m;
+            return new(approved ? 0m : null,approved ? AcademicRisk.Assured : AcademicRisk.Unreachable){IsFinal=true};
+        }
         if(earned>=3m)return new(0m,AcademicRisk.Assured);
         var remaining=items.Where(c=>!c.Completed).Sum(c=>c.Weight);
         if(remaining==0)return new(null,AcademicRisk.Unreachable);

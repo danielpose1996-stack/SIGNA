@@ -1,5 +1,5 @@
 param(
-    [string]$Version='1.6.9',
+    [string]$Version='1.6.10',
     [Parameter(Mandatory)][string]$Payload,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$Compiler=(Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe')

@@ -1,6 +1,7 @@
 namespace GestorDocente.Domain;
 public static class AcademicRules
 {
+    public static decimal RoundGradeForDisplay(decimal grade)=>decimal.Round(grade,2,MidpointRounding.AwayFromZero);
     public static decimal DefaultCutWeight(int number)=>number switch {1 or 2=>30m,3=>40m,_=>0m};
     public static List<AcademicCut> DefaultCuts()=>Enumerable.Range(1,3).Select(n=>new AcademicCut{Number=n,Weight=DefaultCutWeight(n)}).ToList();
     public static void ValidateCutWeights(IEnumerable<decimal> weights)

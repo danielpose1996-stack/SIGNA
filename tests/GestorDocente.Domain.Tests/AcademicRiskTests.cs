@@ -6,6 +6,29 @@ namespace GestorDocente.Domain.Tests;
 public class AcademicRiskTests
 {
     [Theory]
+    [InlineData(2.994,"Reprobado")]
+    [InlineData(2.995,"Aprobado")]
+    [InlineData(2.998,"Aprobado")]
+    [InlineData(3,"Aprobado")]
+    public void Finished_course_status_matches_the_final_grade_shown_to_two_decimals(decimal final,string label)
+    {
+        var result=AcademicRiskCalculator.Calculate([new(final,100,true)]);
+        Assert.Equal(label,result.Label);
+        Assert.Equal(final,GradeCalculator.Final([(final,100m)]));
+    }
+
+    [Fact]
+    public void Completed_weighted_final_that_displays_three_is_passed_without_rounding_the_calculation()
+    {
+        CutProgress[] cuts=[new(2.3m,30,true),new(3.6m,30,true),new(3.07m,40,true)];
+        Assert.Equal(2.998m,GradeCalculator.Final(cuts.Select(c=>(c.Grade,c.Weight))));
+        Assert.Equal("Aprobado",AcademicRiskCalculator.Calculate(cuts).Label);
+        Assert.Equal(0m,AcademicRiskCalculator.Calculate(cuts).Minimum);
+        Assert.Equal("Aprobado asegurado",AcademicRiskCalculator.Calculate([new(5,60,true),new(null,40,false)]).Label);
+        Assert.Equal("No alcanzable",AcademicRiskCalculator.Calculate([new(0,60,true),new(null,40,false)]).Label);
+    }
+
+    [Theory]
     [InlineData(5, "2.1428571428571428571428571429", AcademicRisk.Normal)]
     [InlineData(3, "3", AcademicRisk.Normal)]
     [InlineData(2, "3.4285714285714285714285714286", AcademicRisk.Delicate)]
