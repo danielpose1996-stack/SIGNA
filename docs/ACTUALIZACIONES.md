@@ -8,6 +8,8 @@ SIGNA incorpora Velopack desde **1.6.0**. La edición **1.6.1** mejora el botón
 
 ## Para el docente
 
+**1.6.11** incorpora el buscador de estudiantes en **Mis Materias**. Escribe parte del nombre o apellido para ver las materias, códigos y grupos únicamente del período seleccionado. La búsqueda se actualiza mientras escribes y al cambiar de semestre descarta los resultados anteriores. Es informativa y mantiene el formato de datos, las calificaciones y los respaldos existentes. Desde una instalación Velopack 1.6.0–1.6.10, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
+
 **1.6.10** es un parche de corrección. La aprobación de materias con todos sus cortes completos coincide con la nota final visible a dos decimales: 3,00 aparece como Aprobado, con el color correspondiente y el mismo estado en el PDF consolidado. Conserva los datos originales, los porcentajes y las proyecciones de cortes pendientes, sin cambios de esquema ni del agregado 9. Desde una instalación Velopack 1.6.0–1.6.9, utiliza **Buscar actualizaciones → Actualizar SIGNA**.
 
 **1.6.9** incorpora la sección superior contraíble, materias en mayúsculas, candados persistentes por corte y copia de columnas de notas al portapapeles. Desde una instalación Velopack 1.6.0–1.6.8, utiliza **Buscar actualizaciones → Actualizar SIGNA**. La normalización histórica genera una copia SQLite preventiva antes de actualizar los metadatos. Los candados se guardan en el agregado académico 9. Genera un respaldo antes de actualizar y consérvalo si necesitas volver a una aplicación anterior, que requiere una copia del formato previo.

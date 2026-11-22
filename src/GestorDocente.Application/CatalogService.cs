@@ -6,6 +6,7 @@ public interface ICatalogStore
 {
     IReadOnlyList<AcademicSemester> Semesters();
     IReadOnlyList<CourseRecord> Courses(string semesterId);
+    IReadOnlyList<CourseStudentEnrollment> StudentEnrollments(string semesterId);
     void AddSemester(AcademicSemester semester);
     void AddCourse(CourseRecord course,AcademicWorkspace workspace);
     void UpdateCourse(CourseRecord original,CourseRecord updated);
@@ -20,6 +21,11 @@ public sealed class CatalogService(ICatalogStore store)
     public IReadOnlyList<AcademicSemester> Semesters=>store.Semesters();
     public event Action? Changed;
     public IReadOnlyList<CourseRecord> Courses(string semesterId)=>store.Courses(semesterId);
+    public Task<SemesterStudentIndex> StudentIndexAsync(string semesterId)=>Task.Run(()=>
+    {
+        if(string.IsNullOrWhiteSpace(semesterId))throw new AcademicValidationException("Selecciona primero un período académico.");
+        return new SemesterStudentIndex(semesterId,store.StudentEnrollments(semesterId));
+    });
     public AcademicSemester CreateSemester(int year,int term)
     {
         var semester=CreateSemesterCore(year,term);Publish(semester);return semester;

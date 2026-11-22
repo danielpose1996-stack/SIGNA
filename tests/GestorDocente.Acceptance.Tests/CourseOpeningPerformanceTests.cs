@@ -88,6 +88,7 @@ public class CourseOpeningPerformanceTests
     private sealed class WaitingCatalogStore(ManualResetEventSlim gate,ManualResetEventSlim entered,bool fail=false):ICatalogStore
     {
         public IReadOnlyList<AcademicSemester> Semesters()=>[new("term",2026,1)];
+        public IReadOnlyList<CourseStudentEnrollment> StudentEnrollments(string semesterId)=>[];
         public IReadOnlyList<CourseRecord> Courses(string semesterId)=>[new("course","term","F-1","Materia ficticia","Escuela","")];
         public void AddSemester(AcademicSemester semester)=>throw new NotSupportedException();
         public void AddCourse(CourseRecord course,AcademicWorkspace workspace)=>throw new NotSupportedException();

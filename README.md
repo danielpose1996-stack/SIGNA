@@ -12,7 +12,7 @@ SIGNA está pensado para que un docente conserve y consulte sus materias a lo la
 
 Los instaladores se publican en **[Releases de SIGNA](https://github.com/danielpose1996-stack/SIGNA/releases/latest)**. No necesitas clonar el repositorio ni instalar el SDK de .NET para utilizarlos.
 
-**Parche 1.6.10.** Corrige la coherencia entre la nota final visible, su color y la aprobación de materias con todos los cortes completos. Una definitiva mostrada como **3,00** aparece como **Aprobado**, también en el PDF consolidado. Consulta el [historial de cambios](CHANGELOG.md) y las [notas del parche 1.6.10](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.10).
+**Versión 1.6.11.** Encuentra en qué materias está un estudiante mediante el nuevo buscador en tiempo real de **Mis Materias**. Busca por nombre o apellido exclusivamente en el semestre seleccionado y muestra asignaturas, códigos y grupos. Consulta el [historial de cambios](CHANGELOG.md) y las [notas de SIGNA 1.6.11](https://github.com/danielpose1996-stack/SIGNA/releases/tag/v1.6.11).
 
 Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios guardados durante 30 segundos (máximo dos minutos bajo actividad continua) y verifica cada copia antes de rotar los automáticos. **Generar respaldo** sigue disponible de forma independiente. Más detalles en [Respaldos locales completos](#respaldos-locales-completos).
 
@@ -20,15 +20,15 @@ Elige **Respaldos → Elegir carpeta** una sola vez. SIGNA agrupa los cambios gu
 
 | Sistema y arquitectura | Descarga |
 | --- | --- |
-| Windows 10/11 x64 | `SIGNA-1.6.10-windows-x64-setup.exe` |
-| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.10-linux-x64.AppImage` o `SIGNA-1.6.10-linux-arm64.AppImage` |
-| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.10-linux-x64.deb` o `SIGNA-1.6.10-linux-arm64.deb` |
-| macOS 15 o posterior, Intel | `SIGNA-1.6.10-osx-x64.dmg` |
-| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.10-osx-arm64.dmg` |
+| Windows 10/11 x64 | `SIGNA-1.6.11-windows-x64-setup.exe` |
+| Ubuntu 24.04 LTS x64 o ARM64, actualización integrada | `SIGNA-1.6.11-linux-x64.AppImage` o `SIGNA-1.6.11-linux-arm64.AppImage` |
+| Ubuntu 24.04 LTS x64 o ARM64, instalación con apt | `SIGNA-1.6.11-linux-x64.deb` o `SIGNA-1.6.11-linux-arm64.deb` |
+| macOS 15 o posterior, Intel | `SIGNA-1.6.11-osx-x64.dmg` |
+| macOS 15 o posterior, Apple Silicon | `SIGNA-1.6.11-osx-arm64.dmg` |
 
 Windows muestra la licencia MIT y permite **elegir la carpeta de instalación**; instala para tu usuario y crea accesos en Inicio y el escritorio. El asistente conserva Velopack como gestor de instalación, actualizaciones y desinstalación. Elige una carpeta vacía con permisos de escritura o una instalación compatible de SIGNA; se rechazan destinos con datos o archivos ajenos. Los paquetes nativos de Linux instalan sus archivos y la entrada del menú mediante el gestor de paquetes; AppImage se ejecuta desde una carpeta propia estable y escribible, con permiso de ejecución. En macOS abre el DMG y arrastra SIGNA a Applications. Las actualizaciones y desinstalaciones conservan la base y los respaldos de tu carpeta de usuario; haz un respaldo antes de actualizar.
 
-**Desde SIGNA 1.6.0–1.6.9 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar el parche 1.6.10. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
+**Desde SIGNA 1.6.0–1.6.10 con Velopack**, utiliza **Buscar actualizaciones → Actualizar SIGNA** para instalar 1.6.11. En Ubuntu, la actualización interna corresponde a AppImage; el paquete `.deb` se actualiza con apt.
 
 **Soporte Linux:** Ubuntu 24.04 LTS x64/ARM64, con AppImage y paquetes .deb.
 
@@ -83,6 +83,8 @@ En Notas, abre la rueda dentada de una actividad directa o subactividad y elige 
 En Asistencias, **Activar nota de asistencia** permite definir los cuatro valores P/A/J/T para el corte seleccionado. La nueva columna muestra su promedio simple entre semanas activas con estado asignado, incluida J; los registros vacíos o sin clase se excluyen. Desactivar oculta la columna y conserva la configuración. Esta nota es informativa: no modifica el porcentaje o clasificación de asistencia ni interviene en las notas académicas o la consolidada. La configuración se conserva en la materia y en sus respaldos locales.
 
 ### Cortes y seguimiento académico
+
+**Buscar un estudiante en un semestre:** en **Mis Materias**, selecciona el período y escribe parte del nombre o apellido en **Buscar estudiante en el período**. Los resultados se actualizan mientras escribes y muestran sus materias, códigos y grupos únicamente de ese semestre. Cambiar de período conserva el texto y vuelve a consultar en el nuevo semestre; **Limpiar** retira la búsqueda. Es una consulta informativa que no modifica matrículas ni registros académicos.
 
 En **Notas** y **Asistencias**, el desplegable **Corte académico** permite cambiar de período. El botón de configuración junto al selector abre **Cortes académicos**: puedes agregar cortes, editar sus nombres y eliminarlos con confirmación. Guarda los nombres antes de realizar otra operación. Los nuevos cortes comienzan con 0 %; eliminar uno conserva los porcentajes restantes y solicita revisarlos. Siempre debe quedar al menos un corte.
 

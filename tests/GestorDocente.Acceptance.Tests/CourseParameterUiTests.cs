@@ -133,6 +133,11 @@ public class CourseParameterUiTests
         private readonly List<AcademicSemester> semesters=[];
         private readonly Dictionary<string,(CourseRecord Course,AcademicWorkspace Data)> courses=[];
         public IReadOnlyList<AcademicSemester> Semesters(){lock(gate)return semesters.OrderByDescending(s=>s.Year).ThenByDescending(s=>s.Term).ToArray();}
+        public IReadOnlyList<CourseStudentEnrollment> StudentEnrollments(string semesterId)
+        {
+            lock(gate)return courses.Values.Where(v=>v.Course.SemesterId==semesterId)
+                .SelectMany(v=>v.Data.Students.Select(s=>new CourseStudentEnrollment(semesterId,v.Course.Id,v.Course.Name,v.Course.Code,v.Course.Group,s.Id,s.FullName,s.Document))).ToArray();
+        }
         public IReadOnlyList<CourseRecord> Courses(string id)
         {
             lock(gate)return courses.Values.Where(v=>v.Course.SemesterId==id)

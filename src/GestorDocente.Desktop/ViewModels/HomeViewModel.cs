@@ -27,7 +27,7 @@ public sealed class HomeViewModel : ObservableObject
     public AcademicSemester? SelectedSemester
     {
         get=>selectedSemester;
-        set{if(applyingCatalogSnapshot || value is null && Semesters.Count>0)return;if(Set(ref selectedSemester,value)){Raise(nameof(CanCreateCourse));_ = RefreshCoursesAsync();}}
+        set{if(applyingCatalogSnapshot || value is null && Semesters.Count>0)return;if(Set(ref selectedSemester,value)){StudentSearch.ClearScope(value);Raise(nameof(CanCreateCourse));_ = RefreshCoursesAsync();}}
     }
     public ObservableCollection<CourseSummary> Courses { get; } = [];
     public bool HasCourses => Courses.Count > 0;
@@ -35,11 +35,13 @@ public sealed class HomeViewModel : ObservableObject
     public bool IsLoading{get=>isLoading;private set{if(Set(ref isLoading,value))Raise(nameof(IsEmpty));}}
     public string Error{get=>error;private set{if(Set(ref error,value))Raise(nameof(IsEmpty));}}
     public RelayCommand RefreshCommand{get;}
+    public SemesterStudentSearchViewModel StudentSearch{get;}
 
     public HomeViewModel(WorkspaceService service,CatalogService? catalog=null,bool loadImmediately=true)
     {
         this.service = service;
         this.catalog=catalog;
+        StudentSearch=new(catalog);
         RefreshCommand=new(_=>_ = RefreshAsync(),_=>catalog is not null && !IsLoading);
         if(catalog is null)Refresh();else if(loadImmediately)_ = RefreshAsync();
         if(catalog is null)service.ChangedDetailed += change=>{if(change.Kind is WorkspaceChangeKind.Students or WorkspaceChangeKind.Structure)Refresh();};
@@ -65,6 +67,7 @@ public sealed class HomeViewModel : ObservableObject
         if(catalog is null){Refresh();return;}
         var version=Interlocked.Increment(ref refreshVersion);
         var previous=selectedSemester?.Id;
+        StudentSearch.ClearScope(selectedSemester);
         IsLoading=true;RefreshCommand.Refresh();Error="";
         try
         {
@@ -87,6 +90,7 @@ public sealed class HomeViewModel : ObservableObject
             finally{applyingCatalogSnapshot=false;}
             Courses.Clear();foreach(var course in snapshot.courses)Courses.Add(course);
             Raise(nameof(HasCourses));Raise(nameof(IsEmpty));
+            await StudentSearch.LoadAsync(selectedSemester);
         }
         catch(Exception ex){if(version==refreshVersion)Error=ex is AcademicValidationException ? ex.Message : $"No se pudo listar las materias ({SafeErrorCode.From(ex)}). Pulsa Reintentar.";}
         finally{if(version==refreshVersion){IsLoading=false;RefreshCommand.Refresh();}}
@@ -96,6 +100,7 @@ public sealed class HomeViewModel : ObservableObject
         if(catalog is null)return;
         var version=Interlocked.Increment(ref refreshVersion);
         var semester=selectedSemester;
+        var studentLoading=StudentSearch.LoadAsync(semester);
         IsLoading=true;RefreshCommand.Refresh();Error="";
         try
         {
@@ -103,6 +108,7 @@ public sealed class HomeViewModel : ObservableObject
                 .Select(c=>new CourseSummary(c.Name,c.Code,c.Group,semester.Name,c.StudentCount,false,c.Id,c.School,c.CutCount)).ToArray());
             if(version!=refreshVersion)return;
             Courses.Clear();foreach(var course in courses)Courses.Add(course);
+            await studentLoading;
         }
         catch(Exception ex){if(version==refreshVersion)Error=ex is AcademicValidationException ? ex.Message : $"No se pudo listar las materias ({SafeErrorCode.From(ex)}). Pulsa Reintentar.";}
         finally{if(version==refreshVersion){IsLoading=false;RefreshCommand.Refresh();}}

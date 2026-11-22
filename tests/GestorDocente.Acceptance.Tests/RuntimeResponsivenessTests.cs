@@ -88,6 +88,7 @@ public class RuntimeResponsivenessTests
         public int Opens=>opens;
         public long Revision;
         public IReadOnlyList<AcademicSemester> Semesters()=>[new("term",2026,1)];
+        public IReadOnlyList<CourseStudentEnrollment> StudentEnrollments(string semesterId)=>[];
         public IReadOnlyList<CourseRecord> Courses(string id)=>[new("a","term","A","Materia ficticia A","Escuela",""){Revision=Revision},new("b","term","B","Materia ficticia B","Escuela",""){Revision=0}];
         public IWorkspaceStore OpenCourse(string id)
         {

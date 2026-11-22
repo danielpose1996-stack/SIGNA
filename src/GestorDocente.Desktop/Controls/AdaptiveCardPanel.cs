@@ -8,18 +8,21 @@ public sealed class AdaptiveCardPanel : Panel
 {
     private const double MinimumCardWidth=330;
     private const double Gap=16;
-    private const int MaximumColumns=3;
+    public static readonly StyledProperty<int> MaximumColumnsProperty=AvaloniaProperty.Register<AdaptiveCardPanel,int>(nameof(MaximumColumns),3);
+    public int MaximumColumns{get=>GetValue(MaximumColumnsProperty);set=>SetValue(MaximumColumnsProperty,value);}
+    static AdaptiveCardPanel()=>AffectsMeasure<AdaptiveCardPanel>(MaximumColumnsProperty);
 
-    private static int Columns(double width)
+    private int Columns(double width)
     {
-        if(double.IsInfinity(width) || double.IsNaN(width))return MaximumColumns;
-        if(width>=MaximumColumns*MinimumCardWidth+(MaximumColumns-1)*Gap)return MaximumColumns;
-        return width>=2*MinimumCardWidth+Gap ? 2 : 1;
+        var maximum=Math.Clamp(MaximumColumns,1,3);
+        if(double.IsInfinity(width) || double.IsNaN(width))return maximum;
+        return Math.Clamp((int)Math.Floor((width+Gap)/(MinimumCardWidth+Gap)),1,maximum);
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var width=double.IsInfinity(availableSize.Width) ? MaximumColumns*MinimumCardWidth+(MaximumColumns-1)*Gap : Math.Max(0,availableSize.Width);
+        var maximum=Math.Clamp(MaximumColumns,1,3);
+        var width=double.IsInfinity(availableSize.Width) ? maximum*MinimumCardWidth+(maximum-1)*Gap : Math.Max(0,availableSize.Width);
         var columns=Columns(width);
         var cardWidth=Math.Max(0,(width-(columns-1)*Gap)/columns);
         var cardHeight=0d;

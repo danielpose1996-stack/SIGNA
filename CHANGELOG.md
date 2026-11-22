@@ -1,5 +1,12 @@
 # Historial de cambios de SIGNA
 
+## 1.6.11 — 22 de noviembre de 2026
+
+- **Buscador de estudiantes en Mis Materias.** Escribe parte del nombre o apellido y consulta las materias donde está registrado, con sus códigos y grupos. Los resultados se actualizan mientras escribes, sin pulsar Buscar.
+- **Solo el semestre seleccionado.** Al cambiar de período, desaparecen los resultados anteriores y la misma búsqueda se realiza únicamente en el nuevo semestre. Las respuestas atrasadas de otra selección se descartan.
+- **Consulta fluida e informativa.** No distingue mayúsculas ni tildes y permite limpiar el texto. Filtra un índice en memoria, sin consultar SQLite por cada letra. Los resultados largos tienen desplazamiento y virtualización.
+- Se conservan separados los registros con documentos distintos aunque coincidan sus nombres; los registros sin documento no se unen solo por su nombre. La consulta no muestra documentos, contactos, notas ni asistencias y no modifica matrículas, calificaciones ni configuraciones. Se mantiene el agregado académico 9.
+
 ## 1.6.10 — 19 de noviembre de 2026 · Parche de corrección
 
 - **Aprobación coherente con la nota final.** Al completar todos los cortes, la clasificación utiliza la definitiva mostrada a dos decimales. Un resultado exacto de 2,998, mostrado como 3,00, aparece como **Aprobado**. Los resultados finales muestran **Aprobado** o **Reprobado**; los estados de proyección se mantienen cuando hay cortes pendientes.

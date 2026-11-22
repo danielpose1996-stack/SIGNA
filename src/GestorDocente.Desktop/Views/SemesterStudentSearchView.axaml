@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:GestorDocente.Desktop.Controls" x:Class="GestorDocente.Desktop.Views.SemesterStudentSearchView">
+  <UserControl.Styles>
+    <Style Selector="ListBox.student-matches"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="0"/></Style>
+    <Style Selector="ListBox.student-matches ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,4,0,6"/></Style>
+  </UserControl.Styles>
+  <Border Classes="card" Padding="16" x:Name="SemesterStudentSearchPanel">
+    <StackPanel Spacing="10">
+      <c:AdaptiveCatalogHeader>
+        <StackPanel Orientation="Horizontal" Spacing="9"><c:VectorIcon Kind="person" Width="22" Height="22"/><TextBlock Text="Buscar estudiante en el período" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
+        <Border Background="{DynamicResource Soft}" CornerRadius="12" Padding="10,5"><TextBlock Text="{Binding PeriodLabel}" Foreground="{DynamicResource AccentText}" FontSize="12" FontWeight="SemiBold"/></Border>
+      </c:AdaptiveCatalogHeader>
+      <Grid ColumnDefinitions="*,Auto">
+        <Grid>
+          <TextBox x:Name="SemesterStudentInput" Text="{Binding SearchInput,Mode=TwoWay}" Watermark="Escribe un nombre o apellido…" MaxLength="240" Padding="34,9,10,9" MinHeight="40" IsEnabled="{Binding HasSemester}" AutomationProperties.Name="Buscar estudiante en el período seleccionado" ToolTip.Tip="Busca mientras escribes, únicamente en el período seleccionado."/>
+          <c:VectorIcon Kind="search" Width="17" Height="17" Margin="11,0,0,0" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+        </Grid>
+        <Button Grid.Column="1" Margin="10,0,0,0" Command="{Binding ClearCommand}" IsVisible="{Binding HasQuery}" AutomationProperties.Name="Limpiar búsqueda de estudiantes"><StackPanel Orientation="Horizontal" Spacing="6"><c:VectorIcon Kind="close" Width="14" Height="14"/><TextBlock Text="Limpiar" FontSize="12"/></StackPanel></Button>
+      </Grid>
+      <TextBlock Text="Encuentra sus materias escribiendo parte del nombre o apellido. Solo se consulta el período seleccionado." Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding !HasQuery}"/>
+      <TextBlock Text="Cargando estudiantes del período…" Classes="muted" FontSize="12" IsVisible="{Binding IsLoading}"/>
+      <Border Classes="panel-bar" Padding="10" IsVisible="{Binding Error,Converter={StaticResource HasText}}"><Grid ColumnDefinitions="*,Auto"><TextBlock Text="{Binding Error}" TextWrapping="Wrap" FontSize="12"/><Button Grid.Column="1" Content="Reintentar" Command="{Binding RetryCommand}" Margin="10,0,0,0"/></Grid></Border>
+      <StackPanel Spacing="8" IsVisible="{Binding ShowResults}">
+        <Border Background="{DynamicResource Line}" Height="1"/>
+        <TextBlock x:Name="SemesterStudentResultsLabel" Text="{Binding ResultsLabel}" FontSize="13" FontWeight="SemiBold"/>
+        <TextBlock Text="No se encontraron estudiantes en este período. Prueba con otro nombre o apellido." Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding NoMatches}"/>
+        <ListBox x:Name="SemesterStudentResults" Classes="student-matches" ItemsSource="{Binding Results}" MaxHeight="340" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Estudiantes y materias del período seleccionado">
+          <ListBox.ItemTemplate><DataTemplate>
+            <Border BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="8" Padding="13">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="38,*">
+                  <Border Background="{DynamicResource Soft}" Width="32" Height="32" CornerRadius="16" VerticalAlignment="Top"><c:VectorIcon Kind="person" Width="18" Height="18"/></Border>
+                  <StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="15" TextWrapping="Wrap"/><TextBlock Text="{Binding Courses.Count,StringFormat='Materias en el período seleccionado: {0}'}" Classes="muted" FontSize="12" TextWrapping="Wrap"/></StackPanel>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Courses}">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:AdaptiveCardPanel MaximumColumns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate><DataTemplate>
+                    <Border Background="{DynamicResource Soft}" CornerRadius="6" Padding="12">
+                      <Grid ColumnDefinitions="26,*">
+                        <c:VectorIcon Kind="book" Width="19" Height="19" VerticalAlignment="Top"/>
+                        <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap"/><TextBlock Text="{Binding Code,StringFormat='Código: {0}'}" FontSize="12" TextWrapping="Wrap"/><TextBlock Text="{Binding GroupLabel,StringFormat='Grupo: {0}'}" FontSize="12" TextWrapping="Wrap"/></StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</UserControl>
